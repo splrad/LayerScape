@@ -1,118 +1,35 @@
-# Git 分支与 PR 规则
-
-本文面向贡献者，说明如何命名分支、提交改动和打开 PR。
+# Git分支与拉取请求规则
 
 ## 基本原则
 
-- 从 `main` 创建短期分支。
-- 一个分支只处理一个问题，或一组紧密相关的问题。
-- 禁止直接从本地 `main` 分支推送。
-- 不把格式化、重命名、重构和功能修复混在同一个 PR 里。
+- 从`main`创建短期分支；禁止直接推送本地`main`。
+- 一个分支只处理一个问题或一组紧密相关的改动。
+- 不把无关格式化、重命名、重构和功能修复混入同一拉取请求。
+- 不提交本地日志、临时文件、构建产物、发布包、客户数据、访问令牌或密钥。
 
-## 分支命名
+## 分支名称
 
-分支名使用小写英文、数字和连字符。推荐格式如下：
+分支名只使用小写英文、数字、斜线和连字符：`feature/<topic>`、`bugfix/<topic>`、`docs/<topic>`、`refactor/<topic>`、`perf/<topic>`或`chore/<topic>`。
 
-| 类型 | 格式 | 示例 |
-| --- | --- | --- |
-| 功能 | `feature/<topic>` | `feature/add-ttf-support` |
-| 修复 | `bugfix/<topic>` | `bugfix/mtext-crash` |
-| 文档 | `docs/<topic>` | `docs/developer-guide` |
-| 重构 | `refactor/<topic>` | `refactor/font-index` |
-| 性能 | `perf/<topic>` | `perf/font-scan-cache` |
-| 构建或维护 | `chore/<topic>` | `chore/build-warning` |
+## 组织成员
 
-如果改动对应 Issue，可以把编号放进分支名，例如 `bugfix/issue-123`。
+组织成员把分支推送到`LayerScape`仓库后，由`SPLRAD Steward`创建或更新目标为`main`的唯一拉取请求，生成中文标题和正文，并请求Copilot审查。贡献者检查自动摘要，在“人工补充”中填写自动内容没有覆盖的验证结果或环境限制。
 
-## 本地流程
+## 外部贡献者
 
-先 Fork 仓库，然后 clone 自己的 Fork：
+外部贡献者把修改推送到自己的派生仓库，再从代码托管平台页面手工创建指向`splrad/LayerScape:main`的拉取请求。Steward不修改派生仓库，但会在原始仓库的拉取请求上执行分类和中央验证。外部贡献者按组织模板手工填写摘要、改动内容和验证情况。
 
-```powershell
-git clone https://github.com/<your-name>/CADFontAutoReplace.git
-cd CADFontAutoReplace
-git remote add upstream https://github.com/axiomoth/CADFontAutoReplace.git
-git fetch upstream
-git checkout -b docs/developer-guide upstream/main
-```
+## 提交和本地验证
 
-完成修改后：
+提交信息使用简短约定式格式，例如`docs: improve developer guide`、`fix: handle missing bigfont fallback`或`refactor: isolate shx lookup`。项目不要求`Signed-off-by`，也不运行DCO检查。
 
-```powershell
-git status
-git diff
-git add <changed-files>
-git commit -s -m "docs: improve developer guide"
-git push -u origin docs/developer-guide
-```
+文档改动运行`git diff --check`。单个插件、部署器或共享代码改动按[开发者指南](developer-guide.md)运行对应命令，并在拉取请求“人工补充”中如实写明已运行命令、AutoCAD版本和未覆盖环境。
 
-如果你使用 Fork，从 GitHub 页面打开指向上游仓库 `main` 分支的 PR。
+## 审查和合并
 
-## PR 要求
-
-推送到本仓库短期分支后，PR 标题和说明会自动生成或更新。打开 PR 后先检查生成内容是否准确，再按需要补充人工信息，重点是：
-
-- 自动摘要是否漏掉关键改动。
-- 改动内容是否覆盖了主要文件和行为变化。
-- 是否需要补充审阅者特别关注的兼容性、权限或运行环境限制。
-
-如果从 Fork 打开的 PR 没有自动生成摘要，按以上要点手动补充即可。
-
-文档改动至少运行：
-
-```powershell
-git diff --check
-```
-
-代码改动按范围运行对应构建。常见命令见 [开发者指南](developer-guide.md)。
-
-## 目标分支
-
-贡献者通常向 `main` 分支提交 PR。维护者会根据仓库规则处理后续审查、验证和发布。
-
-如果你不确定目标分支，优先选择 `main`；自动生成的 PR 说明不清楚时，补充一句改动目的。
-
-如果需要本地复测 PR，请直接拉取 PR head 或 PR merge ref 到你本地的测试分支，例如 `gh pr checkout <PR号>`，或 `git fetch upstream refs/pull/<PR号>/merge:review/pr-<PR号>-merge`，不要在 `main` 分支上进行修改。
-
-## 提交建议
-
-提交信息用简短动宾结构说明意图，例如：
-
-```text
-docs: improve netload setup guide
-fix: handle missing bigfont fallback
-refactor: isolate shx availability lookup
-```
-
-仓库会自动生成 PR 标题，但提交信息仍应保持可读。一个 PR 可以包含多个提交，每个提交都应保持可解释。
-
-推荐使用 DCO 风格的 `Signed-off-by` 提交，例如 `git commit -s -m "docs: improve developer guide"`。这会在提交信息末尾加入：
-
-```text
-Signed-off-by: Your Name <your-email@example.com>
-```
-
-仓库会运行非阻断的 `DCO Sign-off Advisory` 检查，提示缺少或邮箱不匹配的 `Signed-off-by`。它当前不会阻止合并，但有助于未来接收更多外部贡献。
-
-如果已经提交后需要补签：
-
-```powershell
-git fetch upstream
-git commit --amend -s
-git rebase --signoff upstream/main
-```
-
-## 不应提交的内容
-
-- 本地日志、截图、临时文件、浏览器 profile。
-- 构建产物和发布包。
-- 未脱敏的 DWG、客户数据或路径截图。
-- 个人环境配置、访问令牌、密钥。
-- 与当前 PR 无关的大范围格式化。
-
-## 等待 Review 时
-
-- 保持分支可构建。
-- 对 review 逐条回应，已处理的问题可说明对应提交。
-- 如果发现 PR 范围过大，优先拆分成更小的 PR。
-- 如果某个运行时行为无法本机验证，在 PR 中明确写出缺少的环境，例如没有 AutoCAD 2027。
+- 中央分类和中央验证必须成功。
+- 至少一名`Maintainers`团队成员批准；有新提交时旧批准自动失效。
+- 所有审查对话必须解决。
+- Copilot意见不是维护者批准。
+- 只有`Maintainers`团队成员执行压缩合并；不自动合并。
+- 合并后由平台删除没有被其他开放拉取请求使用的来源分支。
