@@ -1,47 +1,30 @@
 version: 2
 updates:
-  - package-ecosystem: "github-actions"
-    directory: "/"
-    schedule:
-      interval: "weekly"
-      day: "monday"
-      time: "09:10"
-      timezone: "Asia/Bangkok"
-    open-pull-requests-limit: 5
-    labels:
-      - "workflow"
-      - "chore"
-    commit-message:
-      prefix: "chore(actions)"
-
-  - package-ecosystem: "nuget"
+  - package-ecosystem: nuget
     directories:
-      - "/src/AFR.Deployer"
-      - "/src/AutoCAD/AFR-ACAD2018"
-      - "/src/AutoCAD/AFR-ACAD2019"
-      - "/src/AutoCAD/AFR-ACAD2020"
-      - "/src/AutoCAD/AFR-ACAD2021"
-      - "/src/AutoCAD/AFR-ACAD2022"
-      - "/src/AutoCAD/AFR-ACAD2023"
-      - "/src/AutoCAD/AFR-ACAD2024"
-      - "/src/AutoCAD/AFR-ACAD2025"
-      - "/src/AutoCAD/AFR-ACAD2026"
-      - "/src/AutoCAD/AFR-ACAD2027"
+      - /src/AFR.Deployer
+      - /src/AutoCAD/AFR-ACAD2018
+      - /src/AutoCAD/AFR-ACAD2019
+      - /src/AutoCAD/AFR-ACAD2020
+      - /src/AutoCAD/AFR-ACAD2021
+      - /src/AutoCAD/AFR-ACAD2022
+      - /src/AutoCAD/AFR-ACAD2023
+      - /src/AutoCAD/AFR-ACAD2024
+      - /src/AutoCAD/AFR-ACAD2025
+      - /src/AutoCAD/AFR-ACAD2026
+      - /src/AutoCAD/AFR-ACAD2027
     schedule:
-      interval: "weekly"
-      day: "monday"
+      interval: weekly
+      day: monday
       time: "09:20"
-      timezone: "Asia/Bangkok"
+      timezone: Asia/Bangkok
     open-pull-requests-limit: 5
     labels:
-      - "plugin"
-      - "chore"
+      - plugin
     commit-message:
       prefix: "chore(nuget)"
     ignore:
-      # AutoCAD.NET is pinned per AutoCAD host version. Dependabot can compile
-      # with a newer SDK package while still breaking runtime version alignment.
-      - dependency-name: "AutoCAD.NET"
+      - dependency-name: AutoCAD.NET
     groups:
       dotnet-dependencies:
         patterns:

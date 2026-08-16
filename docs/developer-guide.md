@@ -580,39 +580,18 @@ dotnet build src/AutoCAD/AFR-ACAD2026/AFR-ACAD2026.csproj -c Release
 dotnet build src/AFR.Deployer/AFR.Deployer.csproj
 ```
 
-## 提交 PR 前
+## 提交拉取请求前
 
-按改动范围选择检查项：
-
-| 改动范围 | 至少运行 |
+| 改动范围 | 必须运行 |
 | --- | --- |
 | 文档 | `git diff --check` |
 | 单个插件版本 | `dotnet build src/AutoCAD/AFR-ACAD20XX/AFR-ACAD20XX.csproj` |
 | 部署器 | `dotnet build src/AFR.Deployer/AFR.Deployer.csproj` |
 | 跨项目共享代码 | `dotnet build CADFontAutoReplace.slnx` |
 
-额外检查：
+命令改动检查`CommandNames.cs`、`CommandMethod`和`CommandClass`并在对应AutoCAD命令行验证。Hook改动确认真实`HookHandler`命中和重定向。部署器改动检查安装、卸载、字体释放、AWS回滚和状态刷新。
 
-- 命令改动：检查 `CommandNames.cs`、`CommandMethod`、`CommandClass`，并在 AutoCAD 命令行验证。
-- Debug-only 命令：确认 Release 中不可见。
-- Hook 改动：确认真实 `HookHandler` hit/redirect，不能只看安装成功。
-- 部署器改动：检查安装、卸载、字体释放、AWS 回滚和状态刷新。
-- 建议提交带 `Signed-off-by`，可用 `git commit -s` 创建；当前 DCO 检查只提示，不作为合并门禁。
-
-如果使用 GitHub Desktop 或 Visual Studio 提交，提交前至少做三件事：
-
-1. 在 changed files 列表里逐个确认文件范围。
-2. 提交信息写清楚改动目的，例如 `docs: improve developer guide`。
-3. 推送后在 GitHub 网页打开 PR，并检查自动生成的 PR 标题和说明是否准确。
-
-当前 DCO 检查只提示，不阻断合并。如果你的图形界面工具没有启用 sign-off，可以在提交信息正文手动加入 `Signed-off-by: Your Name <your-email@example.com>`，或用命令行执行 `git commit -s` / `git commit --amend -s`。
-
-PR 标题和说明通常会自动生成。提交前检查生成内容是否准确，必要时补充：
-
-- 运行过的命令。
-- 用哪个 AutoCAD 版本验证。
-- 没有覆盖的环境或版本。
-- 文档改动是否只做了格式和说明调整。
+推送后检查Steward生成的标题和正文，并在“人工补充”中记录实际命令、验证使用的AutoCAD版本和没有覆盖的环境。项目不要求`Signed-off-by`，不运行DCO检查。中央拉取请求验证不会构建LayerScape产品，也不会把未运行显示成通过。
 
 ## 相关文档
 
