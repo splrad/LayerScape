@@ -403,3 +403,5 @@ FodyWeavers.xsd
 /chore/release-notes-v9.2.0.md
 /local/
 /.local/
+/FEATURE_REQUEST_DESIGN.md
+/REPOSITORY_HOMEPAGE_DESIGN.md
