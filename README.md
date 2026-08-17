@@ -1,36 +1,89 @@
 <div align="center">
-<h1 style="display:inline-flex;align-items:center;justify-content:center;gap:16px;"><img src="chore/assets/afr-icon.png" alt="AFR 项目图标" width="46" align="absmiddle" style="border-radius:10px;" /> <span>AFR — CAD 缺失字体自动替换工具</span></h1>
+<h1 style="display:inline-flex;align-items:center;justify-content:center;gap:16px;"><img src="chore/assets/readme/layerscape-icon.png" alt="LayerScape 软件图标" width="46" align="absmiddle" style="border-radius:10px;" /> <span>LayerScape · 叠境</span></h1>
 
-**减少缺失字体导致的文字不显示、乱码和反复手动指定字体**
+**面向 CAD 的模块化效率工具集**
 
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE.txt)
-[![AutoCAD](https://img.shields.io/badge/AutoCAD-2018%E2%80%932027-red.svg)](#-已支持版本)
+[![AutoCAD](https://img.shields.io/badge/AutoCAD-2018%E2%80%932027-red.svg)](#autocad-兼容范围)
 [![.NET](https://img.shields.io/badge/.NET-4.6.2%20%7C%204.7.2%20%7C%204.8%20%7C%208.0%20%7C%2010.0-purple.svg)](https://dotnet.microsoft.com/)
 
-[GitHub](https://github.com/axiomoth/CADFontAutoReplace) · [Gitee（国内镜像）](https://gitee.com/splrad/CADFontAutoReplace) · [Releases](https://github.com/axiomoth/CADFontAutoReplace/releases) · [提交 Issue](https://github.com/axiomoth/CADFontAutoReplace/issues)
+[下载最新版本](https://github.com/splrad/LayerScape/releases) · [快速开始](#快速开始) · [问题反馈](https://github.com/splrad/LayerScape/issues)
 
-**📥 补充下载链接：[123网盘](https://1819233892.share.123pan.cn/123pan/QtB9jv-OJk7h)**
+[GitHub](https://github.com/splrad/LayerScape) · [Gitee（AFR 国内镜像）](https://gitee.com/splrad/CADFontAutoReplace) · [123网盘](https://1819233892.share.123pan.cn/123pan/QtB9jv-OJk7h)
 
 </div>
 
----
+<p align="center">
+  <img src="chore/assets/readme/layerscape-hero.png" alt="LayerScape 品牌视觉：由多层 CAD 绘图平面构成的工作空间" width="100%" style="display:block;border-radius:18px;" />
+</p>
 
-## ✨ 项目亮点
-
-- **缺失字体自动替换**：AFR 会自动处理图纸中的缺失字体，避免打开图纸因为字体问题造成字符显示不全或乱码。
-- **字体缺失场景全覆盖**：同时处理 SHX 主字体、SHX 大字体、TrueType 字体，以及多行文字中的内联字体缺失。
-- **安装和卸载无残留**：部署工具/单DLL会自动识别 AutoCAD 2018–2027，完成安装、卸载、字体释放和插件状态检查全流程。
-- **支持人工复核**：通过 `AFRLOG` 查看每个缺失字体的替换情况，并对当前图纸逐条或批量调整。
+LayerScape 把独立的 CAD 功能放在同一套软件中。所有功能遵循统一的 AutoCAD 兼容范围，并通过同一个部署器安装和管理；每项功能各自解决一个明确的绘图问题。
 
 ---
 
-## 🚀 快速开始
+## LayerScape
+
+### AutoCAD 兼容范围
+
+LayerScape 的所有功能使用同一套 AutoCAD 兼容范围。
+
+| AutoCAD 版本 | 运行环境 |
+|:---:|:---:|
+| AutoCAD **2018**（R22.0） | .NET Framework 4.6.2 |
+| AutoCAD **2019**（R23.0） | .NET Framework 4.7.2 |
+| AutoCAD **2020**（R23.1） | .NET Framework 4.7.2 |
+| AutoCAD **2021**（R24.0） | .NET Framework 4.8 |
+| AutoCAD **2022**（R24.1） | .NET Framework 4.8 |
+| AutoCAD **2023**（R24.2） | .NET Framework 4.8 |
+| AutoCAD **2024**（R24.3） | .NET Framework 4.8 |
+| AutoCAD **2025**（R25.0） | .NET 8.0 |
+| AutoCAD **2026**（R25.1） | .NET 8.0 |
+| AutoCAD **2027**（R26.0） | .NET 10.0 |
+
+### 统一部署
+
+LayerScape 使用同一个部署器安装和管理全部功能。后续增加的功能也会进入这个部署器，不再提供彼此独立的安装入口。
+
+<p align="center">
+  <img src="chore/assets/readme/layerscape-deployer.jpg" alt="LayerScape 统一部署器界面" width="92%" style="display:block;border-radius:14px;background:#ffffff;" />
+</p>
+
+---
+
+## 功能
+
+### AFR · 缺失字体自动替换
+
+打开含有缺失字体的图纸时，AFR 会完成识别和替换，并保留日志供人工复核。
+
+| 自动处理 | 字体覆盖 | 人工复核 |
+| --- | --- | --- |
+| 打开图纸后自动检查并替换缺失字体，减少文字缺失和乱码。 | 支持 SHX 主字体、SHX 大字体、TrueType 字体，以及多行文字中的内联字体。 | 通过 `AFRLOG` 查看替换记录，对当前图纸逐条或批量调整。 |
+
+<table>
+<tr>
+<td align="center" width="42%" valign="top">
+  <img src="chore/assets/readme/afr-font-config.jpg" alt="AFR 默认替换字体配置界面" width="100%" style="display:block;border-radius:14px;background:#ffffff;" />
+  <br>
+  <sub>设置不同字体类型的默认替换目标</sub>
+</td>
+<td align="center" width="58%" valign="top">
+  <img src="chore/assets/readme/afr-log.jpg" alt="AFRLOG 缺失字体替换日志界面" width="100%" style="display:block;border-radius:14px;background:#ffffff;" />
+  <br>
+  <sub>查看实际替换结果，并按当前图纸调整</sub>
+</td>
+</tr>
+</table>
+
+---
+
+## 快速开始
 
 ### 推荐：部署工具一键安装
 
 一般用户只需要下载并运行 **`AFR-Deployer_vX.Y.Z.exe`**；`AFR-DLL_vX.Y.Z.zip` 主要用于维护、测试或受限环境下的手动 `NETLOAD`。
 
-1. 在 [Releases](https://github.com/axiomoth/CADFontAutoReplace/releases) 下载最新发行包。
+1. 在 [Releases](https://github.com/splrad/LayerScape/releases) 下载最新发行包。
 2. **先关闭所有 AutoCAD 进程**（部署工具会在检测到 CAD 运行时禁用安装/卸载按钮）。
 3. 双击运行 `AFR-Deployer_vX.Y.Z.exe`，工具会自动扫描本机已安装的 AutoCAD 版本。
 4. 勾选需要安装的项目，确认“部署路径”（默认会选中首个非系统盘下的 `\CADPlugins\`），点击“安装”。
@@ -51,7 +104,7 @@
 
 > 注意：单 DLL 手动安装不支持自动抑制 AutoCAD “缺少 SHX 文件”弹窗；如需该能力，请使用部署工具安装。
 
-1. 在 [Releases](https://github.com/axiomoth/CADFontAutoReplace/releases) 下载 `AFR-DLL_vX.Y.Z.zip` 并解压。
+1. 在 [Releases](https://github.com/splrad/LayerScape/releases) 下载 `AFR-DLL_vX.Y.Z.zip` 并解压。
 2. 按 AutoCAD 版本选择对应 DLL，例如 AutoCAD 2026 使用 `AFR-ACAD2026.dll`。
 3. 在 AutoCAD 命令行输入 `NETLOAD`，选择该 DLL。
 4. 首次 `NETLOAD` 会完成默认字体部署、配置初始化与自动加载注册；按命令行提示重启 AutoCAD 后生效。
@@ -72,7 +125,7 @@
 > - 保留 `sas_____.pfb`、`MstnFontConfig.xml`、`internat.rsc`、`font.rsc` 等非 SHX 文件；
 > - 字体过多会导致插件界面加载明显卡顿。
 >
-> [点击下载 CAD 字体包（Fonts.zip）](https://github.com/axiomoth/CADFontAutoReplace/releases)
+> [点击下载 CAD 字体包（Fonts.zip）](https://github.com/splrad/LayerScape/releases)
 
 打开有缺失字体的 DWG，看到类似日志即说明插件已执行：
 
@@ -99,49 +152,7 @@ AFR 缺失字体自动替换 v9.1.0
 >
 > MText 内联字体采用运行时映射自动处理，不支持手动替换。
 
-## 🖼️ 界面预览
-
-<table>
-<tr>
-<td align="center" width="50%" valign="top" style="padding:12px;">
-  <img src="https://splrad-img.oss-cn-chengdu.aliyuncs.com/20260407005000713.jpg" alt="AFR 字体配置界面" width="100%" style="display:block;border-radius:16px;background:#ffffff;box-shadow:0 10px 28px rgba(0,0,0,.12);padding:8px;" />
-</td>
-<td align="center" width="50%" valign="top" style="padding:12px;">
-  <img src="https://splrad-img.oss-cn-chengdu.aliyuncs.com/20260407005034079.jpg" alt="AFRLOG 替换日志界面" width="100%" style="display:block;border-radius:16px;background:#ffffff;box-shadow:0 10px 28px rgba(0,0,0,.12);padding:8px;" />
-</td>
-</tr>
-</table>
-
-<table>
-<tr>
-<td align="center" valign="top" style="padding:12px;">
-  <div style="max-width:920px;margin:0 auto;">
-    <img src="https://splrad-img.oss-cn-chengdu.aliyuncs.com/20260503193327546.jpg" alt="AFR 部署工具主界面" width="100%" style="display:block;border-radius:16px;background:#ffffff;box-shadow:0 10px 28px rgba(0,0,0,.12);padding:8px;" />
-  </div>
-</td>
-</tr>
-</table>
-
----
-
-## ✅ 已支持版本
-
-| CAD 版本 | DLL 文件名 | .NET |
-|:---:|:---:|:---:|
-| AutoCAD **2018**（R22.0） | `AFR-ACAD2018.dll` | .NET Framework 4.6.2 |
-| AutoCAD **2019**（R23.0） | `AFR-ACAD2019.dll` | .NET Framework 4.7.2 |
-| AutoCAD **2020**（R23.1） | `AFR-ACAD2020.dll` | .NET Framework 4.7.2 |
-| AutoCAD **2021**（R24.0） | `AFR-ACAD2021.dll` | .NET Framework 4.8 |
-| AutoCAD **2022**（R24.1） | `AFR-ACAD2022.dll` | .NET Framework 4.8 |
-| AutoCAD **2023**（R24.2） | `AFR-ACAD2023.dll` | .NET Framework 4.8 |
-| AutoCAD **2024**（R24.3） | `AFR-ACAD2024.dll` | .NET Framework 4.8 |
-| AutoCAD **2025**（R25.0） | `AFR-ACAD2025.dll` | .NET 8.0 |
-| AutoCAD **2026**（R25.1） | `AFR-ACAD2026.dll` | .NET 8.0 |
-| AutoCAD **2027**（R26.0） | `AFR-ACAD2027.dll` | .NET 10.0 |
-
----
-
-## ⌨️ 命令说明
+## AFR 命令说明
 
 | 命令 | 说明 |
 |:---:|---|
@@ -151,7 +162,7 @@ AFR 缺失字体自动替换 v9.1.0
 
 ---
 
-## ❓ 常见问题
+## AFR 常见问题
 
 <details>
 <summary><b>如何修改替换字体配置？</b></summary>
@@ -190,7 +201,7 @@ AFR 不改写 `MText.Contents`。当前流程会先修复样式表缺失字体�
 
 ### Issues提交
 
-如果使用插件后仍出现“字体不显示”或“乱码”，欢迎提交 [Issues](https://github.com/axiomoth/CADFontAutoReplace/issues)。
+如果使用插件后仍出现“字体不显示”或“乱码”，欢迎提交 [Issues](https://github.com/splrad/LayerScape/issues)。
 
 为便于快速定位，请尽量附上：
 
@@ -247,7 +258,7 @@ AFR 不改写 `MText.Contents`。当前流程会先修复样式表缺失字体�
 | `CDM_NC.shx` `Cdm.shx` | CDM 软件 | 工程设计字体 |
 | `ming.shx` `ming1.shx` `ming2.shx` | 淘宝店铺：CAD专家 Q421259113 | 基于 tssdeng / Roman Simplex 修改 |
 
-> ⚠️ 若你是某款字体原作者，且认为收录方式不当，请通过 [Issues](https://github.com/axiomoth/CADFontAutoReplace/issues) 联系，我会第一时间处理（移除或补充署名）。
+> ⚠️ 若你是某款字体原作者，且认为收录方式不当，请通过 [Issues](https://github.com/splrad/LayerScape/issues) 联系，我会第一时间处理（移除或补充署名）。
 >
 > 本项目字体包仅供学习与辅助使用，不以任何形式进行商业销售。
 
@@ -263,10 +274,10 @@ AFR 不改写 `MText.Contents`。当前流程会先修复样式表缺失字体�
 
 ---
 
-<h2 align="center">⭐ Star History</h2>
+<h2 align="center">⭐ LayerScape Star History</h2>
 
 <p align="center">
-  <a href="https://star-history.com/#axiomoth/CADFontAutoReplace&Date">
-    <img src="https://api.star-history.com/svg?repos=axiomoth/CADFontAutoReplace&type=Date" alt="CADFontAutoReplace Star History" />
+  <a href="https://star-history.com/#splrad/LayerScape&Date">
+    <img src="https://api.star-history.com/svg?repos=splrad/LayerScape&type=Date" alt="LayerScape Star History" />
   </a>
 </p>
