@@ -4,7 +4,7 @@
 **面向 CAD 的模块化效率工具集**
 
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE.txt)
-[![AutoCAD](https://img.shields.io/badge/AutoCAD-2018%E2%80%932027-red.svg)](#autocad-兼容范围)
+[![AutoCAD](https://img.shields.io/badge/AutoCAD-2018%E2%80%932027-red.svg)](#layerscape-软件能力)
 [![.NET](https://img.shields.io/badge/.NET-4.6.2%20%7C%204.7.2%20%7C%204.8%20%7C%208.0%20%7C%2010.0-purple.svg)](https://dotnet.microsoft.com/)
 
 [下载最新版本](https://github.com/splrad/LayerScape/releases) · [快速开始](#快速开始) · [问题反馈](https://github.com/splrad/LayerScape/issues)
@@ -17,15 +17,32 @@
   <img src="chore/assets/readme/layerscape-hero.png" alt="LayerScape 品牌视觉：由多层 CAD 绘图平面构成的工作空间" width="100%" style="display:block;border-radius:18px;" />
 </p>
 
-LayerScape 把独立的 CAD 功能放在同一套软件中。所有功能遵循统一的 AutoCAD 兼容范围，并通过同一个部署器安装和管理；每项功能各自解决一个明确的绘图问题。
-
 ---
 
-## LayerScape
+## LayerScape 软件能力
 
-### AutoCAD 兼容范围
+LayerScape 为全部功能提供同一套版本适配和安装入口。后续增加的功能直接沿用这两项基础能力。
 
-LayerScape 的所有功能使用同一套 AutoCAD 兼容范围。
+### 同一套兼容范围
+
+**AutoCAD 2018–2027**。所有功能共享这一兼容范围，不按功能分别声明支持版本。
+
+`2018–2024` · .NET Framework 4.6.2–4.8<br>
+`2025–2026` · .NET 8<br>
+`2027` · .NET 10
+
+### 同一个安装入口
+
+安装、卸载和状态检查集中在 LayerScape 部署工具中。新增功能也从这里安装和管理。
+
+<p align="center">
+  <img src="chore/assets/readme/layerscape-deployer.jpg" alt="LayerScape 部署工具按 AutoCAD 版本管理功能" width="82%" style="display:block;border-radius:14px;background:#ffffff;" />
+  <br>
+  <sub>按本机 AutoCAD 版本查看和管理已安装功能</sub>
+</p>
+
+<details>
+<summary><strong>查看完整兼容范围</strong></summary>
 
 | AutoCAD 版本 | 运行环境 |
 |:---:|:---:|
@@ -40,13 +57,7 @@ LayerScape 的所有功能使用同一套 AutoCAD 兼容范围。
 | AutoCAD **2026**（R25.1） | .NET 8.0 |
 | AutoCAD **2027**（R26.0） | .NET 10.0 |
 
-### 统一部署
-
-LayerScape 使用同一个部署器安装和管理全部功能。后续增加的功能也会进入这个部署器，不再提供彼此独立的安装入口。
-
-<p align="center">
-  <img src="chore/assets/readme/layerscape-deployer.jpg" alt="LayerScape 统一部署器界面" width="92%" style="display:block;border-radius:14px;background:#ffffff;" />
-</p>
+</details>
 
 ---
 
