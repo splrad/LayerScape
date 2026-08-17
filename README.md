@@ -4,7 +4,7 @@
 **面向 CAD 的模块化效率工具集**
 
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE.txt)
-[![AutoCAD](https://img.shields.io/badge/AutoCAD-2018%E2%80%932027-red.svg)](#layerscape-软件能力)
+[![AutoCAD](https://img.shields.io/badge/AutoCAD-2018%E2%80%932027-red.svg)](#兼容范围)
 [![.NET](https://img.shields.io/badge/.NET-4.6.2%20%7C%204.7.2%20%7C%204.8%20%7C%208.0%20%7C%2010.0-purple.svg)](https://dotnet.microsoft.com/)
 
 [下载最新版本](https://github.com/splrad/LayerScape/releases) · [快速开始](#快速开始) · [问题反馈](https://github.com/splrad/LayerScape/issues)
@@ -17,45 +17,37 @@
   <img src="chore/assets/readme/layerscape-hero.png" alt="LayerScape 品牌视觉：由多层 CAD 绘图平面构成的工作空间" width="100%" style="display:block;border-radius:18px;" />
 </p>
 
----
-
-## LayerScape 软件能力
-
-LayerScape 为全部功能提供同一套版本适配和安装入口。后续增加的功能直接沿用这两项基础能力。
-
-### 同一套兼容范围
-
-**AutoCAD 2018–2027**。所有功能共享这一兼容范围，不按功能分别声明支持版本。
-
-`2018–2024` · .NET Framework 4.6.2–4.8<br>
-`2025–2026` · .NET 8<br>
-`2027` · .NET 10
-
-### 同一个安装入口
-
-安装、卸载和状态检查集中在 LayerScape 部署工具中。新增功能也从这里安装和管理。
+LayerScape 的所有功能共用 AutoCAD 2018–2027 兼容范围，并通过统一入口安装和管理。后续新增功能也会直接沿用这套适配与安装方式。
 
 <p align="center">
   <img src="chore/assets/readme/layerscape-deployer.jpg" alt="LayerScape 部署工具按 AutoCAD 版本管理功能" width="82%" style="display:block;border-radius:14px;background:#ffffff;" />
-  <br>
-  <sub>按本机 AutoCAD 版本查看和管理已安装功能</sub>
 </p>
 
-<details>
+<details id="兼容范围">
 <summary><strong>查看完整兼容范围</strong></summary>
 
-| AutoCAD 版本 | 运行环境 |
-|:---:|:---:|
-| AutoCAD **2018**（R22.0） | .NET Framework 4.6.2 |
-| AutoCAD **2019**（R23.0） | .NET Framework 4.7.2 |
-| AutoCAD **2020**（R23.1） | .NET Framework 4.7.2 |
-| AutoCAD **2021**（R24.0） | .NET Framework 4.8 |
-| AutoCAD **2022**（R24.1） | .NET Framework 4.8 |
-| AutoCAD **2023**（R24.2） | .NET Framework 4.8 |
-| AutoCAD **2024**（R24.3） | .NET Framework 4.8 |
-| AutoCAD **2025**（R25.0） | .NET 8.0 |
-| AutoCAD **2026**（R25.1） | .NET 8.0 |
-| AutoCAD **2027**（R26.0） | .NET 10.0 |
+<div align="center">
+<table>
+<thead>
+<tr>
+<th align="center">AutoCAD 版本</th>
+<th align="center">运行环境</th>
+</tr>
+</thead>
+<tbody>
+<tr><td align="center">AutoCAD <strong>2018</strong>（R22.0）</td><td align="center">.NET Framework 4.6.2</td></tr>
+<tr><td align="center">AutoCAD <strong>2019</strong>（R23.0）</td><td align="center">.NET Framework 4.7.2</td></tr>
+<tr><td align="center">AutoCAD <strong>2020</strong>（R23.1）</td><td align="center">.NET Framework 4.7.2</td></tr>
+<tr><td align="center">AutoCAD <strong>2021</strong>（R24.0）</td><td align="center">.NET Framework 4.8</td></tr>
+<tr><td align="center">AutoCAD <strong>2022</strong>（R24.1）</td><td align="center">.NET Framework 4.8</td></tr>
+<tr><td align="center">AutoCAD <strong>2023</strong>（R24.2）</td><td align="center">.NET Framework 4.8</td></tr>
+<tr><td align="center">AutoCAD <strong>2024</strong>（R24.3）</td><td align="center">.NET Framework 4.8</td></tr>
+<tr><td align="center">AutoCAD <strong>2025</strong>（R25.0）</td><td align="center">.NET 8.0</td></tr>
+<tr><td align="center">AutoCAD <strong>2026</strong>（R25.1）</td><td align="center">.NET 8.0</td></tr>
+<tr><td align="center">AutoCAD <strong>2027</strong>（R26.0）</td><td align="center">.NET 10.0</td></tr>
+</tbody>
+</table>
+</div>
 
 </details>
 
