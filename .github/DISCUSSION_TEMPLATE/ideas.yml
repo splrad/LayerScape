@@ -1,0 +1,28 @@
+title: "[功能建议] "
+labels:
+  - "enhancement"
+  - "status:needs-review"
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        请告诉我们你希望 LayerScape 增加什么功能。
+
+        简单写几句话即可。如果愿意，也可以补充操作方式、
+        界面设想、CAD 版本、截图或参考资料。
+
+  - type: textarea
+    id: description
+    attributes:
+      label: 功能描述
+      description: 简单说明你希望增加的功能。
+      placeholder: 希望增加……
+    validations:
+      required: true
+
+  - type: markdown
+    attributes:
+      value: |
+        提交内容会公开显示，请勿包含未脱敏的图纸、
+        客户资料或其他敏感信息。
