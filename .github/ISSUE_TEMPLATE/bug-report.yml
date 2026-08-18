@@ -24,14 +24,37 @@ body:
     validations:
       required: true
 
-  - type: input
-    id: versions
+  - type: markdown
     attributes:
-      label: AutoCAD 与 LayerScape 版本
-      description: 请填写出现问题时使用的 AutoCAD 和 LayerScape 版本。
-      placeholder: 例如：AutoCAD 2026，LayerScape 9.1.0
+      value: |
+        ### 使用环境
+
+        版本信息有助于确认问题是否与兼容范围有关。
+
+  - type: input
+    id: autocad-version
+    attributes:
+      label: AutoCAD 版本
+      description: 请填写出现问题时使用的 AutoCAD 版本。
+      placeholder: 例如：AutoCAD 2026
     validations:
       required: true
+
+  - type: input
+    id: layerscape-version
+    attributes:
+      label: LayerScape 版本
+      description: 可以在 AutoCAD 启动日志或下载文件名中查看。
+      placeholder: 例如：v9.2.2
+    validations:
+      required: true
+
+  - type: markdown
+    attributes:
+      value: |
+        ### 补充信息
+
+        以下内容不是必填项，但可能帮助我们更快定位问题。
 
   - type: textarea
     id: reproduction
