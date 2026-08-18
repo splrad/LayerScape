@@ -7,7 +7,7 @@
 [![AutoCAD](https://img.shields.io/badge/AutoCAD-2018%E2%80%932027-red.svg)](#兼容范围)
 [![.NET](https://img.shields.io/badge/.NET-4.6.2%20%7C%204.7.2%20%7C%204.8%20%7C%208.0%20%7C%2010.0-purple.svg)](https://dotnet.microsoft.com/)
 
-[下载最新版本](https://github.com/splrad/LayerScape/releases) · [快速开始](#快速开始) · [报告问题](https://github.com/splrad/LayerScape/issues) · [提出功能建议](https://github.com/splrad/LayerScape/discussions/new?category=ideas)
+[下载最新版本](https://github.com/splrad/LayerScape/releases) · [快速开始](#快速开始) · [报告问题](https://github.com/splrad/LayerScape/issues/new?template=bug-report.yml) · [提出功能建议](https://github.com/splrad/LayerScape/discussions/new?category=ideas)
 
 [GitHub](https://github.com/splrad/LayerScape) · [Gitee（AFR 国内镜像）](https://gitee.com/splrad/CADFontAutoReplace) · [123网盘](https://1819233892.share.123pan.cn/123pan/QtB9jv-OJk7h)
 
@@ -204,7 +204,7 @@ AFR 不改写 `MText.Contents`。当前流程会先修复样式表缺失字体�
 
 ### 报告问题
 
-如果插件出现异常、功能失效或处理结果不正确，请提交 [Issue](https://github.com/splrad/LayerScape/issues)。
+如果插件出现异常、功能失效或处理结果不正确，请提交 [Issue](https://github.com/splrad/LayerScape/issues/new?template=bug-report.yml)。
 
 为方便定位，可以提供：
 
