@@ -37,9 +37,9 @@ public static class PluginVersionService
     /// </summary>
     public static string GetDisplayVersion()
     {
-        var full = GetPluginVersion();
-        var idx = full.IndexOf('+');
-        return idx > 0 ? full[..idx] : full;
+        var fullVersion = GetPluginVersion();
+        var separatorIndex = fullVersion.IndexOf('+');
+        return separatorIndex > 0 ? fullVersion[..separatorIndex] : fullVersion;
     }
 
     /// <summary>
