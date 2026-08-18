@@ -1,4 +1,3 @@
-title: "[功能建议] "
 labels:
   - "enhancement"
   - "status:needs-review"
@@ -7,22 +6,24 @@ body:
   - type: markdown
     attributes:
       value: |
-        请告诉我们你希望 LayerScape 增加什么功能。
+        ![LayerScape · 叠境](https://raw.githubusercontent.com/splrad/LayerScape/main/chore/assets/discussions/community-banner.png)
 
-        简单写几句话即可。如果愿意，也可以补充操作方式、
-        界面设想、CAD 版本、截图或参考资料。
+        ## 提出功能建议
+
+        一句话也可以。我们会负责理解需求并判断如何实现。
+
+        **写下建议** → **维护者评估** → **采纳后进入开发计划** → **发布后通知**
 
   - type: textarea
     id: description
     attributes:
-      label: 功能描述
-      description: 简单说明你希望增加的功能。
-      placeholder: 希望增加……
+      label: 你希望 LayerScape 增加什么？
+      description: 可以补充操作方式、界面设想、CAD 版本、截图或参考资料。
+      placeholder: 例如：希望增加批量处理多个图纸中指定内容的功能……
     validations:
       required: true
 
   - type: markdown
     attributes:
       value: |
-        提交内容会公开显示，请勿包含未脱敏的图纸、
-        客户资料或其他敏感信息。
+        > **提示：** 提交内容会公开显示，请勿上传未脱敏的图纸、客户资料或其他敏感信息。

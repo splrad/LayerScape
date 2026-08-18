@@ -1,0 +1,60 @@
+name: 报告问题
+description: 报告插件异常、功能失效或处理结果不正确
+labels:
+  - "bug"
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ![LayerScape · 叠境](https://raw.githubusercontent.com/splrad/LayerScape/main/chore/assets/discussions/community-banner.png)
+
+        ## 报告问题
+
+        请说明实际发生的情况。我们会根据这些信息定位问题。
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: 发生了什么？
+      description: 请说明实际现象，以及你原本期望的结果。
+      placeholder: |
+        实际发生……
+        期望……
+    validations:
+      required: true
+
+  - type: input
+    id: versions
+    attributes:
+      label: AutoCAD 与 LayerScape 版本
+      description: 请填写出现问题时使用的 AutoCAD 和 LayerScape 版本。
+      placeholder: 例如：AutoCAD 2026，LayerScape 9.1.0
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: 如何复现？
+      description: 可以简单说明操作步骤；如果问题并非每次出现，也可以说明发生频率。
+      placeholder: |
+        1. 打开……
+        2. 执行……
+        3. 出现……
+    validations:
+      required: false
+
+  - type: textarea
+    id: materials
+    attributes:
+      label: 补充材料
+      description: 可以拖入截图、日志或脱敏后的示例文件。
+      placeholder: 在这里补充有助于定位问题的材料……
+    validations:
+      required: false
+
+  - type: markdown
+    attributes:
+      value: |
+        > **提示：** 提交内容会公开显示，请勿上传未脱敏的图纸、客户资料或其他敏感信息。
