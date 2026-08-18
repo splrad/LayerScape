@@ -1,7 +1,5 @@
 <div align="center">
-<img src="chore/assets/readme/layerscape-hero-branded.png" alt="LayerScape · 叠境，面向 CAD 的模块化效率工具集" width="100%" />
-
-<br>
+<h1><img src="chore/assets/readme/layerscape-hero-branded.png" alt="LayerScape · 叠境，面向 CAD 的模块化效率工具集" width="100%" /></h1>
 
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE.txt)
 [![AutoCAD](https://img.shields.io/badge/AutoCAD-2018%E2%80%932027-red.svg)](#兼容范围)
