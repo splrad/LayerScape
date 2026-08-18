@@ -1,7 +1,5 @@
 <div align="center">
-<h1 style="display:inline-flex;align-items:center;justify-content:center;gap:16px;"><img src="chore/assets/readme/layerscape-icon.png" alt="LayerScape 软件图标" width="46" align="absmiddle" style="border-radius:10px;" /> <span>LayerScape · 叠境</span></h1>
-
-**面向 CAD 的模块化效率工具集**
+<h1><img src="chore/assets/readme/layerscape-hero-branded.png" alt="LayerScape · 叠境，面向 CAD 的模块化效率工具集" width="100%" /></h1>
 
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE.txt)
 [![AutoCAD](https://img.shields.io/badge/AutoCAD-2018%E2%80%932027-red.svg)](#兼容范围)
@@ -12,10 +10,6 @@
 [GitHub](https://github.com/splrad/LayerScape) · [Gitee（AFR 国内镜像）](https://gitee.com/splrad/CADFontAutoReplace) · [123网盘](https://1819233892.share.123pan.cn/123pan/QtB9jv-OJk7h)
 
 </div>
-
-<p align="center">
-  <img src="chore/assets/readme/layerscape-hero.png" alt="LayerScape 品牌视觉：由多层 CAD 绘图平面构成的工作空间" width="100%" style="display:block;border-radius:18px;" />
-</p>
 
 LayerScape 的所有功能共用 AutoCAD 2018–2027 兼容范围，并通过统一入口安装和管理。后续新增功能也会直接沿用这套适配与安装方式。
 
@@ -270,13 +264,9 @@ AFR 不改写 `MText.Contents`。当前流程会先修复样式表缺失字体�
 
 ---
 
-## ☕ 打赏支持
+## ☕ 支持项目
 
-如果本插件对你有帮助，欢迎支持本项目 ☕
-
-<p align="center">
-  <img src="https://splrad-img.oss-cn-chengdu.aliyuncs.com/20260406215922295.jpg" alt="打赏二维码" width="560" />
-</p>
+如果 LayerScape 对你有所帮助，可以前往[赞助支持页面](SUPPORT.md)，通过微信或支付宝支持项目。
 
 ---
 
