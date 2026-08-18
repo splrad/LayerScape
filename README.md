@@ -5,7 +5,7 @@
 [![AutoCAD](https://img.shields.io/badge/AutoCAD-2018%E2%80%932027-red.svg)](#兼容范围)
 [![.NET](https://img.shields.io/badge/.NET-4.6.2%20%7C%204.7.2%20%7C%204.8%20%7C%208.0%20%7C%2010.0-purple.svg)](https://dotnet.microsoft.com/)
 
-[下载最新版本](https://github.com/splrad/LayerScape/releases) · [快速开始](#快速开始) · [报告问题](https://github.com/splrad/LayerScape/issues/new?template=bug-report.yml) · [提出功能建议](https://github.com/splrad/LayerScape/discussions/new?category=ideas)
+[下载最新版本](https://github.com/splrad/LayerScape/releases) · [快速开始](#快速开始) · [赞助支持](SUPPORT.md) · [报告问题](https://github.com/splrad/LayerScape/issues/new?template=bug-report.yml) · [提出功能建议](https://github.com/splrad/LayerScape/discussions/new?category=ideas)
 
 [GitHub](https://github.com/splrad/LayerScape) · [Gitee（AFR 国内镜像）](https://gitee.com/splrad/CADFontAutoReplace) · [123网盘](https://1819233892.share.123pan.cn/123pan/QtB9jv-OJk7h)
 
@@ -266,7 +266,14 @@ AFR 不改写 `MText.Contents`。当前流程会先修复样式表缺失字体�
 
 ## ☕ 支持项目
 
-如果 LayerScape 对你有所帮助，可以前往[赞助支持页面](SUPPORT.md)，通过微信或支付宝支持项目。
+<p align="center">
+  如果 LayerScape 帮你节省了时间，欢迎自愿支持项目继续维护。
+</p>
+
+<p align="center">
+  <a href="SUPPORT.md"><img src="https://img.shields.io/badge/%E5%BE%AE%E4%BF%A1%E6%94%AF%E6%8C%81-07C160?style=for-the-badge&amp;logo=wechat&amp;logoColor=white" alt="通过微信支持 LayerScape" /></a>
+  <a href="SUPPORT.md"><img src="https://img.shields.io/badge/%E6%94%AF%E4%BB%98%E5%AE%9D%E6%94%AF%E6%8C%81-1677FF?style=for-the-badge&amp;logo=alipay&amp;logoColor=white" alt="通过支付宝支持 LayerScape" /></a>
+</p>
 
 ---
 
