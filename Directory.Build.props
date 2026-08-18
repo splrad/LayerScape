@@ -19,6 +19,7 @@
 	  否则会变成 "9.0.0+20260503.1+c6a2544..."，使日志/注册表里的 build 后缀变成 commit SHA 而非我们维护的 PluginBuildId。
 	-->
 	<IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+	<Deterministic>true</Deterministic>
 
     <!-- 统一构建产物输出到 artifacts/ 目录（仅 bin，不含 obj） -->
     <ArtifactsPath>$(MSBuildThisFileDirectory)artifacts</ArtifactsPath>
