@@ -274,13 +274,3 @@ AFR 不改写 `MText.Contents`。当前流程会先修复样式表缺失字体�
   <a href="SUPPORT.md"><img src="https://img.shields.io/badge/%E5%BE%AE%E4%BF%A1%E6%94%AF%E6%8C%81-07C160?style=for-the-badge&amp;logo=wechat&amp;logoColor=white" alt="通过微信支持 LayerScape" /></a>
   <a href="SUPPORT.md"><img src="https://img.shields.io/badge/%E6%94%AF%E4%BB%98%E5%AE%9D%E6%94%AF%E6%8C%81-1677FF?style=for-the-badge&amp;logo=alipay&amp;logoColor=white" alt="通过支付宝支持 LayerScape" /></a>
 </p>
-
----
-
-<h2 align="center">⭐ LayerScape Star History</h2>
-
-<p align="center">
-  <a href="https://star-history.com/#splrad/LayerScape&Date">
-    <img src="https://api.star-history.com/svg?repos=splrad/LayerScape&type=Date" alt="LayerScape Star History" />
-  </a>
-</p>
