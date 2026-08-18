@@ -1,0 +1,6 @@
+blank_issues_enabled: true
+
+contact_links:
+  - name: 提出功能建议
+    url: https://github.com/splrad/LayerScape/discussions/new?category=ideas
+    about: 告诉我们你希望 LayerScape 增加什么功能。

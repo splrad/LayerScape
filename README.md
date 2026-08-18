@@ -7,7 +7,7 @@
 [![AutoCAD](https://img.shields.io/badge/AutoCAD-2018%E2%80%932027-red.svg)](#兼容范围)
 [![.NET](https://img.shields.io/badge/.NET-4.6.2%20%7C%204.7.2%20%7C%204.8%20%7C%208.0%20%7C%2010.0-purple.svg)](https://dotnet.microsoft.com/)
 
-[下载最新版本](https://github.com/splrad/LayerScape/releases) · [快速开始](#快速开始) · [问题反馈](https://github.com/splrad/LayerScape/issues)
+[下载最新版本](https://github.com/splrad/LayerScape/releases) · [快速开始](#快速开始) · [报告问题](https://github.com/splrad/LayerScape/issues) · [提出功能建议](https://github.com/splrad/LayerScape/discussions/new?category=ideas)
 
 [GitHub](https://github.com/splrad/LayerScape) · [Gitee（AFR 国内镜像）](https://gitee.com/splrad/CADFontAutoReplace) · [123网盘](https://1819233892.share.123pan.cn/123pan/QtB9jv-OJk7h)
 
@@ -200,24 +200,27 @@ AFR 不改写 `MText.Contents`。当前流程会先修复样式表缺失字体�
 
 ---
 
-## 🐞 问题反馈
+## 反馈与建议
 
-### Issues提交
+### 报告问题
 
-如果使用插件后仍出现“字体不显示”或“乱码”，欢迎提交 [Issues](https://github.com/splrad/LayerScape/issues)。
+如果插件出现异常、功能失效或处理结果不正确，请提交 [Issue](https://github.com/splrad/LayerScape/issues)。
 
-为便于快速定位，请尽量附上：
+为方便定位，可以提供：
 
-1. 脱敏后的问题图纸（可最小化为单个问题区域）
-2. 同一图纸中“正常显示部分”截图
-3. 同一图纸中“不正常显示部分”截图
-4. AutoCAD 版本 + 插件 DLL 版本 + 插件配置
+1. 脱敏后的问题图纸，或只保留问题区域的简化示例
+2. 正常和异常显示效果的截图
+3. AutoCAD 版本、插件版本和插件配置
 
-信息越完整，定位越快。
+### 提出功能建议
+
+如果希望 LayerScape 增加某项功能，请前往 [Ideas](https://github.com/splrad/LayerScape/discussions/new?category=ideas)。
+
+简单说明想要什么功能即可。如果愿意，也可以补充操作方式、界面设想、CAD 版本、截图或参考资料。
 
 ### 联系作者
 
-建议优先通过 Issue 反馈问题，便于保留上下文和跟踪处理进度。若图纸、截图或环境信息不便公开，也可以通过以下方式联系作者：
+建议优先通过对应的 GitHub 入口反馈，便于保留上下文和跟踪处理进度。若图纸、截图或环境信息不便公开，也可以通过以下方式联系作者：
 
 - QQ：`1186191934`
 - 微信：`splrad`
