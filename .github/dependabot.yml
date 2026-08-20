@@ -19,8 +19,6 @@ updates:
       time: "09:20"
       timezone: Asia/Bangkok
     open-pull-requests-limit: 5
-    labels:
-      - plugin
     commit-message:
       prefix: "chore(nuget)"
     ignore:
