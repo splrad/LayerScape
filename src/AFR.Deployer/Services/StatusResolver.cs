@@ -31,7 +31,7 @@ internal static class StatusResolver
         if (!appKeyExists)
             return PluginDeployStatus.NotInstalled;
 
-        if (!string.IsNullOrEmpty(dllPath) && !File.Exists(dllPath))
+        if (string.IsNullOrEmpty(dllPath) || !File.Exists(dllPath))
             return PluginDeployStatus.DllMissing;
 
         var currentVersion = DeployerVersionService.GetDisplayVersion();
