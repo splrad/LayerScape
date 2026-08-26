@@ -224,10 +224,7 @@ AFR 不改写 `MText.Contents`。当前流程会先修复样式表缺失字体�
 
 ## 开发与贡献
 
-开发、构建、调试和贡献流程请阅读二级文档：
-
-- [开发者指南](docs/developer-guide.md)
-- [Git 分支与 PR 规则](docs/git-branch-guidelines.md)
+开发、构建、调试、验证、分支和 Pull Request 流程请阅读 [贡献指南](CONTRIBUTING.md)。
 
 ---
 

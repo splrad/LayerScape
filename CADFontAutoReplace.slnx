@@ -18,10 +18,10 @@
 
   <Folder Name="/Docs/">
     <File Path="README.md" />
+    <File Path="CONTRIBUTING.md" />
     <File Path="docs/autodesk-fonts.md" />
     <File Path="docs/developer-guide-advanced.md" />
     <File Path="docs/developer-guide-beginner.md" />
-    <File Path="docs/git-branch-guidelines.md" />
   </Folder>
 
   <Folder Name="/GitHub/">
