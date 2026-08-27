@@ -1,4 +1,4 @@
-# 开发者指南
+# 贡献指南
 
 本文面向普通贡献者，帮助第一次接触本项目的开发者完成一条完整开发路径：
 
@@ -8,7 +8,7 @@
 4. 在 AutoCAD 或部署器中验证结果。
 5. 提交 PR，并补充必要的验证信息。
 
-本文只覆盖开发和验证流程，不覆盖发布流程。用户安装和命令说明请看 [README](../README.md)；分支命名和 PR 规则请看 [Git 分支与 PR 规则](git-branch-guidelines.md)。
+本文覆盖开发、验证、分支和 Pull Request 流程，不覆盖发布流程。用户安装和命令说明请看 [README](README.md)。
 
 你不必把所有步骤都手敲进命令行。后文保留 PowerShell 命令，是为了让路径、参数和构建目标足够明确；如果你习惯使用 Visual Studio、GitHub Desktop 或 GitHub 网页操作，只要结果一致，也可以按图形界面完成克隆、建分支、构建、提交和打开 PR。
 
@@ -32,7 +32,7 @@
 - Windows 10/11。
 - Git。
 - Visual Studio 2022 或更新版本，并安装“.NET 桌面开发”工作负载。
-- 根目录 [global.json](../global.json) 指定的 .NET SDK。当前指定版本是 `10.0.201`，允许 `latestFeature` 滚动。
+- 根目录 [global.json](global.json) 指定的 .NET SDK。当前指定版本是 `10.0.201`，允许 `latestFeature` 滚动。
 
 ### 可选工具
 
@@ -66,7 +66,7 @@ dotnet --version
 dotnet --info
 ```
 
-如果 `dotnet --version` 不满足 [global.json](../global.json)，先安装对应 SDK，再重新打开 PowerShell。
+如果 `dotnet --version` 不满足 [global.json](global.json)，先安装对应 SDK，再重新打开 PowerShell。
 
 ## 获取代码
 
@@ -77,26 +77,26 @@ dotnet --info
 1. 在 GitHub 网页打开项目，点击 `Fork`。
 2. 打开 GitHub Desktop，选择 `File` > `Clone repository`。
 3. 选择自己的 Fork，克隆到本机。
-4. 在 GitHub Desktop 的分支下拉菜单中新建任务分支，例如 `docs/developer-guide`。
+4. 在 GitHub Desktop 的分支下拉菜单中新建任务分支，例如 `docs/contributing`。
 
 如果你使用 Visual Studio，也可以在启动页选择 `Clone a repository`，粘贴 Fork 地址后克隆；打开解决方案后，在右下角或 Git 菜单中新建分支。
 
 命令行路径：
 
 ```powershell
-git clone https://github.com/<your-name>/CADFontAutoReplace.git
-cd CADFontAutoReplace
-git remote add upstream https://github.com/axiomoth/CADFontAutoReplace.git
+git clone https://github.com/<your-name>/LayerScape.git
+cd LayerScape
+git remote add upstream https://github.com/splrad/LayerScape.git
 git fetch upstream
 ```
 
 如果你已经有主仓库写权限，也可以直接克隆主仓库：
 
-图形界面路径同样适用，只是仓库地址换成 `https://github.com/axiomoth/CADFontAutoReplace.git`。
+图形界面路径同样适用，只是仓库地址换成 `https://github.com/splrad/LayerScape.git`。
 
 ```powershell
-git clone https://github.com/axiomoth/CADFontAutoReplace.git
-cd CADFontAutoReplace
+git clone https://github.com/splrad/LayerScape.git
+cd LayerScape
 ```
 
 开始改动前，先确认工作区状态。图形界面用户可以看 GitHub Desktop 的 `Changes` 页或 Visual Studio 的 `Git Changes` 窗口；如果显示没有改动，就等价于命令行的 clean 状态。
@@ -105,18 +105,18 @@ cd CADFontAutoReplace
 git status
 ```
 
-建议每个任务新建一个分支，分支命名规则见 [Git 分支与 PR 规则](git-branch-guidelines.md)。
+建议每个任务新建一个分支，命名规则见本文的“分支和 Pull Request”章节。
 
 如果你克隆的是 Fork：
 
 ```powershell
-git checkout -b docs/developer-guide upstream/main
+git checkout -b docs/contributing upstream/main
 ```
 
 如果你直接克隆主仓库：
 
 ```powershell
-git checkout -b docs/developer-guide origin/main
+git checkout -b docs/contributing origin/main
 ```
 
 ## 第一步：跑通构建
@@ -125,7 +125,7 @@ git checkout -b docs/developer-guide origin/main
 
 如果使用 Visual Studio：
 
-1. 打开根目录 [CADFontAutoReplace.slnx](../CADFontAutoReplace.slnx)。
+1. 打开根目录 [CADFontAutoReplace.slnx](CADFontAutoReplace.slnx)。
 2. 在 Solution Explorer 中找到目标项目，例如 `AFR-ACAD2026` 或 `AFR.Deployer`。
 3. 右键项目选择 `Build`；需要全量检查时，使用菜单 `Build` > `Build Solution`。
 4. 构建失败时先看 `Error List` 和 `Output` 窗口，确认缺少的是 SDK、工作负载、NuGet 还原，还是代码编译错误。
@@ -253,7 +253,7 @@ artifacts\bin\AFR-ACAD2026\debug\AFR-ACAD2026.dll
 
 适合需要断点调试的插件改动。
 
-1. 打开根目录 [CADFontAutoReplace.slnx](../CADFontAutoReplace.slnx)。
+1. 打开根目录 [CADFontAutoReplace.slnx](CADFontAutoReplace.slnx)。
 2. 找到与你 AutoCAD 版本一致的 `AFR-ACAD20XX` 工程。
 3. 将该工程设为启动项目。
 4. 检查 `Properties/launchSettings.json` 中的 `executablePath` 是否指向本机 `acad.exe`。
@@ -521,7 +521,7 @@ Debug 诊断文件在插件目录下，文件名类似 `AFR_Diag_*.jsonl`。每�
 
 ### `dotnet` 命令不存在
 
-安装 [global.json](../global.json) 指定的 .NET SDK，并重新打开 PowerShell。
+安装 [global.json](global.json) 指定的 .NET SDK，并重新打开 PowerShell。
 
 ```powershell
 dotnet --version
@@ -591,9 +591,31 @@ dotnet build src/AFR.Deployer/AFR.Deployer.csproj
 
 命令改动检查`CommandNames.cs`、`CommandMethod`和`CommandClass`并在对应AutoCAD命令行验证。Hook改动确认真实`HookHandler`命中和重定向。部署器改动检查安装、卸载、字体释放、AWS回滚和状态刷新。
 
-推送后检查Steward生成的标题和正文，并在“人工补充”中记录实际命令、验证使用的AutoCAD版本和没有覆盖的环境。项目不要求`Signed-off-by`，不运行DCO检查。中央拉取请求验证不会构建LayerScape产品，也不会把未运行显示成通过。
+在 Pull Request 中如实记录实际运行的命令、验证使用的 AutoCAD 版本和没有覆盖的环境。不要把未运行的检查写成已通过。
+
+## 分支和 Pull Request
+
+### 基本原则
+
+- 从 `main` 创建短期分支；禁止直接推送本地 `main`。
+- 一个分支只处理一个问题或一组紧密相关的改动。
+- 不把无关格式化、重命名、重构和功能修复混入同一拉取请求。
+- 不提交本地日志、临时文件、构建产物、发布包、客户数据、访问令牌或密钥。
+
+### 分支名称
+
+分支名只使用小写英文、数字、斜线和连字符：`feature/<topic>`、`bugfix/<topic>`、`docs/<topic>`、`refactor/<topic>`、`perf/<topic>` 或 `chore/<topic>`。
+
+### 提交和本地验证
+
+提交信息使用简短约定式格式，例如 `docs: improve contributing guide`、`fix: handle missing bigfont fallback` 或 `refactor: isolate shx lookup`。
+
+文档改动运行 `git diff --check`。单个插件、部署器或共享代码改动按本文对应章节运行验证，并在拉取请求“人工补充”中如实写明已运行命令、AutoCAD 版本和未覆盖环境。
+
+### 提交 Pull Request
+
+没有主仓库写权限时，从自己的 Fork 创建指向 `splrad/LayerScape:main` 的 Pull Request。说明改动目的、主要实现和实际验证；如果缺少 AutoCAD 或管理员权限等必要环境，也要明确写出未覆盖的检查。
 
 ## 相关文档
 
-- [Git 分支与 PR 规则](git-branch-guidelines.md)
-- [AutoCAD 原版 SHX 字体清单](autodesk-fonts.md)
+- [AutoCAD 原版 SHX 字体清单](docs/autodesk-fonts.md)
