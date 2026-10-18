@@ -19,6 +19,9 @@
     <OutputDirectory>\AFR-Deployer_vX.Y.Z.exe
     <OutputDirectory>\AFR-DLL_vX.Y.Z.zip
     <OutputDirectory>\Fonts.zip
+.NOTES
+    精确字节恢复要求相同的冻结工具链。中央发布使用固定版本 PowerShell 7；
+    Windows PowerShell 5.1 可用于手动打包，但不同运行时的 ZIP 字节不保证一致。
 .EXAMPLE
     .\tools\Publish-ReleaseAssets.ps1 -OutputDirectory C:\build-assets -Version 9.2.2
 #>
@@ -167,6 +170,8 @@ Assert-PathWithoutLinks $PublishOutput
 Assert-PathWithoutLinks $ArchiveTempDir
 Assert-TreeWithoutLinks (Join-Path $RepoRoot 'artifacts')
 Assert-TreeWithoutLinks $PublishOutput
+Assert-PathWithoutLinks $FontsSourcePath
+if (-not (Test-Path -LiteralPath $FontsSourcePath -PathType Leaf)) { throw 'Fonts source must be a regular file.' }
 $ReleaseVersion = Get-ReleaseVersion
 $previousNoLogo = $env:DOTNET_NOLOGO
 Push-Location -LiteralPath $RepoRoot
@@ -286,7 +291,7 @@ try {
         Remove-Item -LiteralPath $versionedDllZip -Force
     }
 
-    # Stable ordering and timestamps allow exact-byte recovery from the same source.
+    # Stable ordering/timestamps support recovery with the same source AND frozen toolchain.
     Add-Type -AssemblyName System.IO.Compression
     if ($PSVersionTable.PSEdition -eq 'Desktop') {
         Add-Type -AssemblyName System.IO.Compression.FileSystem
@@ -320,6 +325,8 @@ if (-not (Test-Path -LiteralPath $FontsSourcePath)) {
     exit 1
 }
 
+Assert-PathWithoutLinks $FontsSourcePath
+if (-not (Test-Path -LiteralPath $FontsSourcePath -PathType Leaf)) { throw 'Fonts source must be a regular file.' }
 Copy-Item -LiteralPath $FontsSourcePath -Destination $releaseFontsZip -Force
 Write-Ok "字体包 → $releaseFontsZip"
 
