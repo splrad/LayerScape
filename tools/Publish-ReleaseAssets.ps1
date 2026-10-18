@@ -169,6 +169,7 @@ Assert-PathWithoutLinks $PluginOutputRoot
 Assert-PathWithoutLinks $PublishOutput
 Assert-PathWithoutLinks $ArchiveTempDir
 Assert-TreeWithoutLinks (Join-Path $RepoRoot 'artifacts')
+Assert-TreeWithoutLinks (Join-Path $RepoRoot 'src')
 Assert-TreeWithoutLinks $PublishOutput
 Assert-PathWithoutLinks $FontsSourcePath
 if (-not (Test-Path -LiteralPath $FontsSourcePath -PathType Leaf)) { throw 'Fonts source must be a regular file.' }
