@@ -38,6 +38,29 @@ $ErrorActionPreference = 'Stop'
 $OutputEncoding           = [System.Text.Encoding]::UTF8
 
 # ── 路径常量 ──────────────────────────────────────────────────────────────
+Add-Type -TypeDefinition @'
+using System;
+using System.ComponentModel;
+using System.Runtime.InteropServices;
+using System.Text;
+using Microsoft.Win32.SafeHandles;
+public static class ReleaseDirectoryPath {
+    [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+    static extern SafeFileHandle CreateFile(string path, uint access, uint share, IntPtr security, uint creation, uint flags, IntPtr template);
+    [DllImport("kernel32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+    static extern uint GetFinalPathNameByHandle(SafeFileHandle file, StringBuilder path, uint size, uint flags);
+    public static string Resolve(string path) {
+        using (var handle = CreateFile(path, 0, 7, IntPtr.Zero, 3, 0x02000000, IntPtr.Zero)) {
+            if (handle.IsInvalid) throw new Win32Exception(Marshal.GetLastWin32Error());
+            var value = new StringBuilder(32768);
+            uint size = GetFinalPathNameByHandle(handle, value, (uint)value.Capacity, 0);
+            if (size == 0) throw new Win32Exception(Marshal.GetLastWin32Error());
+            if (size >= value.Capacity) throw new InvalidOperationException("Directory path exceeds buffer.");
+            return value.ToString().TrimEnd('\\');
+        }
+    }
+}
+'@
 $RepoRoot       = (Resolve-Path "$PSScriptRoot\..").Path
 $PluginsRoot    = Join-Path $RepoRoot "src\AutoCAD"
 $PluginOutputRoot = Join-Path $RepoRoot "artifacts\bin"       # 标准构建输出根目录
@@ -45,6 +68,9 @@ $ReleaseAssetsDir = [IO.Path]::GetFullPath($OutputDirectory)
 $rootPrefix = [IO.Path]::GetFullPath($RepoRoot).TrimEnd('\', '/') + [IO.Path]::DirectorySeparatorChar
 if ($ReleaseAssetsDir.StartsWith($rootPrefix, [StringComparison]::OrdinalIgnoreCase) -or $ReleaseAssetsDir -eq $RepoRoot) { throw 'OutputDirectory must be outside the product checkout.' }
 if (-not (Test-Path -LiteralPath $ReleaseAssetsDir -PathType Container)) { throw 'OutputDirectory must already exist.' }
+$finalRepoRoot = [ReleaseDirectoryPath]::Resolve($RepoRoot)
+$finalOutput = [ReleaseDirectoryPath]::Resolve($ReleaseAssetsDir)
+if ($finalOutput -eq $finalRepoRoot -or $finalOutput.StartsWith($finalRepoRoot + '\', [StringComparison]::OrdinalIgnoreCase)) { throw 'OutputDirectory must be outside the product checkout.' }
 function Assert-PathWithoutLinks([string]$Path) {
     $currentPath = [IO.Path]::GetFullPath($Path)
     while ($currentPath) {
