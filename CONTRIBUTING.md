@@ -32,7 +32,7 @@
 - Windows 10/11。
 - Git。
 - Visual Studio 2022 或更新版本，并安装“.NET 桌面开发”工作负载。
-- 根目录 [global.json](global.json) 指定的 .NET SDK。当前指定版本是 `10.0.201`，允许 `latestFeature` 滚动。
+- 根目录 [global.json](global.json) 指定的 .NET SDK。当前固定版本为 `10.0.402`，`rollForward` 为 `disable`，需安装该确切 SDK 版本。
 
 ### 可选工具
 

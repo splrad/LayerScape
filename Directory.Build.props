@@ -1,9 +1,6 @@
 <Project>
 
-  <!--
-	插件统一版本号被抽离到根目录 Version.props，方便维护者在 Solution Explorer
-	的 "Solution Items" 文件夹中直接打开修改（IDE 默认隐藏 Directory.Build.props）。
-  -->
+  <!-- Version.props 将根目录 VERSION 映射为统一构建版本。 -->
   <Import Project="$(MSBuildThisFileDirectory)Version.props" />
 
   <PropertyGroup>

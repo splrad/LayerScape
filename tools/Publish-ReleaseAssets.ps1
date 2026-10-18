@@ -1,4 +1,4 @@
-#Requires -Version 5.1
+﻿#Requires -Version 5.1
 <#
 .SYNOPSIS
     自动构建所有 AutoCAD 插件 DLL，并生成 GitHub Release 发布资产。
@@ -45,12 +45,20 @@ $ReleaseAssetsDir = [IO.Path]::GetFullPath($OutputDirectory)
 $rootPrefix = [IO.Path]::GetFullPath($RepoRoot).TrimEnd('\', '/') + [IO.Path]::DirectorySeparatorChar
 if ($ReleaseAssetsDir.StartsWith($rootPrefix, [StringComparison]::OrdinalIgnoreCase) -or $ReleaseAssetsDir -eq $RepoRoot) { throw 'OutputDirectory must be outside the product checkout.' }
 if (-not (Test-Path -LiteralPath $ReleaseAssetsDir -PathType Container)) { throw 'OutputDirectory must already exist.' }
-if ((Get-Item -LiteralPath $ReleaseAssetsDir).Attributes -band [IO.FileAttributes]::ReparsePoint) { throw 'OutputDirectory must not be a link.' }
+function Assert-PathWithoutLinks([string]$Path) {
+    $current = Get-Item -LiteralPath $Path -Force
+    while ($null -ne $current) {
+        if ($current.Attributes -band [IO.FileAttributes]::ReparsePoint) { throw 'OutputDirectory and checkout paths must not contain links.' }
+        $current = $current.Parent
+    }
+}
+Assert-PathWithoutLinks $RepoRoot
+Assert-PathWithoutLinks $ReleaseAssetsDir
 if (@(Get-ChildItem -LiteralPath $ReleaseAssetsDir -Force).Count -ne 0) { throw 'OutputDirectory must be empty.' }
 $ArchiveTempDir = Join-Path $RepoRoot "artifacts\release-archive-temp"
 $DeployerCsproj = Join-Path $RepoRoot "src\AFR.Deployer\AFR.Deployer.csproj"
 $PublishOutput  = Join-Path $RepoRoot "publish\AFR.Deployer"
-$VersionProps    = Join-Path $RepoRoot "Version.props"
+
 $FontsSourcePath = Join-Path $RepoRoot "chore\Fonts.zip"
 
 # 自动发现 src\AutoCAD\AFR-ACAD*\*.csproj，避免新增 CAD 版本时手工维护列表。
@@ -101,16 +109,11 @@ function Get-PluginReleaseFile([pscustomobject]$plugin, [string]$extension) {
 
 function Get-ReleaseVersion {
     try {
-        [xml]$xml = Get-Content -LiteralPath $VersionProps -Raw
-        $version = $xml.Project.PropertyGroup.PluginDisplayVersion | Where-Object { $_ } | Select-Object -First 1
-        if ([string]::IsNullOrWhiteSpace($version)) {
-            throw "PluginDisplayVersion 为空"
-        }
         $canonical = [IO.File]::ReadAllText((Join-Path $RepoRoot 'VERSION'))
-        if ($canonical -cnotmatch '^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\n$' -or $canonical -cne "$RequestedVersion`n" -or $version.Trim() -cne $RequestedVersion) { throw 'VERSION, requested version and Version.props must agree.' }
+        if ($canonical -cnotmatch '^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\n$' -or $canonical -cne "$RequestedVersion`n") { throw 'VERSION and requested version must agree.' }
         return $RequestedVersion
     } catch {
-        Write-Fail "无法从 Version.props 读取 PluginDisplayVersion: $($_.Exception.Message)"
+        Write-Fail "无法从 VERSION 读取发布版本: $($_.Exception.Message)"
         exit 1
     }
 }
@@ -223,6 +226,11 @@ try {
 
     # Stable ordering and timestamps allow exact-byte recovery from the same source.
     Add-Type -AssemblyName System.IO.Compression
+    if ($PSVersionTable.PSEdition -eq 'Desktop') {
+        Add-Type -AssemblyName System.IO.Compression.FileSystem
+    } else {
+        Add-Type -AssemblyName System.IO.Compression.ZipFile
+    }
     $zip = [IO.Compression.ZipFile]::Open($versionedDllZip, [IO.Compression.ZipArchiveMode]::Create)
     try {
         foreach ($dll in (Get-ChildItem -LiteralPath $ArchiveTempDir -Filter '*.dll' | Sort-Object Name)) {
