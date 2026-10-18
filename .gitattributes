@@ -9,6 +9,7 @@
 ###############################################################################
 *.sh text eol=lf
 *.bash text eol=lf
+VERSION text eol=lf
 
 ###############################################################################
 # Set default behavior for command prompt diff.

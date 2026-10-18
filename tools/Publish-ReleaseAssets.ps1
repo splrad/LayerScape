@@ -10,21 +10,22 @@
       2. 校验每个插件的 Release DLL 与 CAD 元数据 JSON
       3. dotnet publish AFR.Deployer -> 自包含 .NET 10 单文件 EXE
          （已内置 .NET Desktop Runtime 所需组件；无需 Windows App Runtime 等外置依赖）
-      4. 生成版本化发布资产到 artifacts\ReleaseAssets\
+      4. 生成版本化发布资产到调用方提供的空 OutputDirectory
          - AFR-Deployer_vX.Y.Z.exe：部署器 EXE 本体
          - AFR-DLL_vX.Y.Z.zip：仅 AFR-ACAD*.dll 插件主 DLL
          - Fonts.zip：字体资源包
 .OUTPUTS
     <RepoRoot>\publish\AFR.Deployer\AFR.Deployer.exe
-    <RepoRoot>\artifacts\ReleaseAssets\AFR-Deployer_vX.Y.Z.exe
-    <RepoRoot>\artifacts\ReleaseAssets\AFR-DLL_vX.Y.Z.zip
-    <RepoRoot>\artifacts\ReleaseAssets\Fonts.zip
+    <OutputDirectory>\AFR-Deployer_vX.Y.Z.exe
+    <OutputDirectory>\AFR-DLL_vX.Y.Z.zip
+    <OutputDirectory>\Fonts.zip
 .EXAMPLE
-    .\tools\Publish-ReleaseAssets.ps1
-    .\tools\Publish-ReleaseAssets.ps1 -SkipPluginBuild   # 跳过插件构建，仅重新生成发布资产
+    .\tools\Publish-ReleaseAssets.ps1 -OutputDirectory C:\build-assets -Version 9.2.2
 #>
 param(
-    [switch]$SkipPluginBuild
+    [switch]$SkipPluginBuild,
+    [Parameter(Mandatory=$true)][string]$OutputDirectory,
+    [Parameter(Mandatory=$true)][Alias('Version')][string]$RequestedVersion
 )
 
 Set-StrictMode -Version Latest
@@ -40,7 +41,12 @@ $OutputEncoding           = [System.Text.Encoding]::UTF8
 $RepoRoot       = (Resolve-Path "$PSScriptRoot\..").Path
 $PluginsRoot    = Join-Path $RepoRoot "src\AutoCAD"
 $PluginOutputRoot = Join-Path $RepoRoot "artifacts\bin"       # 标准构建输出根目录
-$ReleaseAssetsDir = Join-Path $RepoRoot "artifacts\ReleaseAssets" # GitHub Release 上传资产目录
+$ReleaseAssetsDir = [IO.Path]::GetFullPath($OutputDirectory)
+$rootPrefix = [IO.Path]::GetFullPath($RepoRoot).TrimEnd('\', '/') + [IO.Path]::DirectorySeparatorChar
+if ($ReleaseAssetsDir.StartsWith($rootPrefix, [StringComparison]::OrdinalIgnoreCase) -or $ReleaseAssetsDir -eq $RepoRoot) { throw 'OutputDirectory must be outside the product checkout.' }
+if (-not (Test-Path -LiteralPath $ReleaseAssetsDir -PathType Container)) { throw 'OutputDirectory must already exist.' }
+if ((Get-Item -LiteralPath $ReleaseAssetsDir).Attributes -band [IO.FileAttributes]::ReparsePoint) { throw 'OutputDirectory must not be a link.' }
+if (@(Get-ChildItem -LiteralPath $ReleaseAssetsDir -Force).Count -ne 0) { throw 'OutputDirectory must be empty.' }
 $ArchiveTempDir = Join-Path $RepoRoot "artifacts\release-archive-temp"
 $DeployerCsproj = Join-Path $RepoRoot "src\AFR.Deployer\AFR.Deployer.csproj"
 $PublishOutput  = Join-Path $RepoRoot "publish\AFR.Deployer"
@@ -100,7 +106,9 @@ function Get-ReleaseVersion {
         if ([string]::IsNullOrWhiteSpace($version)) {
             throw "PluginDisplayVersion 为空"
         }
-        return $version.Trim()
+        $canonical = [IO.File]::ReadAllText((Join-Path $RepoRoot 'VERSION'))
+        if ($canonical -cnotmatch '^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\n$' -or $canonical -cne "$RequestedVersion`n" -or $version.Trim() -cne $RequestedVersion) { throw 'VERSION, requested version and Version.props must agree.' }
+        return $RequestedVersion
     } catch {
         Write-Fail "无法从 Version.props 读取 PluginDisplayVersion: $($_.Exception.Message)"
         exit 1
@@ -122,7 +130,7 @@ if (-not $SkipPluginBuild) {
         Write-Host "  → 构建 $($p.Name) ($($p.TFM))..." -NoNewline
 
         # 构建单个版本壳项目；构建成功后会在标准输出目录生成 DLL 与 sidecar JSON。
-        $output = dotnet build $csproj -c Release --nologo -v quiet 2>&1
+        $output = dotnet build $csproj -c Release --nologo -v quiet "-p:PathMap=$RepoRoot=/_/src" -p:ContinuousIntegrationBuild=true 2>&1
         if ($LASTEXITCODE -ne 0) {
             Write-Fail "失败"
             $buildErrors += $p.Name
@@ -174,7 +182,7 @@ if ($missingInputs.Count -gt 0) {
 Write-Step "发布 AFR.Deployer (自包含单文件)"
 New-Item -ItemType Directory -Force -Path $PublishOutput | Out-Null
 
-dotnet publish $DeployerCsproj -c Release -o $PublishOutput --nologo
+dotnet publish $DeployerCsproj -c Release -o $PublishOutput --nologo "-p:PathMap=$RepoRoot=/_/src" -p:ContinuousIntegrationBuild=true
 if ($LASTEXITCODE -ne 0) {
     Write-Fail "发布失败"
     exit 1
@@ -184,7 +192,7 @@ $exePath = Join-Path $PublishOutput "AFR-Deployer.exe"
 $sizeMB  = [math]::Round((Get-Item $exePath).Length / 1MB, 1)
 
 # ── Step 4：生成最终发布资产 ────────────────────────────────────────────
-Write-Step "生成发布资产到 artifacts\ReleaseAssets\"
+Write-Step "生成发布资产到中央输出目录"
 New-Item -ItemType Directory -Force -Path $ReleaseAssetsDir | Out-Null
 
 $versionedExe = Join-Path $ReleaseAssetsDir "AFR-Deployer_$ReleaseTag.exe"
@@ -213,7 +221,17 @@ try {
         Remove-Item -LiteralPath $versionedDllZip -Force
     }
 
-    Compress-Archive -Path (Join-Path $ArchiveTempDir "*.dll") -DestinationPath $versionedDllZip -Force
+    # Stable ordering and timestamps allow exact-byte recovery from the same source.
+    Add-Type -AssemblyName System.IO.Compression
+    $zip = [IO.Compression.ZipFile]::Open($versionedDllZip, [IO.Compression.ZipArchiveMode]::Create)
+    try {
+        foreach ($dll in (Get-ChildItem -LiteralPath $ArchiveTempDir -Filter '*.dll' | Sort-Object Name)) {
+            $entry = $zip.CreateEntry($dll.Name, [IO.Compression.CompressionLevel]::Optimal)
+            $entry.LastWriteTime = [DateTimeOffset]::new(2000, 1, 1, 0, 0, 0, [TimeSpan]::Zero)
+            $inputStream = [IO.File]::OpenRead($dll.FullName); $outputStream = $entry.Open()
+            try { $inputStream.CopyTo($outputStream) } finally { $inputStream.Dispose(); $outputStream.Dispose() }
+        }
+    } finally { $zip.Dispose() }
     Write-Ok "插件 DLL ZIP → $versionedDllZip"
 } finally {
     if (Test-Path -LiteralPath $ArchiveTempDir) {
