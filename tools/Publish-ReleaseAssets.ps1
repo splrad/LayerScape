@@ -84,6 +84,18 @@ function Assert-PathWithoutLinks([string]$Path) {
         $currentPath = if ($null -ne $parent) { $parent.FullName } else { $null }
     }
 }
+function Assert-TreeWithoutLinks([string]$Path) {
+    Assert-PathWithoutLinks $Path
+    if (-not (Test-Path -LiteralPath $Path -PathType Container)) { return }
+    $pending = New-Object 'System.Collections.Generic.Stack[string]'
+    $pending.Push($Path)
+    while ($pending.Count -gt 0) {
+        foreach ($item in (Get-ChildItem -LiteralPath $pending.Pop() -Force)) {
+            if ($item.Attributes -band [IO.FileAttributes]::ReparsePoint) { throw 'Work paths must not contain links.' }
+            if ($item.PSIsContainer) { $pending.Push($item.FullName) }
+        }
+    }
+}
 Assert-PathWithoutLinks $RepoRoot
 Assert-PathWithoutLinks $ReleaseAssetsDir
 if (@(Get-ChildItem -LiteralPath $ReleaseAssetsDir -Force).Count -ne 0) { throw 'OutputDirectory must be empty.' }
@@ -153,6 +165,8 @@ function Get-ReleaseVersion {
 Assert-PathWithoutLinks $PluginOutputRoot
 Assert-PathWithoutLinks $PublishOutput
 Assert-PathWithoutLinks $ArchiveTempDir
+Assert-TreeWithoutLinks (Join-Path $RepoRoot 'artifacts')
+Assert-TreeWithoutLinks $PublishOutput
 $ReleaseVersion = Get-ReleaseVersion
 $previousNoLogo = $env:DOTNET_NOLOGO
 Push-Location -LiteralPath $RepoRoot
