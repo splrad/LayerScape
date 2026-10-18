@@ -46,16 +46,20 @@ $rootPrefix = [IO.Path]::GetFullPath($RepoRoot).TrimEnd('\', '/') + [IO.Path]::D
 if ($ReleaseAssetsDir.StartsWith($rootPrefix, [StringComparison]::OrdinalIgnoreCase) -or $ReleaseAssetsDir -eq $RepoRoot) { throw 'OutputDirectory must be outside the product checkout.' }
 if (-not (Test-Path -LiteralPath $ReleaseAssetsDir -PathType Container)) { throw 'OutputDirectory must already exist.' }
 function Assert-PathWithoutLinks([string]$Path) {
-    $current = Get-Item -LiteralPath $Path -Force
-    while ($null -ne $current) {
-        if ($current.Attributes -band [IO.FileAttributes]::ReparsePoint) { throw 'OutputDirectory and checkout paths must not contain links.' }
-        $current = $current.Parent
+    $currentPath = [IO.Path]::GetFullPath($Path)
+    while ($currentPath) {
+        if (Test-Path -LiteralPath $currentPath) {
+            $current = Get-Item -LiteralPath $currentPath -Force
+            if ($current.Attributes -band [IO.FileAttributes]::ReparsePoint) { throw 'Work paths must not contain links.' }
+        }
+        $parent = [IO.Directory]::GetParent($currentPath)
+        $currentPath = if ($null -ne $parent) { $parent.FullName } else { $null }
     }
 }
 Assert-PathWithoutLinks $RepoRoot
 Assert-PathWithoutLinks $ReleaseAssetsDir
 if (@(Get-ChildItem -LiteralPath $ReleaseAssetsDir -Force).Count -ne 0) { throw 'OutputDirectory must be empty.' }
-$ArchiveTempDir = Join-Path $RepoRoot "artifacts\release-archive-temp"
+$ArchiveTempDir = Join-Path $RepoRoot ("artifacts\release-archive-temp-" + [guid]::NewGuid().ToString('N'))
 $DeployerCsproj = Join-Path $RepoRoot "src\AFR.Deployer\AFR.Deployer.csproj"
 $PublishOutput  = Join-Path $RepoRoot "publish\AFR.Deployer"
 
@@ -118,7 +122,14 @@ function Get-ReleaseVersion {
     }
 }
 
+Assert-PathWithoutLinks $PluginOutputRoot
+Assert-PathWithoutLinks $PublishOutput
+Assert-PathWithoutLinks $ArchiveTempDir
 $ReleaseVersion = Get-ReleaseVersion
+foreach ($project in @($Plugins | ForEach-Object { Join-Path $PluginsRoot "$($_.Name)\$($_.Name).csproj" }) + @($DeployerCsproj)) {
+    $evaluated = dotnet msbuild $project -nologo -getProperty:PluginDisplayVersion
+    if ($LASTEXITCODE -ne 0 -or ($evaluated | Out-String).Trim() -cne $ReleaseVersion) { throw 'MSBuild PluginDisplayVersion must match VERSION and requested version.' }
+}
 $ReleaseTag = "v$ReleaseVersion"
 
 # ── Step 1：构建所有插件 DLL ─────────────────────────────────────────────
@@ -183,6 +194,7 @@ if ($missingInputs.Count -gt 0) {
 # ── Step 3：发布 AFR.Deployer 单文件 EXE ─────────────────────────────────
 # 此处只发布部署器本体；插件 DLL/JSON 由项目文件直接从标准输出目录嵌入。
 Write-Step "发布 AFR.Deployer (自包含单文件)"
+Assert-PathWithoutLinks $PublishOutput
 New-Item -ItemType Directory -Force -Path $PublishOutput | Out-Null
 
 dotnet publish $DeployerCsproj -c Release -o $PublishOutput --nologo "-p:PathMap=$RepoRoot=/_/src" -p:ContinuousIntegrationBuild=true
@@ -199,15 +211,19 @@ Write-Step "生成发布资产到中央输出目录"
 New-Item -ItemType Directory -Force -Path $ReleaseAssetsDir | Out-Null
 
 $versionedExe = Join-Path $ReleaseAssetsDir "AFR-Deployer_$ReleaseTag.exe"
+foreach ($assetPath in @($exePath) + @($Plugins | ForEach-Object { Get-PluginReleaseFile $_ ".dll" })) {
+    Assert-PathWithoutLinks $assetPath
+    $native = [Diagnostics.FileVersionInfo]::GetVersionInfo($assetPath)
+    if ($native.FileVersion -cne $ReleaseVersion -or $native.ProductVersion.Split('+')[0] -cne $ReleaseVersion) { throw "Native asset version mismatch: $assetPath" }
+}
+Assert-PathWithoutLinks $ReleaseAssetsDir
 Copy-Item -LiteralPath $exePath -Destination $versionedExe -Force
 Write-Ok "部署器 EXE → $versionedExe"
 
 $versionedDllZip = Join-Path $ReleaseAssetsDir "AFR-DLL_$ReleaseTag.zip"
 $releaseFontsZip = Join-Path $ReleaseAssetsDir "Fonts.zip"
-if (Test-Path -LiteralPath $ArchiveTempDir) {
-    Remove-Item -LiteralPath $ArchiveTempDir -Recurse -Force
-}
-New-Item -ItemType Directory -Force -Path $ArchiveTempDir | Out-Null
+Assert-PathWithoutLinks $ArchiveTempDir
+New-Item -ItemType Directory -Path $ArchiveTempDir | Out-Null
 
 try {
     foreach ($p in $Plugins) {
@@ -243,6 +259,9 @@ try {
     Write-Ok "插件 DLL ZIP → $versionedDllZip"
 } finally {
     if (Test-Path -LiteralPath $ArchiveTempDir) {
+        Assert-PathWithoutLinks $ArchiveTempDir
+        $archivePrefix = [IO.Path]::GetFullPath((Join-Path $RepoRoot 'artifacts')).TrimEnd('\') + '\release-archive-temp-'
+        if (-not [IO.Path]::GetFullPath($ArchiveTempDir).StartsWith($archivePrefix, [StringComparison]::OrdinalIgnoreCase)) { throw 'Unexpected archive temporary path.' }
         Remove-Item -LiteralPath $ArchiveTempDir -Recurse -Force
     }
 }
