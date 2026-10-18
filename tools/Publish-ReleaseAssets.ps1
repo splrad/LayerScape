@@ -284,8 +284,11 @@ try {
         foreach ($dll in (Get-ChildItem -LiteralPath $ArchiveTempDir -Filter '*.dll' | Sort-Object Name)) {
             $entry = $zip.CreateEntry($dll.Name, [IO.Compression.CompressionLevel]::Optimal)
             $entry.LastWriteTime = [DateTimeOffset]::new(2000, 1, 1, 0, 0, 0, [TimeSpan]::Zero)
-            $inputStream = [IO.File]::OpenRead($dll.FullName); $outputStream = $entry.Open()
-            try { $inputStream.CopyTo($outputStream) } finally { $inputStream.Dispose(); $outputStream.Dispose() }
+            $inputStream = [IO.File]::OpenRead($dll.FullName)
+            try {
+                $outputStream = $entry.Open()
+                try { $inputStream.CopyTo($outputStream) } finally { $outputStream.Dispose() }
+            } finally { $inputStream.Dispose() }
         }
     } finally { $zip.Dispose() }
     Write-Ok "插件 DLL ZIP → $versionedDllZip"
