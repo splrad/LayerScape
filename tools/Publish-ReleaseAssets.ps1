@@ -38,6 +38,7 @@ $ErrorActionPreference = 'Stop'
 $OutputEncoding           = [System.Text.Encoding]::UTF8
 
 # ── 路径常量 ──────────────────────────────────────────────────────────────
+if (-not ('ReleaseDirectoryPath' -as [type])) {
 Add-Type -TypeDefinition @'
 using System;
 using System.ComponentModel;
@@ -61,6 +62,7 @@ public static class ReleaseDirectoryPath {
     }
 }
 '@
+}
 $RepoRoot       = (Resolve-Path "$PSScriptRoot\..").Path
 $PluginsRoot    = Join-Path $RepoRoot "src\AutoCAD"
 $PluginOutputRoot = Join-Path $RepoRoot "artifacts\bin"       # 标准构建输出根目录
@@ -152,6 +154,10 @@ Assert-PathWithoutLinks $PluginOutputRoot
 Assert-PathWithoutLinks $PublishOutput
 Assert-PathWithoutLinks $ArchiveTempDir
 $ReleaseVersion = Get-ReleaseVersion
+$previousNoLogo = $env:DOTNET_NOLOGO
+Push-Location -LiteralPath $RepoRoot
+try {
+$env:DOTNET_NOLOGO = 'true'
 foreach ($project in @($Plugins | ForEach-Object { Join-Path $PluginsRoot "$($_.Name)\$($_.Name).csproj" }) + @($DeployerCsproj)) {
     $evaluated = dotnet msbuild $project -nologo -getProperty:PluginDisplayVersion
     if ($LASTEXITCODE -ne 0 -or ($evaluated | Out-String).Trim() -cne $ReleaseVersion) { throw 'MSBuild PluginDisplayVersion must match VERSION and requested version.' }
@@ -305,3 +311,8 @@ Write-Host "  输出：$exePath ($sizeMB MB)" -ForegroundColor Green
 Write-Host "  发布资产：$versionedExe" -ForegroundColor Green
 Write-Host "  发布资产：$versionedDllZip" -ForegroundColor Green
 Write-Host "  发布资产：$releaseFontsZip" -ForegroundColor Green
+
+} finally {
+    $env:DOTNET_NOLOGO = $previousNoLogo
+    Pop-Location
+}
