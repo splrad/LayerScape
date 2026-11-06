@@ -1,0 +1,88 @@
+name: SPLRAD PR Labels
+on:
+  workflow_run:
+    workflows: [SPLRAD PR Title]
+    types: [completed]
+permissions:
+  contents: read
+  actions: read
+  pull-requests: write
+concurrency:
+  group: pr-labeler-${{ github.repository_id }}
+  cancel-in-progress: false
+  queue: max
+jobs:
+  labels:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Resolve current PR from native title Run
+        id: target
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          node --input-type=module <<'NODE'
+          import { execFileSync } from 'node:child_process';
+          import { appendFileSync, readFileSync } from 'node:fs';
+
+          // Only resolve the target. actions/labeler owns matching and label mutation.
+          const event = JSON.parse(readFileSync(process.env.GITHUB_EVENT_PATH, 'utf8'));
+          const repository = process.env.GITHUB_REPOSITORY;
+          const repositoryId = Number(process.env.GITHUB_REPOSITORY_ID);
+          const sourceId = event.workflow_run?.id;
+          const attempt = event.workflow_run?.run_attempt;
+          const positive = value => Number.isSafeInteger(value) && value > 0;
+          if (process.env.GITHUB_EVENT_NAME !== 'workflow_run' || event.action !== 'completed'
+              || !/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.test(repository ?? '')
+              || !positive(repositoryId) || !positive(sourceId) || !positive(attempt)) {
+            throw new Error('LABELER_EVENT_IDENTITY');
+          }
+          const api = (path, pages = false) => JSON.parse(execFileSync('gh', [
+            'api', '--method', 'GET', ...(pages ? ['--paginate', '--slurp'] : []), path
+          ], { encoding: 'utf8', maxBuffer: 16 * 1024 * 1024 }));
+          const workflow = api(`repos/${repository}/actions/workflows/pr-title.yml`);
+          const run = api(`repos/${repository}/actions/runs/${sourceId}`);
+          if (!positive(workflow.id) || workflow.path !== '.github/workflows/pr-title.yml'
+              || run.id !== sourceId || run.workflow_id !== workflow.id
+              || run.path !== workflow.path || run.event !== 'pull_request_target'
+              || run.repository?.id !== repositoryId || run.repository?.full_name !== repository
+              || !/^[a-f0-9]{40}$/.test(run.head_sha ?? '')
+              || typeof run.head_branch !== 'string' || !run.head_branch) {
+            throw new Error('LABELER_SOURCE_IDENTITY');
+          }
+          let number = '', reason = 'SOURCE_ATTEMPT_MOVED';
+          if (run.status === 'completed' && run.run_attempt === attempt) {
+            // pull_requests can be empty, and its embedded head can move after the Run.
+            // Resolve current, open PRs from the base repository; a fork is allowed.
+            const pages = api(`repos/${repository}/pulls?state=open&per_page=100`, true);
+            if (!Array.isArray(pages) || !pages.length || pages.some(page => !Array.isArray(page))) {
+              throw new Error('LABELER_PR_PAGES');
+            }
+            const matches = pages.flat().filter(pr => pr.state === 'open'
+              && pr.base?.repo?.id === repositoryId && pr.base?.repo?.full_name === repository
+              && pr.head?.sha === run.head_sha && pr.head?.ref === run.head_branch);
+            if (matches.some(pr => !positive(pr.number))) throw new Error('LABELER_PR_IDENTITY');
+            const numbers = [...new Set(matches.map(pr => pr.number))];
+            if (numbers.length > 1) throw new Error('LABELER_PR_AMBIGUOUS');
+            reason = 'PR_NOT_CURRENT_OR_OPEN';
+            if (numbers.length === 1) {
+              // Read back the single PR after pagination; do not label an old-head result.
+              const pr = api(`repos/${repository}/pulls/${numbers[0]}`);
+              if (pr.number !== numbers[0] || pr.base?.repo?.id !== repositoryId
+                  || pr.base?.repo?.full_name !== repository) throw new Error('LABELER_PR_IDENTITY');
+              if (pr.state === 'open' && pr.head?.sha === run.head_sha && pr.head?.ref === run.head_branch) {
+                number = String(pr.number); reason = 'CURRENT_PR';
+              }
+            }
+          }
+          appendFileSync(process.env.GITHUB_OUTPUT, `number=${number}\nreason=${reason}\n`);
+          console.log(JSON.stringify({sourceRunId: run.id, sourceAttempt: run.run_attempt, sourceHead: run.head_sha, targetPr: number ? Number(number) : null, reason}));
+          NODE
+      - uses: actions/labeler@bf12e9b00b37c5c0ca2b87b79b2daf7891dbda13 # v7.0.0
+        if: steps.target.outputs.number != ''
+        with:
+          repo-token: ${{ github.token }}
+          pr-number: ${{ steps.target.outputs.number }}
+          sync-labels: true
+          configuration-path: .github/labeler.yml

@@ -81,3 +81,6 @@ VERSION text eol=lf
 #*.PDF   diff=astextplain
 #*.rtf   diff=astextplain
 #*.RTF   diff=astextplain
+
+# Shared review instructions use the canonical template bytes.
+AGENTS.md text eol=lf

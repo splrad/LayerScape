@@ -1,0 +1,103 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended",
+    "docker:pinDigests",
+    "helpers:pinGitHubActionDigests"
+  ],
+  "automerge": false,
+  "dependencyDashboard": true,
+  "ignoreScripts": true,
+  "timezone": "Asia/Bangkok",
+  "prConcurrentLimit": 5,
+  "prHourlyLimit": 2,
+  "rangeStrategy": "pin",
+  "ignoreUnstable": true,
+  "minimumReleaseAge": null,
+  "schedule": [
+    "at any time"
+  ],
+  "lockFileMaintenance": {
+    "enabled": true,
+    "schedule": [
+      "at any time"
+    ]
+  },
+  "packageRules": [
+    {
+      "matchUpdateTypes": [
+        "major"
+      ],
+      "groupName": null
+    },
+    {
+      "matchManagers": [
+        "github-actions"
+      ],
+      "enabled": false
+    },
+    {
+      "matchManagers": [
+        "github-actions"
+      ],
+      "matchFileNames": [
+        ".github/workflows/**",
+        "action.yml",
+        "action.yaml",
+        "templates/**",
+        ".github/actions/**"
+      ],
+      "matchDepTypes": [
+        "uses-with",
+        "container",
+        "service",
+        "docker",
+        "github-runner"
+      ],
+      "enabled": true
+    },
+    {
+      "matchManagers": [
+        "github-actions"
+      ],
+      "matchPackageNames": [
+        "splrad/steward"
+      ],
+      "enabled": false
+    },
+    {
+      "matchManagers": [
+        "mise"
+      ],
+      "matchPackageNames": [
+        "node"
+      ],
+      "versioning": "semver",
+      "ignoreUnstable": true
+    }
+  ],
+  "enabledManagers": [
+    "mise",
+    "github-actions"
+  ],
+  "ignorePaths": [
+    ".github/workflows/pr-title.yml",
+    ".github/workflows/pr-labeler.yml",
+    ".github/labeler.yml"
+  ],
+  "prHeader": "本 PR 包含以下依赖更新：",
+  "prBodyColumns": [
+    "Package",
+    "Type",
+    "Update",
+    "Change"
+  ],
+  "prBodyHeadingDefinitions": {
+    "Package": "组件",
+    "Type": "依赖类别",
+    "Update": "更新类型",
+    "Change": "版本变化"
+  },
+  "prBodyTemplate": "{{{header}}}{{{table}}}{{{warnings}}}{{{notes}}}{{{changelogs}}}{{{controls}}}{{{footer}}}",
+  "prFooter": "本 PR 由 [Renovate](https://github.com/renovatebot/renovate) 自动生成。"
+}
