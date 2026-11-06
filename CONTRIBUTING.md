@@ -646,3 +646,13 @@ AI 代为创建 PR 或更改草稿状态须有对应授权。创建前核对同�
 ### layerscape.user-data
 - 字体、SHX、映射、路径或升级逻辑不得静默覆盖、丢失或错误迁移用户数据。
   Safe path: 保留现有配置和回退语义，对迁移进行可逆处理或显式确认，并验证发布资产与版本文件一致。
+
+## 运行时代码与发布资产审查
+
+适用于 src/**、tools/Publish-ReleaseAssets.ps1、Directory.Build.props、Directory.Packages.props、global.json、Version.props、chore/Fonts.zip。
+
+- 核对AutoCAD版本、目标框架、WPF行为和部署器嵌入资源。
+- 核对十个`AFR-ACAD20XX`插件、`.cad.json`描述符、字体包和三项发布资产仍能被`tools/Publish-ReleaseAssets.ps1`发现。
+- 核对字体替换、SHX处理、运行时映射、安装和卸载路径的用户可见行为。
+- 核对`Version.props`、构建属性和发布脚本不会产生错误版本、标签、目标提交或资产名称。
+- 运行代码和安装包改动才进入用户可见发布说明；纯文档、中央自动化或版本号维护不生成更新条目。
