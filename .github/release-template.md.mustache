@@ -1,0 +1,49 @@
+# {{productName}} {{version}}
+
+{{{summary}}}
+
+## 升级须知
+
+### 兼容性
+
+{{{compatibility}}}
+
+### 升级与迁移
+
+{{{upgrade}}}
+
+### 资产与安装
+
+{{{downloads}}}
+
+{{{installation}}}
+
+### 已知问题
+
+{{{knownIssues}}}
+
+### 恢复
+
+{{{recovery}}}
+
+## 更新内容
+
+{{{userChanges}}}
+
+{{#hasContributors}}
+## 贡献者
+
+{{#contributors}}
+<a href="{{profileUrl}}"><img src="{{avatarUrl}}" alt="{{alt}}" width="48" height="48"></a>
+{{/contributors}}
+
+{{/hasContributors}}
+## 完整变更
+
+- 完整变化：[{{sourceLinkLabel}}]({{{sourceUrl}}})
+- 源码提交：[{{sourceSha}}]({{{commitUrl}}})
+- 执行器提交：{{controllerSha}}
+- 校验文件：`SHA256SUMS`；产物清单：`artifact-manifest.json`；依赖清单：`sbom.spdx.json`。
+{{#channels}}
+- {{name}}：{{status}}。{{{location}}}
+{{/channels}}
