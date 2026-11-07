@@ -1,0 +1,9 @@
+auto/docs:
+  - changed-files:
+      - any-glob-to-any-file: ['**/*.md', 'docs/**']
+auto/workflows:
+  - changed-files:
+      - any-glob-to-any-file: ['.github/workflows/**']
+auto/tests:
+  - changed-files:
+      - any-glob-to-any-file: ['**/test/**', '**/tests/**', '**/*.test.*']
