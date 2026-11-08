@@ -1,0 +1,48 @@
+name: LayerScape Channel Preflight
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+  packages: read
+concurrency:
+  group: layerscape-channel-preflight
+  cancel-in-progress: false
+jobs:
+  ghcr-metadata:
+    if: github.repository == 'splrad/LayerScape' && github.repository_id == '1187527897' && github.ref == 'refs/heads/main'
+    runs-on: windows-2025
+    timeout-minutes: 10
+    environment:
+      name: channel-read
+      deployment: false
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          repository: splrad/steward
+          ref: 115b3447bdd5414c0767f35f304c828a3fb45953
+          path: controller
+          persist-credentials: false
+      - name: Verify product token metadata visibility
+        shell: pwsh
+        env:
+          GHCR_TOKEN: ${{ github.token }}
+          OWNER_INVENTORY: ${{ vars.GHCR_OWNER_PACKAGE_INVENTORY }}
+        run: |
+          $ErrorActionPreference='Stop'
+          . ./controller/scripts/ghcr-package-state.ps1
+          $package=Get-LayerScapePackageState -Token $env:GHCR_TOKEN -OwnerInventory $env:OWNER_INVENTORY
+          $record=[ordered]@{
+            repositoryId=1187527897
+            sourceSha=$env:GITHUB_SHA
+            runId=[long]$env:GITHUB_RUN_ID
+            attempt=[int]$env:GITHUB_RUN_ATTEMPT
+            observedAt=[DateTimeOffset]::UtcNow.ToString('o')
+            package=$package
+          }
+          $record|ConvertTo-Json -Depth 6|Set-Content -LiteralPath ghcr-preflight.json -Encoding utf8
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: ghcr-preflight-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ghcr-preflight.json
+          if-no-files-found: error
+          retention-days: 90
