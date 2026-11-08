@@ -71,7 +71,7 @@ internal static class UpdateCheckService
             var asset = release.Assets.Single(asset => asset.Name == "artifact-manifest.json");
             if (!SafeAssetUrl(asset.BrowserDownloadUrl, source, release.TagName!)) return UpdateCheckResult.ReachableNoUpdate(source);
             using var manifestResponse = await http.GetAsync(asset.BrowserDownloadUrl, HttpCompletionOption.ResponseHeadersRead, linked.Token);
-            if (!manifestResponse.IsSuccessStatusCode) return UpdateCheckResult.ReachableNoUpdate(source);
+            if (!manifestResponse.IsSuccessStatusCode) return UpdateCheckResult.Unreachable(source);
             var manifest = await ReadBoundedAsync(manifestResponse, 1024 * 1024, linked.Token);
             if (!AdmitsManifest(manifest, latestVersionText, release.TagName!)) return UpdateCheckResult.ReachableNoUpdate(source);
 

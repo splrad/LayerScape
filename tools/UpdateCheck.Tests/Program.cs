@@ -4,7 +4,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using AFR.Deployer.Services;
 
-var cases = new[] { "valid-github", "valid-gitee", "legacy-gitee", "extra-assets", "missing-asset", "duplicate-asset", "wrong-repo", "wrong-id", "wrong-unit", "wrong-tag", "wrong-version", "unsupported-schema", "missing-digest", "draft", "prerelease", "future-major", "old-client", "unsafe-asset", "unreachable", "no-release" };
+var cases = new[] { "valid-github", "valid-gitee", "legacy-gitee", "extra-assets", "missing-asset", "duplicate-asset", "wrong-repo", "wrong-id", "wrong-unit", "wrong-tag", "wrong-version", "unsupported-schema", "missing-digest", "draft", "prerelease", "future-major", "old-client", "unsafe-asset", "unreachable", "no-release", "manifest-forbidden", "manifest-rate-limited", "manifest-server-error" };
 foreach (var scenario in cases)
 {
     var source = scenario.Contains("gitee") ? UpdateCheckSource.Gitee : UpdateCheckSource.GitHub;
@@ -44,13 +44,20 @@ foreach (var scenario in cases)
             return Response(scenario == "unreachable" ? HttpStatusCode.ServiceUnavailable : scenario == "no-release" ? HttpStatusCode.NotFound : HttpStatusCode.OK, release);
         }
         Require(url.EndsWith("/artifact-manifest.json"), "startup downloaded a business asset");
-        return Response(HttpStatusCode.OK, manifest.ToJsonString());
+        var manifestStatus = scenario switch {
+            "manifest-forbidden" => HttpStatusCode.Forbidden,
+            "manifest-rate-limited" => HttpStatusCode.TooManyRequests,
+            "manifest-server-error" => HttpStatusCode.ServiceUnavailable,
+            _ => HttpStatusCode.OK
+        };
+        return Response(manifestStatus, manifest.ToJsonString());
     });
     using var http = new HttpClient(handler);
     var result = await UpdateCheckService.CheckAsync(source, http, local);
     var expectedUpdate = scenario is "valid-github" or "valid-gitee" or "extra-assets" or "future-major";
     Require(result.HasUpdate == expectedUpdate, scenario + " admission");
-    Require(result.IsReachable == (scenario != "unreachable"), scenario + " reachability");
+    var sourceUnavailable = scenario == "unreachable" || scenario.StartsWith("manifest-", StringComparison.Ordinal);
+    Require(result.IsReachable == !sourceUnavailable, scenario + " reachability");
     Require(requests.Count <= 2, scenario + " bounded startup requests");
     if (expectedUpdate) { Require(requests.Count == 2, scenario + " manifest read"); Require(result.ReleaseUrl.EndsWith("/tag/v" + version), scenario + " release URL"); }
     Console.WriteLine("PASS " + scenario);
