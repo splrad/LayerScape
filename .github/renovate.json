@@ -37,6 +37,23 @@
       ],
       "groupName": "validated controller",
       "groupSlug": "validated-controller"
+    },
+    {
+      "matchManagers": [
+        "github-actions"
+      ],
+      "matchFileNames": [
+        ".github/workflows/channel-preflight.yml",
+        ".github/workflows/steward-release-publish.yml",
+        ".github/workflows/steward-release-channels.yml"
+      ],
+      "matchDepTypes": [
+        "uses-with"
+      ],
+      "matchPackageNames": [
+        "jdx/mise"
+      ],
+      "enabled": true
     }
   ],
   "customManagers": [

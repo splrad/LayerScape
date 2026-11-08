@@ -43,3 +43,13 @@ updates:
     open-pull-requests-limit: 5
     commit-message:
       prefix: "chore(actions)"
+  - package-ecosystem: dotnet-sdk
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: "09:40"
+      timezone: Asia/Bangkok
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "chore(sdk)"
