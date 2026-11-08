@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "repositoryAuthors": [
+    {
+      "id": 44151430,
+      "evidence": "LayerScape author explicitly confirmed as axiomoth on 2026-10-27; GitHub numeric user ID 44151430 verified via https://api.github.com/users/axiomoth."
+    }
+  ],
+  "units": [
+    {
+      "id": "layerscape",
+      "path": ".",
+      "notesPath": ".release-notes/layerscape.md",
+      "assets": [
+        {
+          "id": "deployer",
+          "name": "AFR-Deployer_v${version}.exe",
+          "mediaType": "application/vnd.microsoft.portable-executable"
+        },
+        {
+          "id": "plugins",
+          "name": "AFR-DLL_v${version}.zip",
+          "mediaType": "application/zip"
+        },
+        {
+          "id": "fonts",
+          "name": "Fonts.zip",
+          "mediaType": "application/zip"
+        }
+      ],
+      "channels": [
+        {
+          "id": "ghcr-assets",
+          "required": true,
+          "location": "ghcr.io/splrad/layerscape-assets"
+        },
+        {
+          "id": "winget",
+          "required": true,
+          "location": "SPLRAD.LayerScape.Deployer"
+        }
+      ]
+    }
+  ]
+}

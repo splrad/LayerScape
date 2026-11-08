@@ -1,0 +1,437 @@
+name: Product Release
+run-name: Build ${{ inputs.operation_key }}
+on:
+  workflow_dispatch:
+    inputs:
+      cycle_id:
+        type: string
+        required: true
+      operation_key:
+        type: string
+        required: true
+      source_sha:
+        type: string
+        required: true
+      controller_sha:
+        type: string
+        required: true
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: steward-product-release-${{ github.repository_id }}
+  queue: max
+  cancel-in-progress: false
+jobs:
+  admit:
+    runs-on: windows-2025
+    timeout-minutes: 15
+    outputs:
+      record: ${{ steps.identity.outputs.record }}
+      units: ${{ steps.identity.outputs.units }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.sha }}
+          path: product
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          repository: splrad/steward
+          ref: 115b3447bdd5414c0767f35f304c828a3fb45953
+          path: controller
+          persist-credentials: false
+      - name: Enable Git long paths
+        shell: pwsh
+        run: git config --global core.longpaths true
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: steward/release-state
+          path: state
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: jdx/mise-action@82a612c5ab8bcda7cc5db6b7e81a8e7584c3dc6e
+        env:
+          MISE_SAFE: '1'
+          MISE_NODE_COMPILE: 'false'
+        with:
+          version: 2026.10.18
+          working_directory: controller
+          install_args: --locked
+          cache: false
+          env: false
+          persist_github_token: false
+      - name: Activate trusted controller tool paths
+        working-directory: controller
+        shell: pwsh
+        env:
+          MISE_SAFE: '1'
+          MISE_LOCKED: '1'
+        run: |
+          $toolPaths = mise bin-paths
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          $toolPaths | Out-File -FilePath $env:GITHUB_PATH -Append -Encoding utf8
+      - name: Install locked controller dependencies
+        working-directory: controller
+        shell: pwsh
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Install locked native metadata reader
+        shell: pwsh
+        run: |
+          uv sync --project controller/tools/template --frozen --only-group release-inspection --no-build
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+      - name: Read canonical dispatch and source
+        id: identity
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CYCLE_ID: ${{ inputs.cycle_id }}
+          OPERATION_KEY: ${{ inputs.operation_key }}
+          SOURCE_SHA: ${{ inputs.source_sha }}
+          CONTROLLER_SHA: ${{ inputs.controller_sha }}
+        run: |
+          for ($n = 0; $n -lt 20; $n++) {
+            node controller/packages/runner/dist/index.js release-pipeline identity --cycle-id "$env:CYCLE_ID" --operation-key "$env:OPERATION_KEY" --source-sha "$env:SOURCE_SHA" --controller-sha "$env:CONTROLLER_SHA" --source-dir product --controller-dir controller --state-dir state --output "identity-$n.json"
+            if ($LASTEXITCODE -eq 0) { exit 0 }
+            if ($LASTEXITCODE -ne 75) { exit $LASTEXITCODE }
+            Start-Sleep -Seconds 30
+            git -C state fetch --no-tags origin refs/heads/steward/release-state
+            if ($LASTEXITCODE) { exit $LASTEXITCODE }
+            git -C state update-ref refs/heads/steward/release-state FETCH_HEAD
+            if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          }
+          exit 75
+  build:
+    name: build/${{ matrix.target }}/${{ matrix.unit }}
+    needs: admit
+    runs-on: windows-2025
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - unit: layerscape
+            target: windows-x64
+            assets: [ deployer, plugins, fonts ]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.sha }}
+          path: product
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          repository: splrad/steward
+          ref: 115b3447bdd5414c0767f35f304c828a3fb45953
+          path: controller
+          persist-credentials: false
+      - name: Enable Git long paths
+        shell: pwsh
+        run: git config --global core.longpaths true
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: steward/release-state
+          path: state
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: jdx/mise-action@82a612c5ab8bcda7cc5db6b7e81a8e7584c3dc6e
+        env:
+          MISE_SAFE: '1'
+          MISE_NODE_COMPILE: 'false'
+        with:
+          version: 2026.10.18
+          working_directory: controller
+          install_args: --locked
+          cache: false
+          env: false
+          persist_github_token: false
+      - name: Activate trusted controller tool paths
+        working-directory: controller
+        shell: pwsh
+        env:
+          MISE_SAFE: "1"
+          MISE_LOCKED: "1"
+        run: |
+          $toolPaths = mise bin-paths
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          $toolPaths | Add-Content -LiteralPath $env:GITHUB_PATH
+      - name: Install locked controller dependencies
+        working-directory: controller
+        shell: pwsh
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Install locked native metadata reader
+        working-directory: controller
+        shell: pwsh
+        run: |
+          uv sync --project tools/template --frozen --only-group release-inspection --no-build
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+      - name: Read build record
+        id: unit
+        shell: pwsh
+        env:
+          BUILD_RECORD: ${{ needs.admit.outputs.record }}
+          UNIT: ${{ matrix.unit }}
+        run: |
+          [IO.File]::WriteAllText((Join-Path $env:GITHUB_WORKSPACE 'record.json'), $env:BUILD_RECORD, [Text.UTF8Encoding]::new($false))
+          $record = $env:BUILD_RECORD | ConvertFrom-Json
+          $selected = @($record.units | Where-Object { $_.id -ceq $env:UNIT }).Count -eq 1
+          "selected=$($selected.ToString().ToLowerInvariant())" >> $env:GITHUB_OUTPUT
+      - name: Read existing frozen bytes
+        id: recover
+        if: steps.unit.outputs.selected == 'true'
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          UNIT: ${{ matrix.unit }}
+        run: node controller/packages/runner/dist/index.js release-pipeline recover
+          --record record.json --unit "$env:UNIT" --source-dir product
+          --controller-dir controller --state-dir state --directory
+          "$env:RUNNER_TEMP/recovered" --home "$env:RUNNER_TEMP/recover-home"
+          --output recover.json
+      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68
+        if: steps.unit.outputs.selected == 'true' && steps.recover.outputs.found !=
+          'true'
+        with:
+          global-json-file: product/global.json
+      - name: business-build
+        if: steps.unit.outputs.selected == 'true' && steps.recover.outputs.found !=
+          'true'
+        id: build
+        shell: pwsh
+        working-directory: product
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $releaseVersion = (Get-Content ./VERSION -Raw).Trim()
+          $releaseAssetsDir = Join-Path $env:RUNNER_TEMP ('layerscape-release-assets-' + [guid]::NewGuid().ToString('N'))
+          New-Item -ItemType Directory -Path $releaseAssetsDir | Out-Null
+          "assets=$releaseAssetsDir" >> $env:GITHUB_OUTPUT
+          dotnet restore tools/UpdateCheck.Tests/UpdateCheck.Tests.csproj --locked-mode
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          dotnet run --project tools/UpdateCheck.Tests/UpdateCheck.Tests.csproj --configuration Release --no-restore
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          dotnet restore CADFontAutoReplace.slnx --locked-mode
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          pwsh -NoProfile -File ./tools/Publish-ReleaseAssets.ps1 -OutputDirectory $releaseAssetsDir -RequestedVersion $releaseVersion
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          Get-ChildItem -LiteralPath $releaseAssetsDir -File | Get-FileHash -Algorithm SHA256
+      - name: business-upload
+        id: upload
+        if: steps.unit.outputs.selected == 'true' && steps.recover.outputs.found !=
+          'true'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: release-${{ github.repository_id }}-${{ matrix.unit }}-${{ matrix.target
+            }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ steps.build.outputs.assets }}/*
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 90
+      - name: Read native business result
+        if: ${{ always() && steps.recover.outcome == 'success' &&
+          steps.recover.outputs.found != 'true' }}
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          UNIT: ${{ matrix.unit }}
+          JOB_NAME: build/${{ matrix.target }}/${{ matrix.unit }}
+          ARTIFACT_ID: ${{ steps.upload.outputs.artifact-id }}
+          ARTIFACT_DIGEST: ${{ steps.upload.outputs.artifact-digest }}
+        run: |
+          $objects = @()
+          if ($env:ARTIFACT_ID -and $env:ARTIFACT_DIGEST) {
+            $objects += @{kind='artifact'; id=[long]$env:ARTIFACT_ID; digest=$env:ARTIFACT_DIGEST}
+          }
+          $json = ConvertTo-Json -InputObject $objects -Compress
+          node controller/packages/runner/dist/index.js release-pipeline result --record record.json --unit "$env:UNIT" --controller-dir controller --state-dir state --job-name "$env:JOB_NAME" --objects "$json" --output result.json
+  sign:
+    needs: [ admit, build ]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    outputs:
+      result: ${{ steps.signing.outputs.result }}
+    steps:
+      - name: Audited LayerScape signing applicability
+        id: signing
+        shell: bash
+        run: echo 'result=NOT_APPLICABLE' >> "$GITHUB_OUTPUT"
+  evidence:
+    name: evidence/${{ matrix.unit }}
+    needs: [ admit, build, sign ]
+    if: needs.sign.outputs.result == 'NOT_APPLICABLE'
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.admit.outputs.units) }}
+    uses: splrad/steward/.github/workflows/product-release.yml@115b3447bdd5414c0767f35f304c828a3fb45953
+    with:
+      record: ${{ needs.admit.outputs.record }}
+      unit: ${{ matrix.unit }}
+  freeze:
+    name: freeze/${{ matrix.unit }}
+    needs: [ admit, build, sign, evidence ]
+    runs-on: windows-2025
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.admit.outputs.units) }}
+    permissions:
+      contents: read
+      actions: read
+      id-token: write
+      attestations: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.sha }}
+          path: product
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          repository: splrad/steward
+          ref: 115b3447bdd5414c0767f35f304c828a3fb45953
+          path: controller
+          persist-credentials: false
+      - name: Enable Git long paths
+        shell: pwsh
+        run: git config --global core.longpaths true
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: steward/release-state
+          path: state
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: jdx/mise-action@82a612c5ab8bcda7cc5db6b7e81a8e7584c3dc6e
+        env:
+          MISE_SAFE: '1'
+          MISE_NODE_COMPILE: 'false'
+        with:
+          version: 2026.10.18
+          working_directory: controller
+          install_args: --locked
+          cache: false
+          env: false
+          persist_github_token: false
+      - name: Activate trusted controller tool paths
+        working-directory: controller
+        shell: pwsh
+        env:
+          MISE_SAFE: "1"
+          MISE_LOCKED: "1"
+        run: |
+          $toolPaths = mise bin-paths
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          $toolPaths | Add-Content -LiteralPath $env:GITHUB_PATH
+      - name: Install locked controller dependencies
+        working-directory: controller
+        shell: pwsh
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Install locked native metadata reader
+        working-directory: controller
+        shell: pwsh
+        run: |
+          uv sync --project tools/template --frozen --only-group release-inspection --no-build
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+      - name: Read build record
+        shell: pwsh
+        env:
+          BUILD_RECORD: ${{ needs.admit.outputs.record }}
+        run: |
+          [IO.File]::WriteAllText((Join-Path $env:GITHUB_WORKSPACE 'record.json'), $env:BUILD_RECORD, [Text.UTF8Encoding]::new($false))
+      - name: Read existing frozen bytes
+        id: recover
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          UNIT: ${{ matrix.unit }}
+        run: node controller/packages/runner/dist/index.js release-pipeline recover
+          --record record.json --unit "$env:UNIT" --source-dir product
+          --controller-dir controller --state-dir state --directory
+          "$env:RUNNER_TEMP/recovered" --home "$env:RUNNER_TEMP/recover-home"
+          --output recover.json
+      - name: Read exact verified artifact ID
+        if: steps.recover.outputs.found != 'true'
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          UNIT: ${{ matrix.unit }}
+        run: node controller/packages/runner/dist/index.js release-pipeline evidence
+          --record record.json --unit "$env:UNIT" --source-dir product
+          --controller-dir controller --state-dir state --directory
+          "$env:RUNNER_TEMP/final" --home "$env:RUNNER_TEMP/evidence-home"
+          --output evidence.json
+      - name: business-attest
+        if: steps.recover.outputs.found != 'true'
+        id: attest
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6
+        with:
+          subject-path: ${{ runner.temp }}/final/*
+          push-to-registry: false
+          create-storage-record: false
+      - name: business-verify-proof
+        if: steps.recover.outputs.found != 'true'
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SOURCE_SHA: ${{ github.sha }}
+          SOURCE_REF: ${{ github.ref }}
+          PRODUCT_REPOSITORY: ${{ github.repository }}
+        run: |
+          foreach ($file in Get-ChildItem -LiteralPath "$env:RUNNER_TEMP/final" -File) {
+            gh attestation verify $file.FullName --repo "$env:PRODUCT_REPOSITORY" --source-ref "$env:SOURCE_REF" --source-digest "$env:SOURCE_SHA" --signer-workflow "$env:PRODUCT_REPOSITORY/.github/workflows/steward-release-publish.yml" --signer-digest "$env:SOURCE_SHA"
+            if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          }
+      - name: business-proof-archive
+        if: steps.recover.outputs.found != 'true'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: proof-${{ github.repository_id }}-${{ matrix.unit }}-${{ github.sha }}-${{
+            github.run_id }}-${{ github.run_attempt }}
+          path: ${{ steps.attest.outputs.bundle-path }}
+          if-no-files-found: error
+          retention-days: 90
+      - name: business-freeze
+        id: upload
+        if: steps.recover.outputs.found != 'true'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: final-${{ github.repository_id }}-${{ matrix.unit }}-${{ github.sha }}-${{
+            github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/final/*
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 90
+      - name: Read native business result
+        if: ${{ always() && steps.recover.outcome == 'success' &&
+          steps.recover.outputs.found != 'true' }}
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          UNIT: ${{ matrix.unit }}
+          JOB_NAME: freeze/${{ matrix.unit }}
+          ARTIFACT_ID: ${{ steps.upload.outputs.artifact-id }}
+          ARTIFACT_DIGEST: ${{ steps.upload.outputs.artifact-digest }}
+        run: |
+          $objects = @()
+          if ($env:ARTIFACT_ID -and $env:ARTIFACT_DIGEST) {
+            $objects += @{kind='artifact'; id=[long]$env:ARTIFACT_ID; digest=$env:ARTIFACT_DIGEST}
+          }
+          $json = ConvertTo-Json -InputObject $objects -Compress
+          node controller/packages/runner/dist/index.js release-pipeline result --record record.json --unit "$env:UNIT" --controller-dir controller --state-dir state --job-name "$env:JOB_NAME" --objects "$json" --output result.json
+
+  complete:
+    needs: [ admit, build, sign, evidence, freeze ]
+    if: always()
+    runs-on: windows-2025
+    timeout-minutes: 3
+    steps:
+      - name: Require every product phase to succeed
+        shell: pwsh
+        env:
+          JOB_RESULTS: ${{ toJSON(needs) }}
+        run: |
+          $results = $env:JOB_RESULTS | ConvertFrom-Json
+          foreach ($job in $results.PSObject.Properties) {
+            if ($job.Value.result -cne 'success') { throw "Product phase $($job.Name): $($job.Value.result)" }
+          }
