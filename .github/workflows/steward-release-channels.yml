@@ -268,7 +268,7 @@ jobs:
           WINGET_FORK_REPOSITORY: ${{ vars.WINGET_FORK_REPOSITORY }}
           GHCR_OWNER_PACKAGE_INVENTORY: ${{ vars.GHCR_OWNER_PACKAGE_INVENTORY }}
         run: |
-          
+
           $ErrorActionPreference='Stop'
           $selection=Get-Content -LiteralPath selection.json -Raw | ConvertFrom-Json
           $items=@()
@@ -421,7 +421,7 @@ jobs:
           WINGET_FORK_REPOSITORY: ${{ vars.WINGET_FORK_REPOSITORY }}
           GHCR_OWNER_PACKAGE_INVENTORY: ${{ vars.GHCR_OWNER_PACKAGE_INVENTORY }}
         run: |
-          
+
           $ErrorActionPreference='Stop'
           $selection=Get-Content -LiteralPath selection.json -Raw | ConvertFrom-Json
           $items=@()
@@ -594,7 +594,7 @@ jobs:
           GHCR_TOKEN: ${{ github.token }}
           GHCR_OWNER_PACKAGE_INVENTORY: ${{ vars.GHCR_OWNER_PACKAGE_INVENTORY }}
         run: |
-          
+
           $ErrorActionPreference='Stop'
           $manifest=Get-Content -LiteralPath manifest.json -Raw|ConvertFrom-Json
           $version=$manifest.version
@@ -650,7 +650,7 @@ jobs:
           UNIT: ${{ matrix.unitId }}
           CHANNEL: ${{ matrix.channelId }}
         run: |
-          
+
           $selection=Get-Content -LiteralPath selection.json -Raw|ConvertFrom-Json
           $target=$selection.targets|Where-Object {$_.unitId -eq $env:UNIT -and $_.channelId -eq $env:CHANNEL}
           $native=Get-Content -LiteralPath native.json -Raw|ConvertFrom-Json
@@ -781,359 +781,141 @@ jobs:
           WINGETCREATE_EXE: ${{ steps.winget-tool.outputs.exe }}
           GH_TOKEN: ${{ secrets.WINGET_FORK_TOKEN }}
           WINGET_FORK_REPOSITORY: ${{ vars.WINGET_FORK_REPOSITORY }}
-        run: "$ErrorActionPreference='Stop'
-
+        run: |
+          $ErrorActionPreference='Stop'
           $manifest=Get-Content -LiteralPath manifest.json -Raw|ConvertFrom-Json
-
           $version=$manifest.version
-
-          if ($version -notmatch
-          '^[0-9]+\\.[0-9]+\\.[0-9]+(?:-[A-Za-z0-9.-]+)?$') { throw
-          'WINGET_VERSION' }
-
+          if ($version -notmatch '^[0-9]+\.[0-9]+\.[0-9]+(?:-[A-Za-z0-9.-]+)?$') { throw 'WINGET_VERSION' }
           $installer=@($manifest.artifacts|Where-Object {$_.id -eq 'deployer'})
-
           if ($installer.Count -ne 1) { throw 'WINGET_INSTALLER' }
-
-          $url=\"https://github.com/splrad/LayerScape/releases/download/$($mani\
-          fest.tag)/$($installer[0].path)\"
-
+          $url="https://github.com/splrad/LayerScape/releases/download/$($manifest.tag)/$($installer[0].path)"
           $upstream=gh api repos/microsoft/winget-pkgs|ConvertFrom-Json
-
-          if ($LASTEXITCODE -or $upstream.full_name -ne 'microsoft/winget-pkgs')
-          { throw 'WINGET_UPSTREAM_IDENTITY' }
-
-          if ($env:WINGET_FORK_REPOSITORY -cne 'axiomoth/winget-pkgs') { throw
-          'WINGET_FIXED_FORK_REQUIRED' }
-
-          $fork=gh api \"repos/$env:WINGET_FORK_REPOSITORY\"|ConvertFrom-Json
-
-          if ($LASTEXITCODE -or $fork.full_name -cne 'axiomoth/winget-pkgs' -or
-          $fork.private -or $fork.owner.type -cne 'User' -or -not $fork.fork -or
-          $fork.parent.id -ne $upstream.id) { throw 'WINGET_FORK_IDENTITY' }
-
-          $branch=\"steward/SPLRAD.LayerScape.Deployer/$version\"
-
-          $query='repos/microsoft/winget-pkgs/pulls?state=all&head='+[Uri]::Esc\
-          apeDataString(\"$($fork.owner.login):$branch\")+'&base='+[Uri]::Escap\
-          eDataString($upstream.default_branch)+'&per_page=100'
-
+          if ($LASTEXITCODE -or $upstream.full_name -ne 'microsoft/winget-pkgs') { throw 'WINGET_UPSTREAM_IDENTITY' }
+          if ($env:WINGET_FORK_REPOSITORY -cne 'axiomoth/winget-pkgs') { throw 'WINGET_FIXED_FORK_REQUIRED' }
+          $fork=gh api "repos/$env:WINGET_FORK_REPOSITORY"|ConvertFrom-Json
+          if ($LASTEXITCODE -or $fork.full_name -cne 'axiomoth/winget-pkgs' -or $fork.private -or $fork.owner.type -cne 'User' -or -not $fork.fork -or $fork.parent.id -ne $upstream.id) { throw 'WINGET_FORK_IDENTITY' }
+          $branch="steward/SPLRAD.LayerScape.Deployer/$version"
+          $query='repos/microsoft/winget-pkgs/pulls?state=all&head='+[Uri]::EscapeDataString("$($fork.owner.login):$branch")+'&base='+[Uri]::EscapeDataString($upstream.default_branch)+'&per_page=100'
           function Get-VersionPr {
-
-          \  $pages=gh api --paginate --slurp $query
-
-          \  if ($LASTEXITCODE) { throw 'WINGET_PR_READ_UNKNOWN' }
-
-          \  $prs=@(($pages|ConvertFrom-Json)|ForEach-Object {$_}|Where-Object
-          {$_.head.repo.id -eq $fork.id -and $_.head.ref -eq $branch -and
-          $_.base.repo.id -eq $upstream.id -and $_.base.ref -eq
-          $upstream.default_branch})
-
-          \  if ($prs.Count -gt 1) { throw 'WINGET_DUPLICATE_PR' }
-
-          \  if ($prs.Count -eq 0) { return $null }
-
-          \  $pr=gh api
-          \"repos/microsoft/winget-pkgs/pulls/$($prs[0].number)\"|ConvertFrom-J\
-          son
-
-          \  if ($LASTEXITCODE) { throw 'WINGET_PR_READ_UNKNOWN' };return $pr
-
+            $pages=gh api --paginate --slurp $query
+            if ($LASTEXITCODE) { throw 'WINGET_PR_READ_UNKNOWN' }
+            $prs=@(($pages|ConvertFrom-Json)|ForEach-Object {$_}|Where-Object {$_.head.repo.id -eq $fork.id -and $_.head.ref -eq $branch -and $_.base.repo.id -eq $upstream.id -and $_.base.ref -eq $upstream.default_branch})
+            if ($prs.Count -gt 1) { throw 'WINGET_DUPLICATE_PR' }
+            if ($prs.Count -eq 0) { return $null }
+            $pr=gh api "repos/microsoft/winget-pkgs/pulls/$($prs[0].number)"|ConvertFrom-Json
+            if ($LASTEXITCODE) { throw 'WINGET_PR_READ_UNKNOWN' };return $pr
           }
-
           $pr=Get-VersionPr
-
           if ($env:MODE -eq 'submit' -and $null -eq $pr) {
-
-          \  $packagePath='manifests/s/SPLRAD/LayerScape/Deployer'
-
-          \  $package=gh api --include
-          \"repos/microsoft/winget-pkgs/contents/$packagePath\" 2>$null
-
-          \  $status=[regex]::Match(($package -join \"`n\"),'HTTP/\\S+
-          (\\d+)').Groups[1].Value
-
-          \  if ($status -eq '200') {
-
-          \    & $env:WINGETCREATE_EXE update SPLRAD.LayerScape.Deployer
-          --version $version --urls \"$url|x64\" --out generated --format yaml
-
-          \    if ($LASTEXITCODE) { throw 'WINGET_CREATE_UPDATE' }
-
-          \    $directory=Join-Path $pwd \"generated/$packagePath/$version\"
-
-          \  } elseif ($status -eq '404') {
-
-          \    # Public upstream repository read succeeded; this exact native
-          path does not exist.
-
-          \    $directory=Join-Path $pwd 'generated-first';New-Item -ItemType
-          Directory -Path $directory|Out-Null
-
-          \    $template=Get-Content -LiteralPath
-          product/.github/winget/SPLRAD.LayerScape.Deployer.yaml.mustache -Raw
-
-          \    $content=$template.Replace('${version}',$version).Replace('${ins\
-          tallerUrl}',$url).Replace('${installerSha256}',$installer[0].sha256.T\
-          oUpperInvariant())
-
-          \    [IO.File]::WriteAllText((Join-Path $directory
-          'SPLRAD.LayerScape.Deployer.yaml'),$content,[Text.UTF8Encoding]::new(\
-          $false))
-
-          \  } else { throw 'WINGET_PACKAGE_READ_UNKNOWN' }
-
-          \  winget validate --manifest $directory --disable-interactivity
-
-          \  if ($LASTEXITCODE) { throw 'WINGET_VALIDATION' }
-
-          \  $files=@(Get-ChildItem -LiteralPath $directory -File)
-
-          \  if ($files.Count -lt 1 -or ($files|Where-Object {$_.Extension -ne
-          '.yaml'})) { throw 'WINGET_MANIFEST_SET' }
-
-          \  $entries=@()
-
-          \  foreach($file in $files) {
-
-          \    $text=[IO.File]::ReadAllText($file.FullName)
-
-          \    if ($text -notmatch [regex]::Escape($version) -or $text -notmatch
-          'SPLRAD.LayerScape.Deployer') { throw 'WINGET_MANIFEST_VERSION' }
-
-          \    if ($text -match 'InstallerUrl:' -and ($text -notmatch
-          [regex]::Escape($url) -or $text -notmatch $installer[0].sha256)) {
-          throw 'WINGET_MANIFEST_BYTES' }
-
-          \    $entries+=@{path=\"$packagePath/$version/$($file.Name)\";mode='1\
-          00644';type='blob';content=$text}
-
-          \  }
-
-          \  $ref=gh api --include
-          \"repos/$env:WINGET_FORK_REPOSITORY/git/ref/heads/$branch\" 2>$null
-
-          \  $refStatus=[regex]::Match(($ref -join \"`n\"),'HTTP/\\S+
-          (\\d+)').Groups[1].Value
-
-          \  if ($refStatus -eq '404') {
-
-          \    $base=gh api
-          \"repos/microsoft/winget-pkgs/commits/$($upstream.default_branch)\"|C\
-          onvertFrom-Json
-
-          \    if ($LASTEXITCODE) { throw 'WINGET_BASE_READ' }
-
-          \    @{base_tree=$base.commit.tree.sha;tree=$entries}|ConvertTo-Json
-          -Depth 15|Set-Content -LiteralPath tree.json -Encoding utf8
-
-          \    $tree=gh api --method POST
-          \"repos/$env:WINGET_FORK_REPOSITORY/git/trees\" --input
-          tree.json|ConvertFrom-Json
-
-          \    if ($LASTEXITCODE) { throw 'WINGET_TREE_WRITE' }
-
-          \    @{message=\"Add SPLRAD.LayerScape.Deployer
-          $version\";tree=$tree.sha;parents=@($base.sha)}|ConvertTo-Json|Set-Co\
-          ntent -LiteralPath commit.json -Encoding utf8
-
-          \    $commit=gh api --method POST
-          \"repos/$env:WINGET_FORK_REPOSITORY/git/commits\" --input
-          commit.json|ConvertFrom-Json
-
-          \    if ($LASTEXITCODE) { throw 'WINGET_COMMIT_WRITE' }
-
-          \    @{ref=\"refs/heads/$branch\";sha=$commit.sha}|ConvertTo-Json|Set\
-          -Content -LiteralPath ref.json -Encoding utf8
-
-          \    gh api --method POST
-          \"repos/$env:WINGET_FORK_REPOSITORY/git/refs\" --input
-          ref.json|Out-Null
-
-          \    # A lost creation response or 422 is reconciled by reading each
-          exact intended file below.
-
-          \  } elseif ($refStatus -ne '200') { throw 'WINGET_FORK_READ_UNKNOWN'
+            $packagePath='manifests/s/SPLRAD/LayerScape/Deployer'
+            $package=gh api --include "repos/microsoft/winget-pkgs/contents/$packagePath" 2>$null
+            $status=[regex]::Match(($package -join "`n"),'HTTP/\S+ (\d+)').Groups[1].Value
+            if ($status -eq '200') {
+              & $env:WINGETCREATE_EXE update SPLRAD.LayerScape.Deployer --version $version --urls "$url|x64" --out generated --format yaml
+              if ($LASTEXITCODE) { throw 'WINGET_CREATE_UPDATE' }
+              $directory=Join-Path $pwd "generated/$packagePath/$version"
+            } elseif ($status -eq '404') {
+              # Public upstream repository read succeeded; this exact native path does not exist.
+              $directory=Join-Path $pwd 'generated-first';New-Item -ItemType Directory -Path $directory|Out-Null
+              $template=Get-Content -LiteralPath product/.github/winget/SPLRAD.LayerScape.Deployer.yaml.mustache -Raw
+              $content=$template.Replace('${version}',$version).Replace('${installerUrl}',$url).Replace('${installerSha256}',$installer[0].sha256.ToUpperInvariant())
+              [IO.File]::WriteAllText((Join-Path $directory 'SPLRAD.LayerScape.Deployer.yaml'),$content,[Text.UTF8Encoding]::new($false))
+            } else { throw 'WINGET_PACKAGE_READ_UNKNOWN' }
+            winget validate --manifest $directory --disable-interactivity
+            if ($LASTEXITCODE) { throw 'WINGET_VALIDATION' }
+            $files=@(Get-ChildItem -LiteralPath $directory -File)
+            if ($files.Count -lt 1 -or ($files|Where-Object {$_.Extension -ne '.yaml'})) { throw 'WINGET_MANIFEST_SET' }
+            $entries=@()
+            foreach($file in $files) {
+              $text=[IO.File]::ReadAllText($file.FullName)
+              if ($text -notmatch [regex]::Escape($version) -or $text -notmatch 'SPLRAD.LayerScape.Deployer') { throw 'WINGET_MANIFEST_VERSION' }
+              if ($text -match 'InstallerUrl:' -and ($text -notmatch [regex]::Escape($url) -or $text -notmatch $installer[0].sha256)) { throw 'WINGET_MANIFEST_BYTES' }
+              $entries+=@{path="$packagePath/$version/$($file.Name)";mode='100644';type='blob';content=$text}
+            }
+            $ref=gh api --include "repos/$env:WINGET_FORK_REPOSITORY/git/ref/heads/$branch" 2>$null
+            $refStatus=[regex]::Match(($ref -join "`n"),'HTTP/\S+ (\d+)').Groups[1].Value
+            if ($refStatus -eq '404') {
+              $base=gh api "repos/microsoft/winget-pkgs/commits/$($upstream.default_branch)"|ConvertFrom-Json
+              if ($LASTEXITCODE) { throw 'WINGET_BASE_READ' }
+              @{base_tree=$base.commit.tree.sha;tree=$entries}|ConvertTo-Json -Depth 15|Set-Content -LiteralPath tree.json -Encoding utf8
+              $tree=gh api --method POST "repos/$env:WINGET_FORK_REPOSITORY/git/trees" --input tree.json|ConvertFrom-Json
+              if ($LASTEXITCODE) { throw 'WINGET_TREE_WRITE' }
+              @{message="Add SPLRAD.LayerScape.Deployer $version";tree=$tree.sha;parents=@($base.sha)}|ConvertTo-Json|Set-Content -LiteralPath commit.json -Encoding utf8
+              $commit=gh api --method POST "repos/$env:WINGET_FORK_REPOSITORY/git/commits" --input commit.json|ConvertFrom-Json
+              if ($LASTEXITCODE) { throw 'WINGET_COMMIT_WRITE' }
+              @{ref="refs/heads/$branch";sha=$commit.sha}|ConvertTo-Json|Set-Content -LiteralPath ref.json -Encoding utf8
+              gh api --method POST "repos/$env:WINGET_FORK_REPOSITORY/git/refs" --input ref.json|Out-Null
+              # A lost creation response or 422 is reconciled by reading each exact intended file below.
+            } elseif ($refStatus -ne '200') { throw 'WINGET_FORK_READ_UNKNOWN' }
+            foreach($entry in $entries) {
+              $actual=gh api "repos/$env:WINGET_FORK_REPOSITORY/contents/$($entry.path)?ref=$([Uri]::EscapeDataString($branch))"|ConvertFrom-Json
+              if ($LASTEXITCODE -or $actual.encoding -ne 'base64' -or [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($actual.content)) -cne $entry.content) { throw 'WINGET_FORK_CONTENT_CONFLICT' }
+            }
+            # Query again before POST; repeated responses never authorize a second version PR.
+            $pr=Get-VersionPr
+            if ($null -eq $pr) {
+              @{title="New version: SPLRAD.LayerScape.Deployer $version";head="$($fork.owner.login):$branch";base=$upstream.default_branch;body="Release: https://github.com/splrad/LayerScape/releases/tag/$($manifest.tag)"}|ConvertTo-Json|Set-Content -LiteralPath pr.json -Encoding utf8
+              gh api --method POST repos/microsoft/winget-pkgs/pulls --input pr.json|Out-Null
+              $pr=Get-VersionPr
+              if ($null -eq $pr) { throw 'WINGET_SUBMISSION_UNCONFIRMED' }
+            }
           }
-
-          \  foreach($entry in $entries) {
-
-          \    $actual=gh api
-          \"repos/$env:WINGET_FORK_REPOSITORY/contents/$($entry.path)?ref=$([Ur\
-          i]::EscapeDataString($branch))\"|ConvertFrom-Json
-
-          \    if ($LASTEXITCODE -or $actual.encoding -ne 'base64' -or
-          [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($actual.c\
-          ontent)) -cne $entry.content) { throw 'WINGET_FORK_CONTENT_CONFLICT' }
-
-          \  }
-
-          \  # Query again before POST; repeated responses never authorize a
-          second version PR.
-
-          \  $pr=Get-VersionPr
-
-          \  if ($null -eq $pr) {
-
-          \    @{title=\"New version: SPLRAD.LayerScape.Deployer
-          $version\";head=\"$($fork.owner.login):$branch\";base=$upstream.defau\
-          lt_branch;body=\"Release:
-          https://github.com/splrad/LayerScape/releases/tag/$($manifest.tag)\"}\
-          |ConvertTo-Json|Set-Content -LiteralPath pr.json -Encoding utf8
-
-          \    gh api --method POST repos/microsoft/winget-pkgs/pulls --input
-          pr.json|Out-Null
-
-          \    $pr=Get-VersionPr
-
-          \    if ($null -eq $pr) { throw 'WINGET_SUBMISSION_UNCONFIRMED' }
-
-          \  }
-
-          }
-
-          if ($null -eq $pr -or ($pr.state -eq 'closed' -and -not $pr.merged)) {
-          throw 'WINGET_REJECTED_OR_MISSING' }
-
-          # Existing PRs must still describe these exact formal bytes, including
-          after a lost POST response.
-
-          $prFiles=gh api --paginate --slurp
-          \"repos/microsoft/winget-pkgs/pulls/$($pr.number)/files?per_page=100\"
-          | ConvertFrom-Json
-
+          if ($null -eq $pr -or ($pr.state -eq 'closed' -and -not $pr.merged)) { throw 'WINGET_REJECTED_OR_MISSING' }
+          # Existing PRs must still describe these exact formal bytes, including after a lost POST response.
+          $prFiles=gh api --paginate --slurp "repos/microsoft/winget-pkgs/pulls/$($pr.number)/files?per_page=100" | ConvertFrom-Json
           if ($LASTEXITCODE) { throw 'WINGET_PR_FILES_UNKNOWN' }
-
           $prFiles=@($prFiles|ForEach-Object {$_})
-
-          $prefix=\"manifests/s/SPLRAD/LayerScape/Deployer/$version/\"
-
-          if (-not $prFiles.Count -or @($prFiles|Where-Object {$_.filename
-          -notlike \"$prefix*.yaml\" -or
-          $_.filename.Substring($prefix.Length).Contains('/') -or $_.status -eq
-          'removed'}).Count) { throw 'WINGET_PR_SCOPE_CONFLICT' }
-
-          $checkDirectory=Join-Path $pwd 'verified-pr';New-Item -ItemType
-          Directory -Path $checkDirectory|Out-Null
-
+          $prefix="manifests/s/SPLRAD/LayerScape/Deployer/$version/"
+          if (-not $prFiles.Count -or @($prFiles|Where-Object {$_.filename -notlike "$prefix*.yaml" -or $_.filename.Substring($prefix.Length).Contains('/') -or $_.status -eq 'removed'}).Count) { throw 'WINGET_PR_SCOPE_CONFLICT' }
+          $checkDirectory=Join-Path $pwd 'verified-pr';New-Item -ItemType Directory -Path $checkDirectory|Out-Null
           $urls=@();$hashes=@()
-
           foreach($file in $prFiles) {
-
-          \  $actual=gh api
-          \"repos/$env:WINGET_FORK_REPOSITORY/contents/$($file.filename)?ref=$(\
-          $pr.head.sha)\"|ConvertFrom-Json
-
-          \  if ($LASTEXITCODE -or $actual.encoding -ne 'base64') { throw
-          'WINGET_PR_CONTENT_UNKNOWN' }
-
-          \ 
-          $content=[Text.Encoding]::UTF8.GetString([Convert]::FromBase64String(\
-          $actual.content))
-
-          \  [IO.File]::WriteAllText((Join-Path $checkDirectory
-          ([IO.Path]::GetFileName($file.filename))),$content,[Text.UTF8Encoding\
-          ]::new($false))
-
-          \ 
-          $urls+=@([regex]::Matches($content,'(?m)^\\s*InstallerUrl:\\s*([^\\r\
-          \\n]+?)\\s*$')|ForEach-Object {$_.Groups[1].Value.Trim('\"',\"'\")})
-
-          \ 
-          $hashes+=@([regex]::Matches($content,'(?m)^\\s*InstallerSha256:\\s*([\
-          A-Fa-f0-9]{64})\\s*$')|ForEach-Object {$_.Groups[1].Value})
-
+            $actual=gh api "repos/$env:WINGET_FORK_REPOSITORY/contents/$($file.filename)?ref=$($pr.head.sha)"|ConvertFrom-Json
+            if ($LASTEXITCODE -or $actual.encoding -ne 'base64') { throw 'WINGET_PR_CONTENT_UNKNOWN' }
+            $content=[Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($actual.content))
+            [IO.File]::WriteAllText((Join-Path $checkDirectory ([IO.Path]::GetFileName($file.filename))),$content,[Text.UTF8Encoding]::new($false))
+            $urls+=@([regex]::Matches($content,'(?m)^\s*InstallerUrl:\s*([^\r\n]+?)\s*$')|ForEach-Object {$_.Groups[1].Value.Trim('"',"'")})
+            $hashes+=@([regex]::Matches($content,'(?m)^\s*InstallerSha256:\s*([A-Fa-f0-9]{64})\s*$')|ForEach-Object {$_.Groups[1].Value})
           }
-
-          if ($urls.Count -ne 1 -or $hashes.Count -ne 1 -or $urls[0] -cne $url
-          -or $hashes[0] -ine $installer[0].sha256) { throw
-          'WINGET_PR_BYTES_CONFLICT' }
-
+          if ($urls.Count -ne 1 -or $hashes.Count -ne 1 -or $urls[0] -cne $url -or $hashes[0] -ine $installer[0].sha256) { throw 'WINGET_PR_BYTES_CONFLICT' }
           winget validate --manifest $checkDirectory --disable-interactivity
-
           if ($LASTEXITCODE) { throw 'WINGET_PR_VALIDATION' }
-
           $consumed=$false;$indexed=$false
-
           if ($env:MODE -eq 'verify') {
-
-          \  if (-not $pr.merged) { throw 'DEPENDENCY_NOT_READY' }
-
-          \  winget source update --name winget --disable-interactivity
-
-          \  if ($LASTEXITCODE) { throw 'WINGET_INDEX_UNKNOWN' }
-
-          \  winget show --id SPLRAD.LayerScape.Deployer --exact --version
-          $version --source winget --accept-source-agreements
-          --disable-interactivity
-
-          \  if ($LASTEXITCODE) { throw 'DEPENDENCY_NOT_READY' }
-
-          \  $indexed=$true
-
-          \  foreach ($selectionMode in @('exact','default')) {
-
-          \    $arguments=@('install','--id','SPLRAD.LayerScape.Deployer','--ex\
-          act','--source','winget','--scope','user','--accept-package-agreement\
-          s','--accept-source-agreements','--disable-interactivity')
-
-          \    if ($selectionMode -eq 'exact') {
-          $arguments+=@('--version',$version) }
-
-          \    else {
-
-          \      $defaultShow=winget show --id SPLRAD.LayerScape.Deployer
-          --exact --source winget --accept-source-agreements
-          --disable-interactivity
-
-          \      $defaultShow | Write-Output
-
-          \      if ($LASTEXITCODE -or ($defaultShow -join
-          [Environment]::NewLine) -notmatch
-          ('(?m)^Version:\\s*'+[Regex]::Escape($version)+'\\s*$')) { throw
-          'WINGET_DEFAULT_VERSION' }
-
-          \    }
-
-          \    winget @arguments
-
-          \    if ($LASTEXITCODE) { throw 'WINGET_INSTALL_FAILED' }
-
-          \    try {
-
-          \      $installed=Get-Command layerscape-deployer.exe -ErrorAction
-          Stop
-
-          \      if ((Get-FileHash -LiteralPath $installed.Source -Algorithm
-          SHA256).Hash.ToLowerInvariant() -ne $installer[0].sha256) { throw
-          'WINGET_INSTALLED_BYTES' }
-
-          \    } finally {
-
-          \      winget uninstall --id SPLRAD.LayerScape.Deployer --exact
-          --source winget --disable-interactivity
-
-          \      if ($LASTEXITCODE) { throw 'WINGET_UNINSTALL_FAILED' }
-
-          \    }
-
-          \  }
-
-          \  $consumed=$true
-
+            if (-not $pr.merged) { throw 'DEPENDENCY_NOT_READY' }
+            winget source update --name winget --disable-interactivity
+            if ($LASTEXITCODE) { throw 'WINGET_INDEX_UNKNOWN' }
+            winget show --id SPLRAD.LayerScape.Deployer --exact --version $version --source winget --accept-source-agreements --disable-interactivity
+            if ($LASTEXITCODE) { throw 'DEPENDENCY_NOT_READY' }
+            $indexed=$true
+            foreach ($selectionMode in @('exact','default')) {
+              $arguments=@('install','--id','SPLRAD.LayerScape.Deployer','--exact','--source','winget','--scope','user','--accept-package-agreements','--accept-source-agreements','--disable-interactivity')
+              if ($selectionMode -eq 'exact') { $arguments+=@('--version',$version) }
+              else {
+                $defaultShow=winget show --id SPLRAD.LayerScape.Deployer --exact --source winget --accept-source-agreements --disable-interactivity
+                $defaultShow | Write-Output
+                if ($LASTEXITCODE -or ($defaultShow -join [Environment]::NewLine) -notmatch ('(?m)^Version:\s*'+[Regex]::Escape($version)+'\s*$')) { throw 'WINGET_DEFAULT_VERSION' }
+              }
+              winget @arguments
+              if ($LASTEXITCODE) { throw 'WINGET_INSTALL_FAILED' }
+              try {
+                $installed=Get-Command layerscape-deployer.exe -ErrorAction Stop
+                if ((Get-FileHash -LiteralPath $installed.Source -Algorithm SHA256).Hash.ToLowerInvariant() -ne $installer[0].sha256) { throw 'WINGET_INSTALLED_BYTES' }
+              } finally {
+                winget uninstall --id SPLRAD.LayerScape.Deployer --exact --source winget --disable-interactivity
+                if ($LASTEXITCODE) { throw 'WINGET_UNINSTALL_FAILED' }
+              }
+            }
+            $consumed=$true
           }
-
-          @{id=[string]$pr.number;accepted=[bool]$pr.merged;indexed=$indexed;co\
-          nsumed=$consumed;observedAt=[DateTime]::UtcNow.ToString('o')}|Convert\
-          To-Json -Compress|Set-Content -LiteralPath native.json -Encoding
-          utf8\r\n"
+          @{id=[string]$pr.number;accepted=[bool]$pr.merged;indexed=$indexed;consumed=$consumed;observedAt=[DateTime]::UtcNow.ToString('o')}|ConvertTo-Json -Compress|Set-Content -LiteralPath native.json -Encoding utf8
       - name: Capture native result
         shell: pwsh
         env:
           UNIT: ${{ matrix.unitId }}
           CHANNEL: ${{ matrix.channelId }}
         run: |
-          
+
           $selection=Get-Content -LiteralPath selection.json -Raw|ConvertFrom-Json
           $target=$selection.targets|Where-Object {$_.unitId -eq $env:UNIT -and $_.channelId -eq $env:CHANNEL}
           $native=Get-Content -LiteralPath native.json -Raw|ConvertFrom-Json
@@ -1252,7 +1034,7 @@ jobs:
         env:
           MODE: verify
         run: |
-          
+
           $ErrorActionPreference='Stop'
           $manifest=Get-Content -LiteralPath manifest.json -Raw|ConvertFrom-Json
           $version=$manifest.version
@@ -1308,7 +1090,7 @@ jobs:
           UNIT: ${{ matrix.unitId }}
           CHANNEL: ${{ matrix.channelId }}
         run: |
-          
+
           $selection=Get-Content -LiteralPath selection.json -Raw|ConvertFrom-Json
           $target=$selection.targets|Where-Object {$_.unitId -eq $env:UNIT -and $_.channelId -eq $env:CHANNEL}
           $native=Get-Content -LiteralPath native.json -Raw|ConvertFrom-Json
@@ -1436,359 +1218,141 @@ jobs:
           WINGETCREATE_EXE: ${{ steps.winget-tool.outputs.exe }}
           GH_TOKEN: ${{ github.token }}
           WINGET_FORK_REPOSITORY: ${{ vars.WINGET_FORK_REPOSITORY }}
-        run: "$ErrorActionPreference='Stop'
-
+        run: |
+          $ErrorActionPreference='Stop'
           $manifest=Get-Content -LiteralPath manifest.json -Raw|ConvertFrom-Json
-
           $version=$manifest.version
-
-          if ($version -notmatch
-          '^[0-9]+\\.[0-9]+\\.[0-9]+(?:-[A-Za-z0-9.-]+)?$') { throw
-          'WINGET_VERSION' }
-
+          if ($version -notmatch '^[0-9]+\.[0-9]+\.[0-9]+(?:-[A-Za-z0-9.-]+)?$') { throw 'WINGET_VERSION' }
           $installer=@($manifest.artifacts|Where-Object {$_.id -eq 'deployer'})
-
           if ($installer.Count -ne 1) { throw 'WINGET_INSTALLER' }
-
-          $url=\"https://github.com/splrad/LayerScape/releases/download/$($mani\
-          fest.tag)/$($installer[0].path)\"
-
+          $url="https://github.com/splrad/LayerScape/releases/download/$($manifest.tag)/$($installer[0].path)"
           $upstream=gh api repos/microsoft/winget-pkgs|ConvertFrom-Json
-
-          if ($LASTEXITCODE -or $upstream.full_name -ne 'microsoft/winget-pkgs')
-          { throw 'WINGET_UPSTREAM_IDENTITY' }
-
-          if ($env:WINGET_FORK_REPOSITORY -cne 'axiomoth/winget-pkgs') { throw
-          'WINGET_FIXED_FORK_REQUIRED' }
-
-          $fork=gh api \"repos/$env:WINGET_FORK_REPOSITORY\"|ConvertFrom-Json
-
-          if ($LASTEXITCODE -or $fork.full_name -cne 'axiomoth/winget-pkgs' -or
-          $fork.private -or $fork.owner.type -cne 'User' -or -not $fork.fork -or
-          $fork.parent.id -ne $upstream.id) { throw 'WINGET_FORK_IDENTITY' }
-
-          $branch=\"steward/SPLRAD.LayerScape.Deployer/$version\"
-
-          $query='repos/microsoft/winget-pkgs/pulls?state=all&head='+[Uri]::Esc\
-          apeDataString(\"$($fork.owner.login):$branch\")+'&base='+[Uri]::Escap\
-          eDataString($upstream.default_branch)+'&per_page=100'
-
+          if ($LASTEXITCODE -or $upstream.full_name -ne 'microsoft/winget-pkgs') { throw 'WINGET_UPSTREAM_IDENTITY' }
+          if ($env:WINGET_FORK_REPOSITORY -cne 'axiomoth/winget-pkgs') { throw 'WINGET_FIXED_FORK_REQUIRED' }
+          $fork=gh api "repos/$env:WINGET_FORK_REPOSITORY"|ConvertFrom-Json
+          if ($LASTEXITCODE -or $fork.full_name -cne 'axiomoth/winget-pkgs' -or $fork.private -or $fork.owner.type -cne 'User' -or -not $fork.fork -or $fork.parent.id -ne $upstream.id) { throw 'WINGET_FORK_IDENTITY' }
+          $branch="steward/SPLRAD.LayerScape.Deployer/$version"
+          $query='repos/microsoft/winget-pkgs/pulls?state=all&head='+[Uri]::EscapeDataString("$($fork.owner.login):$branch")+'&base='+[Uri]::EscapeDataString($upstream.default_branch)+'&per_page=100'
           function Get-VersionPr {
-
-          \  $pages=gh api --paginate --slurp $query
-
-          \  if ($LASTEXITCODE) { throw 'WINGET_PR_READ_UNKNOWN' }
-
-          \  $prs=@(($pages|ConvertFrom-Json)|ForEach-Object {$_}|Where-Object
-          {$_.head.repo.id -eq $fork.id -and $_.head.ref -eq $branch -and
-          $_.base.repo.id -eq $upstream.id -and $_.base.ref -eq
-          $upstream.default_branch})
-
-          \  if ($prs.Count -gt 1) { throw 'WINGET_DUPLICATE_PR' }
-
-          \  if ($prs.Count -eq 0) { return $null }
-
-          \  $pr=gh api
-          \"repos/microsoft/winget-pkgs/pulls/$($prs[0].number)\"|ConvertFrom-J\
-          son
-
-          \  if ($LASTEXITCODE) { throw 'WINGET_PR_READ_UNKNOWN' };return $pr
-
+            $pages=gh api --paginate --slurp $query
+            if ($LASTEXITCODE) { throw 'WINGET_PR_READ_UNKNOWN' }
+            $prs=@(($pages|ConvertFrom-Json)|ForEach-Object {$_}|Where-Object {$_.head.repo.id -eq $fork.id -and $_.head.ref -eq $branch -and $_.base.repo.id -eq $upstream.id -and $_.base.ref -eq $upstream.default_branch})
+            if ($prs.Count -gt 1) { throw 'WINGET_DUPLICATE_PR' }
+            if ($prs.Count -eq 0) { return $null }
+            $pr=gh api "repos/microsoft/winget-pkgs/pulls/$($prs[0].number)"|ConvertFrom-Json
+            if ($LASTEXITCODE) { throw 'WINGET_PR_READ_UNKNOWN' };return $pr
           }
-
           $pr=Get-VersionPr
-
           if ($env:MODE -eq 'submit' -and $null -eq $pr) {
-
-          \  $packagePath='manifests/s/SPLRAD/LayerScape/Deployer'
-
-          \  $package=gh api --include
-          \"repos/microsoft/winget-pkgs/contents/$packagePath\" 2>$null
-
-          \  $status=[regex]::Match(($package -join \"`n\"),'HTTP/\\S+
-          (\\d+)').Groups[1].Value
-
-          \  if ($status -eq '200') {
-
-          \    & $env:WINGETCREATE_EXE update SPLRAD.LayerScape.Deployer
-          --version $version --urls \"$url|x64\" --out generated --format yaml
-
-          \    if ($LASTEXITCODE) { throw 'WINGET_CREATE_UPDATE' }
-
-          \    $directory=Join-Path $pwd \"generated/$packagePath/$version\"
-
-          \  } elseif ($status -eq '404') {
-
-          \    # Public upstream repository read succeeded; this exact native
-          path does not exist.
-
-          \    $directory=Join-Path $pwd 'generated-first';New-Item -ItemType
-          Directory -Path $directory|Out-Null
-
-          \    $template=Get-Content -LiteralPath
-          product/.github/winget/SPLRAD.LayerScape.Deployer.yaml.mustache -Raw
-
-          \    $content=$template.Replace('${version}',$version).Replace('${ins\
-          tallerUrl}',$url).Replace('${installerSha256}',$installer[0].sha256.T\
-          oUpperInvariant())
-
-          \    [IO.File]::WriteAllText((Join-Path $directory
-          'SPLRAD.LayerScape.Deployer.yaml'),$content,[Text.UTF8Encoding]::new(\
-          $false))
-
-          \  } else { throw 'WINGET_PACKAGE_READ_UNKNOWN' }
-
-          \  winget validate --manifest $directory --disable-interactivity
-
-          \  if ($LASTEXITCODE) { throw 'WINGET_VALIDATION' }
-
-          \  $files=@(Get-ChildItem -LiteralPath $directory -File)
-
-          \  if ($files.Count -lt 1 -or ($files|Where-Object {$_.Extension -ne
-          '.yaml'})) { throw 'WINGET_MANIFEST_SET' }
-
-          \  $entries=@()
-
-          \  foreach($file in $files) {
-
-          \    $text=[IO.File]::ReadAllText($file.FullName)
-
-          \    if ($text -notmatch [regex]::Escape($version) -or $text -notmatch
-          'SPLRAD.LayerScape.Deployer') { throw 'WINGET_MANIFEST_VERSION' }
-
-          \    if ($text -match 'InstallerUrl:' -and ($text -notmatch
-          [regex]::Escape($url) -or $text -notmatch $installer[0].sha256)) {
-          throw 'WINGET_MANIFEST_BYTES' }
-
-          \    $entries+=@{path=\"$packagePath/$version/$($file.Name)\";mode='1\
-          00644';type='blob';content=$text}
-
-          \  }
-
-          \  $ref=gh api --include
-          \"repos/$env:WINGET_FORK_REPOSITORY/git/ref/heads/$branch\" 2>$null
-
-          \  $refStatus=[regex]::Match(($ref -join \"`n\"),'HTTP/\\S+
-          (\\d+)').Groups[1].Value
-
-          \  if ($refStatus -eq '404') {
-
-          \    $base=gh api
-          \"repos/microsoft/winget-pkgs/commits/$($upstream.default_branch)\"|C\
-          onvertFrom-Json
-
-          \    if ($LASTEXITCODE) { throw 'WINGET_BASE_READ' }
-
-          \    @{base_tree=$base.commit.tree.sha;tree=$entries}|ConvertTo-Json
-          -Depth 15|Set-Content -LiteralPath tree.json -Encoding utf8
-
-          \    $tree=gh api --method POST
-          \"repos/$env:WINGET_FORK_REPOSITORY/git/trees\" --input
-          tree.json|ConvertFrom-Json
-
-          \    if ($LASTEXITCODE) { throw 'WINGET_TREE_WRITE' }
-
-          \    @{message=\"Add SPLRAD.LayerScape.Deployer
-          $version\";tree=$tree.sha;parents=@($base.sha)}|ConvertTo-Json|Set-Co\
-          ntent -LiteralPath commit.json -Encoding utf8
-
-          \    $commit=gh api --method POST
-          \"repos/$env:WINGET_FORK_REPOSITORY/git/commits\" --input
-          commit.json|ConvertFrom-Json
-
-          \    if ($LASTEXITCODE) { throw 'WINGET_COMMIT_WRITE' }
-
-          \    @{ref=\"refs/heads/$branch\";sha=$commit.sha}|ConvertTo-Json|Set\
-          -Content -LiteralPath ref.json -Encoding utf8
-
-          \    gh api --method POST
-          \"repos/$env:WINGET_FORK_REPOSITORY/git/refs\" --input
-          ref.json|Out-Null
-
-          \    # A lost creation response or 422 is reconciled by reading each
-          exact intended file below.
-
-          \  } elseif ($refStatus -ne '200') { throw 'WINGET_FORK_READ_UNKNOWN'
+            $packagePath='manifests/s/SPLRAD/LayerScape/Deployer'
+            $package=gh api --include "repos/microsoft/winget-pkgs/contents/$packagePath" 2>$null
+            $status=[regex]::Match(($package -join "`n"),'HTTP/\S+ (\d+)').Groups[1].Value
+            if ($status -eq '200') {
+              & $env:WINGETCREATE_EXE update SPLRAD.LayerScape.Deployer --version $version --urls "$url|x64" --out generated --format yaml
+              if ($LASTEXITCODE) { throw 'WINGET_CREATE_UPDATE' }
+              $directory=Join-Path $pwd "generated/$packagePath/$version"
+            } elseif ($status -eq '404') {
+              # Public upstream repository read succeeded; this exact native path does not exist.
+              $directory=Join-Path $pwd 'generated-first';New-Item -ItemType Directory -Path $directory|Out-Null
+              $template=Get-Content -LiteralPath product/.github/winget/SPLRAD.LayerScape.Deployer.yaml.mustache -Raw
+              $content=$template.Replace('${version}',$version).Replace('${installerUrl}',$url).Replace('${installerSha256}',$installer[0].sha256.ToUpperInvariant())
+              [IO.File]::WriteAllText((Join-Path $directory 'SPLRAD.LayerScape.Deployer.yaml'),$content,[Text.UTF8Encoding]::new($false))
+            } else { throw 'WINGET_PACKAGE_READ_UNKNOWN' }
+            winget validate --manifest $directory --disable-interactivity
+            if ($LASTEXITCODE) { throw 'WINGET_VALIDATION' }
+            $files=@(Get-ChildItem -LiteralPath $directory -File)
+            if ($files.Count -lt 1 -or ($files|Where-Object {$_.Extension -ne '.yaml'})) { throw 'WINGET_MANIFEST_SET' }
+            $entries=@()
+            foreach($file in $files) {
+              $text=[IO.File]::ReadAllText($file.FullName)
+              if ($text -notmatch [regex]::Escape($version) -or $text -notmatch 'SPLRAD.LayerScape.Deployer') { throw 'WINGET_MANIFEST_VERSION' }
+              if ($text -match 'InstallerUrl:' -and ($text -notmatch [regex]::Escape($url) -or $text -notmatch $installer[0].sha256)) { throw 'WINGET_MANIFEST_BYTES' }
+              $entries+=@{path="$packagePath/$version/$($file.Name)";mode='100644';type='blob';content=$text}
+            }
+            $ref=gh api --include "repos/$env:WINGET_FORK_REPOSITORY/git/ref/heads/$branch" 2>$null
+            $refStatus=[regex]::Match(($ref -join "`n"),'HTTP/\S+ (\d+)').Groups[1].Value
+            if ($refStatus -eq '404') {
+              $base=gh api "repos/microsoft/winget-pkgs/commits/$($upstream.default_branch)"|ConvertFrom-Json
+              if ($LASTEXITCODE) { throw 'WINGET_BASE_READ' }
+              @{base_tree=$base.commit.tree.sha;tree=$entries}|ConvertTo-Json -Depth 15|Set-Content -LiteralPath tree.json -Encoding utf8
+              $tree=gh api --method POST "repos/$env:WINGET_FORK_REPOSITORY/git/trees" --input tree.json|ConvertFrom-Json
+              if ($LASTEXITCODE) { throw 'WINGET_TREE_WRITE' }
+              @{message="Add SPLRAD.LayerScape.Deployer $version";tree=$tree.sha;parents=@($base.sha)}|ConvertTo-Json|Set-Content -LiteralPath commit.json -Encoding utf8
+              $commit=gh api --method POST "repos/$env:WINGET_FORK_REPOSITORY/git/commits" --input commit.json|ConvertFrom-Json
+              if ($LASTEXITCODE) { throw 'WINGET_COMMIT_WRITE' }
+              @{ref="refs/heads/$branch";sha=$commit.sha}|ConvertTo-Json|Set-Content -LiteralPath ref.json -Encoding utf8
+              gh api --method POST "repos/$env:WINGET_FORK_REPOSITORY/git/refs" --input ref.json|Out-Null
+              # A lost creation response or 422 is reconciled by reading each exact intended file below.
+            } elseif ($refStatus -ne '200') { throw 'WINGET_FORK_READ_UNKNOWN' }
+            foreach($entry in $entries) {
+              $actual=gh api "repos/$env:WINGET_FORK_REPOSITORY/contents/$($entry.path)?ref=$([Uri]::EscapeDataString($branch))"|ConvertFrom-Json
+              if ($LASTEXITCODE -or $actual.encoding -ne 'base64' -or [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($actual.content)) -cne $entry.content) { throw 'WINGET_FORK_CONTENT_CONFLICT' }
+            }
+            # Query again before POST; repeated responses never authorize a second version PR.
+            $pr=Get-VersionPr
+            if ($null -eq $pr) {
+              @{title="New version: SPLRAD.LayerScape.Deployer $version";head="$($fork.owner.login):$branch";base=$upstream.default_branch;body="Release: https://github.com/splrad/LayerScape/releases/tag/$($manifest.tag)"}|ConvertTo-Json|Set-Content -LiteralPath pr.json -Encoding utf8
+              gh api --method POST repos/microsoft/winget-pkgs/pulls --input pr.json|Out-Null
+              $pr=Get-VersionPr
+              if ($null -eq $pr) { throw 'WINGET_SUBMISSION_UNCONFIRMED' }
+            }
           }
-
-          \  foreach($entry in $entries) {
-
-          \    $actual=gh api
-          \"repos/$env:WINGET_FORK_REPOSITORY/contents/$($entry.path)?ref=$([Ur\
-          i]::EscapeDataString($branch))\"|ConvertFrom-Json
-
-          \    if ($LASTEXITCODE -or $actual.encoding -ne 'base64' -or
-          [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($actual.c\
-          ontent)) -cne $entry.content) { throw 'WINGET_FORK_CONTENT_CONFLICT' }
-
-          \  }
-
-          \  # Query again before POST; repeated responses never authorize a
-          second version PR.
-
-          \  $pr=Get-VersionPr
-
-          \  if ($null -eq $pr) {
-
-          \    @{title=\"New version: SPLRAD.LayerScape.Deployer
-          $version\";head=\"$($fork.owner.login):$branch\";base=$upstream.defau\
-          lt_branch;body=\"Release:
-          https://github.com/splrad/LayerScape/releases/tag/$($manifest.tag)\"}\
-          |ConvertTo-Json|Set-Content -LiteralPath pr.json -Encoding utf8
-
-          \    gh api --method POST repos/microsoft/winget-pkgs/pulls --input
-          pr.json|Out-Null
-
-          \    $pr=Get-VersionPr
-
-          \    if ($null -eq $pr) { throw 'WINGET_SUBMISSION_UNCONFIRMED' }
-
-          \  }
-
-          }
-
-          if ($null -eq $pr -or ($pr.state -eq 'closed' -and -not $pr.merged)) {
-          throw 'WINGET_REJECTED_OR_MISSING' }
-
-          # Existing PRs must still describe these exact formal bytes, including
-          after a lost POST response.
-
-          $prFiles=gh api --paginate --slurp
-          \"repos/microsoft/winget-pkgs/pulls/$($pr.number)/files?per_page=100\"
-          | ConvertFrom-Json
-
+          if ($null -eq $pr -or ($pr.state -eq 'closed' -and -not $pr.merged)) { throw 'WINGET_REJECTED_OR_MISSING' }
+          # Existing PRs must still describe these exact formal bytes, including after a lost POST response.
+          $prFiles=gh api --paginate --slurp "repos/microsoft/winget-pkgs/pulls/$($pr.number)/files?per_page=100" | ConvertFrom-Json
           if ($LASTEXITCODE) { throw 'WINGET_PR_FILES_UNKNOWN' }
-
           $prFiles=@($prFiles|ForEach-Object {$_})
-
-          $prefix=\"manifests/s/SPLRAD/LayerScape/Deployer/$version/\"
-
-          if (-not $prFiles.Count -or @($prFiles|Where-Object {$_.filename
-          -notlike \"$prefix*.yaml\" -or
-          $_.filename.Substring($prefix.Length).Contains('/') -or $_.status -eq
-          'removed'}).Count) { throw 'WINGET_PR_SCOPE_CONFLICT' }
-
-          $checkDirectory=Join-Path $pwd 'verified-pr';New-Item -ItemType
-          Directory -Path $checkDirectory|Out-Null
-
+          $prefix="manifests/s/SPLRAD/LayerScape/Deployer/$version/"
+          if (-not $prFiles.Count -or @($prFiles|Where-Object {$_.filename -notlike "$prefix*.yaml" -or $_.filename.Substring($prefix.Length).Contains('/') -or $_.status -eq 'removed'}).Count) { throw 'WINGET_PR_SCOPE_CONFLICT' }
+          $checkDirectory=Join-Path $pwd 'verified-pr';New-Item -ItemType Directory -Path $checkDirectory|Out-Null
           $urls=@();$hashes=@()
-
           foreach($file in $prFiles) {
-
-          \  $actual=gh api
-          \"repos/$env:WINGET_FORK_REPOSITORY/contents/$($file.filename)?ref=$(\
-          $pr.head.sha)\"|ConvertFrom-Json
-
-          \  if ($LASTEXITCODE -or $actual.encoding -ne 'base64') { throw
-          'WINGET_PR_CONTENT_UNKNOWN' }
-
-          \ 
-          $content=[Text.Encoding]::UTF8.GetString([Convert]::FromBase64String(\
-          $actual.content))
-
-          \  [IO.File]::WriteAllText((Join-Path $checkDirectory
-          ([IO.Path]::GetFileName($file.filename))),$content,[Text.UTF8Encoding\
-          ]::new($false))
-
-          \ 
-          $urls+=@([regex]::Matches($content,'(?m)^\\s*InstallerUrl:\\s*([^\\r\
-          \\n]+?)\\s*$')|ForEach-Object {$_.Groups[1].Value.Trim('\"',\"'\")})
-
-          \ 
-          $hashes+=@([regex]::Matches($content,'(?m)^\\s*InstallerSha256:\\s*([\
-          A-Fa-f0-9]{64})\\s*$')|ForEach-Object {$_.Groups[1].Value})
-
+            $actual=gh api "repos/$env:WINGET_FORK_REPOSITORY/contents/$($file.filename)?ref=$($pr.head.sha)"|ConvertFrom-Json
+            if ($LASTEXITCODE -or $actual.encoding -ne 'base64') { throw 'WINGET_PR_CONTENT_UNKNOWN' }
+            $content=[Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($actual.content))
+            [IO.File]::WriteAllText((Join-Path $checkDirectory ([IO.Path]::GetFileName($file.filename))),$content,[Text.UTF8Encoding]::new($false))
+            $urls+=@([regex]::Matches($content,'(?m)^\s*InstallerUrl:\s*([^\r\n]+?)\s*$')|ForEach-Object {$_.Groups[1].Value.Trim('"',"'")})
+            $hashes+=@([regex]::Matches($content,'(?m)^\s*InstallerSha256:\s*([A-Fa-f0-9]{64})\s*$')|ForEach-Object {$_.Groups[1].Value})
           }
-
-          if ($urls.Count -ne 1 -or $hashes.Count -ne 1 -or $urls[0] -cne $url
-          -or $hashes[0] -ine $installer[0].sha256) { throw
-          'WINGET_PR_BYTES_CONFLICT' }
-
+          if ($urls.Count -ne 1 -or $hashes.Count -ne 1 -or $urls[0] -cne $url -or $hashes[0] -ine $installer[0].sha256) { throw 'WINGET_PR_BYTES_CONFLICT' }
           winget validate --manifest $checkDirectory --disable-interactivity
-
           if ($LASTEXITCODE) { throw 'WINGET_PR_VALIDATION' }
-
           $consumed=$false;$indexed=$false
-
           if ($env:MODE -eq 'verify') {
-
-          \  if (-not $pr.merged) { throw 'DEPENDENCY_NOT_READY' }
-
-          \  winget source update --name winget --disable-interactivity
-
-          \  if ($LASTEXITCODE) { throw 'WINGET_INDEX_UNKNOWN' }
-
-          \  winget show --id SPLRAD.LayerScape.Deployer --exact --version
-          $version --source winget --accept-source-agreements
-          --disable-interactivity
-
-          \  if ($LASTEXITCODE) { throw 'DEPENDENCY_NOT_READY' }
-
-          \  $indexed=$true
-
-          \  foreach ($selectionMode in @('exact','default')) {
-
-          \    $arguments=@('install','--id','SPLRAD.LayerScape.Deployer','--ex\
-          act','--source','winget','--scope','user','--accept-package-agreement\
-          s','--accept-source-agreements','--disable-interactivity')
-
-          \    if ($selectionMode -eq 'exact') {
-          $arguments+=@('--version',$version) }
-
-          \    else {
-
-          \      $defaultShow=winget show --id SPLRAD.LayerScape.Deployer
-          --exact --source winget --accept-source-agreements
-          --disable-interactivity
-
-          \      $defaultShow | Write-Output
-
-          \      if ($LASTEXITCODE -or ($defaultShow -join
-          [Environment]::NewLine) -notmatch
-          ('(?m)^Version:\\s*'+[Regex]::Escape($version)+'\\s*$')) { throw
-          'WINGET_DEFAULT_VERSION' }
-
-          \    }
-
-          \    winget @arguments
-
-          \    if ($LASTEXITCODE) { throw 'WINGET_INSTALL_FAILED' }
-
-          \    try {
-
-          \      $installed=Get-Command layerscape-deployer.exe -ErrorAction
-          Stop
-
-          \      if ((Get-FileHash -LiteralPath $installed.Source -Algorithm
-          SHA256).Hash.ToLowerInvariant() -ne $installer[0].sha256) { throw
-          'WINGET_INSTALLED_BYTES' }
-
-          \    } finally {
-
-          \      winget uninstall --id SPLRAD.LayerScape.Deployer --exact
-          --source winget --disable-interactivity
-
-          \      if ($LASTEXITCODE) { throw 'WINGET_UNINSTALL_FAILED' }
-
-          \    }
-
-          \  }
-
-          \  $consumed=$true
-
+            if (-not $pr.merged) { throw 'DEPENDENCY_NOT_READY' }
+            winget source update --name winget --disable-interactivity
+            if ($LASTEXITCODE) { throw 'WINGET_INDEX_UNKNOWN' }
+            winget show --id SPLRAD.LayerScape.Deployer --exact --version $version --source winget --accept-source-agreements --disable-interactivity
+            if ($LASTEXITCODE) { throw 'DEPENDENCY_NOT_READY' }
+            $indexed=$true
+            foreach ($selectionMode in @('exact','default')) {
+              $arguments=@('install','--id','SPLRAD.LayerScape.Deployer','--exact','--source','winget','--scope','user','--accept-package-agreements','--accept-source-agreements','--disable-interactivity')
+              if ($selectionMode -eq 'exact') { $arguments+=@('--version',$version) }
+              else {
+                $defaultShow=winget show --id SPLRAD.LayerScape.Deployer --exact --source winget --accept-source-agreements --disable-interactivity
+                $defaultShow | Write-Output
+                if ($LASTEXITCODE -or ($defaultShow -join [Environment]::NewLine) -notmatch ('(?m)^Version:\s*'+[Regex]::Escape($version)+'\s*$')) { throw 'WINGET_DEFAULT_VERSION' }
+              }
+              winget @arguments
+              if ($LASTEXITCODE) { throw 'WINGET_INSTALL_FAILED' }
+              try {
+                $installed=Get-Command layerscape-deployer.exe -ErrorAction Stop
+                if ((Get-FileHash -LiteralPath $installed.Source -Algorithm SHA256).Hash.ToLowerInvariant() -ne $installer[0].sha256) { throw 'WINGET_INSTALLED_BYTES' }
+              } finally {
+                winget uninstall --id SPLRAD.LayerScape.Deployer --exact --source winget --disable-interactivity
+                if ($LASTEXITCODE) { throw 'WINGET_UNINSTALL_FAILED' }
+              }
+            }
+            $consumed=$true
           }
-
-          @{id=[string]$pr.number;accepted=[bool]$pr.merged;indexed=$indexed;co\
-          nsumed=$consumed;observedAt=[DateTime]::UtcNow.ToString('o')}|Convert\
-          To-Json -Compress|Set-Content -LiteralPath native.json -Encoding
-          utf8\r\n"
+          @{id=[string]$pr.number;accepted=[bool]$pr.merged;indexed=$indexed;consumed=$consumed;observedAt=[DateTime]::UtcNow.ToString('o')}|ConvertTo-Json -Compress|Set-Content -LiteralPath native.json -Encoding utf8
       - name: Capture native result
         shell: pwsh
         env:
           UNIT: ${{ matrix.unitId }}
           CHANNEL: ${{ matrix.channelId }}
         run: |
-          
+
           $selection=Get-Content -LiteralPath selection.json -Raw|ConvertFrom-Json
           $target=$selection.targets|Where-Object {$_.unitId -eq $env:UNIT -and $_.channelId -eq $env:CHANNEL}
           $native=Get-Content -LiteralPath native.json -Raw|ConvertFrom-Json
