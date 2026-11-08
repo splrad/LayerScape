@@ -1404,3 +1404,20 @@ jobs:
           $results=$env:RESULTS|ConvertFrom-Json
           if ($results.'source-check'.result -ne 'success') { throw 'CHANNEL_SOURCE_FAILED' }
           foreach ($item in $results.PSObject.Properties) { if ($item.Value.result -in @('failure','cancelled')) { throw 'CHANNEL_NATIVE_JOB_FAILED' } }
+          $requiredJobs=@('source-check')
+          switch -CaseSensitive ($env:MODE) {
+            'observe' { $requiredJobs+='observe' }
+            { $_ -cin @('submit','verify') } {
+              $requiredJobs+=@('admit','channel-prepare')
+              $outputs=$results.'channel-prepare'.outputs
+              foreach ($channel in @(@{flag='has_ghcr';job='ghcr-assets'},@{flag='has_winget';job='winget'})) {
+                $selected=$outputs.($channel.flag)
+                if ($selected -cnotin @('true','false')) { throw 'CHANNEL_SELECTION_UNKNOWN' }
+                if ($selected -ceq 'true') { $requiredJobs+="$($channel.job)-$env:MODE" }
+              }
+            }
+            default { throw 'CHANNEL_MODE_INVALID' }
+          }
+          foreach ($job in $requiredJobs) {
+            if ($results.$job.result -cne 'success') { throw "CHANNEL_REQUIRED_JOB_INCOMPLETE: $job" }
+          }
