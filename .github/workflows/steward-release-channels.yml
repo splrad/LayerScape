@@ -1,0 +1,1423 @@
+name: Product Release Channels
+run-name: Channels ${{ inputs.mode }} ${{ inputs.request_key }}
+on:
+  workflow_dispatch:
+    inputs:
+      cycle_id:
+        type: string
+        required: true
+      source_sha:
+        type: string
+        required: true
+      execution_sha:
+        type: string
+        required: true
+      controller_sha:
+        type: string
+        required: true
+      targets_json:
+        type: string
+        required: true
+      mode:
+        type: string
+        required: true
+      operation_key:
+        type: string
+        required: true
+      request_key:
+        type: string
+        required: true
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: steward-product-channels-${{ github.repository_id }}-${{ inputs.mode ==
+    'observe' && 'observe' || 'business' }}
+  queue: max
+  cancel-in-progress: false
+jobs:
+  source-check:
+    runs-on: windows-2025
+    timeout-minutes: 10
+    outputs:
+      targets_digest: ${{ steps.identity.outputs.targets_digest }}
+      matrix: ${{ steps.identity.outputs.matrix }}
+      has_work: ${{ steps.identity.outputs.has_work }}
+      ghcr_matrix: ${{ steps.identity.outputs.ghcr_matrix }}
+      winget_matrix: ${{ steps.identity.outputs.winget_matrix }}
+      has_ghcr: ${{ steps.identity.outputs.has_ghcr }}
+      has_winget: ${{ steps.identity.outputs.has_winget }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.sha }}
+          path: product
+          persist-credentials: false
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          repository: splrad/steward
+          ref: 115b3447bdd5414c0767f35f304c828a3fb45953
+          path: controller
+          persist-credentials: false
+      - name: Enable Git long paths
+        shell: pwsh
+        run: git config --global core.longpaths true
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: steward/release-state
+          path: state
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: jdx/mise-action@82a612c5ab8bcda7cc5db6b7e81a8e7584c3dc6e
+        env:
+          MISE_SAFE: "1"
+          MISE_NODE_COMPILE: "false"
+        with:
+          version: 2026.10.18
+          working_directory: controller
+          install_args: --locked
+          cache: false
+          env: false
+          persist_github_token: false
+      - name: Activate trusted controller tool paths
+        working-directory: controller
+        shell: pwsh
+        env:
+          MISE_SAFE: "1"
+          MISE_LOCKED: "1"
+        run: |
+          $toolPaths = mise bin-paths
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          $toolPaths | Add-Content -LiteralPath $env:GITHUB_PATH
+      - name: Install locked controller dependencies
+        working-directory: controller
+        shell: pwsh
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Closed native inputs
+        shell: pwsh
+        env:
+          CHANNEL_INPUTS: ${{ toJSON(inputs) }}
+        run: "[IO.File]::WriteAllText((Join-Path $pwd 'inputs.json'),
+          $env:CHANNEL_INPUTS, [Text.UTF8Encoding]::new($false))"
+      - name: Verify native source
+        id: identity
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |-
+          node controller/packages/runner/dist/index.js release-pipeline channel-source --inputs inputs.json --state-dir state --controller-dir controller --stage source --output selection.json
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+  admit:
+    needs: source-check
+    if: inputs.mode != 'observe'
+    runs-on: windows-2025
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.sha }}
+          path: product
+          persist-credentials: false
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          repository: splrad/steward
+          ref: 115b3447bdd5414c0767f35f304c828a3fb45953
+          path: controller
+          persist-credentials: false
+      - name: Enable Git long paths
+        shell: pwsh
+        run: git config --global core.longpaths true
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: steward/release-state
+          path: state
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: jdx/mise-action@82a612c5ab8bcda7cc5db6b7e81a8e7584c3dc6e
+        env:
+          MISE_SAFE: "1"
+          MISE_NODE_COMPILE: "false"
+        with:
+          version: 2026.10.18
+          working_directory: controller
+          install_args: --locked
+          cache: false
+          env: false
+          persist_github_token: false
+      - name: Activate trusted controller tool paths
+        working-directory: controller
+        shell: pwsh
+        env:
+          MISE_SAFE: "1"
+          MISE_LOCKED: "1"
+        run: |
+          $toolPaths = mise bin-paths
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          $toolPaths | Add-Content -LiteralPath $env:GITHUB_PATH
+      - name: Install locked controller dependencies
+        working-directory: controller
+        shell: pwsh
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Closed native inputs
+        shell: pwsh
+        env:
+          CHANNEL_INPUTS: ${{ toJSON(inputs) }}
+        run: "[IO.File]::WriteAllText((Join-Path $pwd 'inputs.json'),
+          $env:CHANNEL_INPUTS, [Text.UTF8Encoding]::new($false))"
+      - name: Read canonical channel request
+        id: identity
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |-
+          for ($n=0; $n -lt 20; $n++) {
+            node controller/packages/runner/dist/index.js release-pipeline channel-source --inputs inputs.json --state-dir state --controller-dir controller --stage admit --output "admission-$n.json"
+            if ($LASTEXITCODE -eq 0) { exit 0 }
+            if ($LASTEXITCODE -ne 75) { exit $LASTEXITCODE }
+            Start-Sleep -Seconds 30
+          }
+          exit 75
+  channel-prepare:
+    name: channel-prepare
+    needs:
+      - source-check
+      - admit
+    if: inputs.mode != 'observe'
+    runs-on: windows-2025
+    timeout-minutes: 10
+    environment:
+      name: channel-read
+      deployment: false
+    permissions:
+      contents: read
+      actions: read
+      packages: read
+    outputs:
+      targets_digest: ${{ steps.ready.outputs.targets_digest }}
+      matrix: ${{ steps.ready.outputs.matrix }}
+      has_work: ${{ steps.ready.outputs.has_work }}
+      ghcr_matrix: ${{ steps.ready.outputs.ghcr_matrix }}
+      winget_matrix: ${{ steps.ready.outputs.winget_matrix }}
+      has_ghcr: ${{ steps.ready.outputs.has_ghcr }}
+      has_winget: ${{ steps.ready.outputs.has_winget }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.sha }}
+          path: product
+          persist-credentials: false
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          repository: splrad/steward
+          ref: 115b3447bdd5414c0767f35f304c828a3fb45953
+          path: controller
+          persist-credentials: false
+      - name: Enable Git long paths
+        shell: pwsh
+        run: git config --global core.longpaths true
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: steward/release-state
+          path: state
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: jdx/mise-action@82a612c5ab8bcda7cc5db6b7e81a8e7584c3dc6e
+        env:
+          MISE_SAFE: "1"
+          MISE_NODE_COMPILE: "false"
+        with:
+          version: 2026.10.18
+          working_directory: controller
+          install_args: --locked
+          cache: false
+          env: false
+          persist_github_token: false
+      - name: Activate trusted controller tool paths
+        working-directory: controller
+        shell: pwsh
+        env:
+          MISE_SAFE: "1"
+          MISE_LOCKED: "1"
+        run: |
+          $toolPaths = mise bin-paths
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          $toolPaths | Add-Content -LiteralPath $env:GITHUB_PATH
+      - name: Install locked controller dependencies
+        working-directory: controller
+        shell: pwsh
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Closed native inputs
+        shell: pwsh
+        env:
+          CHANNEL_INPUTS: ${{ toJSON(inputs) }}
+        run: "[IO.File]::WriteAllText((Join-Path $pwd 'inputs.json'),
+          $env:CHANNEL_INPUTS, [Text.UTF8Encoding]::new($false))"
+      - name: Read canonical channel request
+        id: identity
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |-
+          node controller/packages/runner/dist/index.js release-pipeline channel-source --inputs inputs.json --state-dir state --controller-dir controller --stage admit --output selection.json
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+      - name: Read current channel readiness
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CHANNEL_READ_TOKEN: ${{ secrets.CHANNEL_READ_TOKEN || github.token }}
+          WINGET_FORK_REPOSITORY: ${{ vars.WINGET_FORK_REPOSITORY }}
+          GHCR_OWNER_PACKAGE_INVENTORY: ${{ vars.GHCR_OWNER_PACKAGE_INVENTORY }}
+        run: |
+
+          $ErrorActionPreference='Stop'
+          $selection=Get-Content -LiteralPath selection.json -Raw | ConvertFrom-Json
+          $items=@()
+          $auth=Join-Path $env:RUNNER_TEMP 'oras-read.json'
+          [IO.File]::WriteAllText($auth,'{"auths":{}}')
+          $env:CHANNEL_READ_TOKEN | oras login ghcr.io --username $env:GITHUB_ACTOR --password-stdin --registry-config $auth
+          if ($LASTEXITCODE) { throw 'CHANNEL_READ_AUTH_UNKNOWN' }
+          foreach ($target in $selection.targets) {
+            $item=[ordered]@{unitId=$target.unitId;channelId=$target.channelId;version=$target.version;readStatus='AUTH_UNKNOWN';exists=$null;digest=$null;accepted=$null;indexed=$null;observedAt=[DateTime]::UtcNow.ToString('o');evidenceKind=$target.channelId}
+            if ($target.channelId -eq 'ghcr-assets') {
+              . controller/scripts/ghcr-package-state.ps1
+              $package=Get-LayerScapePackageState -Token $env:CHANNEL_READ_TOKEN -OwnerInventory $env:GHCR_OWNER_PACKAGE_INVENTORY
+              if ($package.state -eq 'ABSENT') { $item.readStatus='NOT_FOUND_CONFIRMED';$item.exists=$false;$item.accepted=$false;$item.indexed=$false }
+              else {
+                $tags=oras repo tags ghcr.io/splrad/layerscape-assets --registry-config $auth --format json 2>$null
+                if ($LASTEXITCODE -ne 0) { throw 'GHCR_TAG_VISIBILITY_UNKNOWN' }
+                $listed=$tags|ConvertFrom-Json
+                if ($listed.tags -notcontains $target.version) { $item.readStatus='NOT_FOUND_CONFIRMED';$item.exists=$false;$item.accepted=$false;$item.indexed=$false }
+                else {
+                  $nativeDigest=oras resolve --registry-config $auth "ghcr.io/splrad/layerscape-assets:$($target.version)" 2>$null
+                  if ($LASTEXITCODE -ne 0 -or $nativeDigest.Trim() -notmatch '^sha256:[a-f0-9]{64}$') { throw 'GHCR_DIGEST_UNKNOWN' }
+                  $item.readStatus='PENDING';$item.exists=$true;$item.digest=$nativeDigest.Trim();$item.accepted=$true;$item.indexed=$false
+                  if ($package.visibility -eq 'public') {
+                    $anonymous=Join-Path $env:RUNNER_TEMP 'oras-probe-anonymous.json';[IO.File]::WriteAllText($anonymous,'{"auths":{}}')
+                    $publicDigest=oras resolve --registry-config $anonymous "ghcr.io/splrad/layerscape-assets:$($target.version)" 2>$null
+                    if ($LASTEXITCODE -eq 0 -and $publicDigest.Trim() -eq $nativeDigest.Trim()) { $item.readStatus='OK';$item.indexed=$true }
+                  }
+                }
+              }
+            } elseif ($target.channelId -eq 'winget') {
+              $fork=gh api "repos/$env:WINGET_FORK_REPOSITORY" 2>$null
+              if ($LASTEXITCODE -eq 0) {
+                $fork=$fork|ConvertFrom-Json
+                if ($env:WINGET_FORK_REPOSITORY -cne 'axiomoth/winget-pkgs' -or $fork.full_name -cne 'axiomoth/winget-pkgs' -or $fork.private -or $fork.owner.type -cne 'User' -or $fork.parent.full_name -ne 'microsoft/winget-pkgs' -or -not $fork.fork) { throw 'WINGET_FORK_IDENTITY' }
+                $upstream=gh api repos/microsoft/winget-pkgs | ConvertFrom-Json
+                if ($LASTEXITCODE) { throw 'WINGET_UPSTREAM_READ_UNKNOWN' }
+                $branch="steward/SPLRAD.LayerScape.Deployer/$($target.version)"
+                $query='repos/microsoft/winget-pkgs/pulls?state=all&head='+[Uri]::EscapeDataString("$($fork.owner.login):$branch")+'&base='+[Uri]::EscapeDataString($upstream.default_branch)+'&per_page=100'
+                $pages=gh api --paginate --slurp $query 2>$null
+                if ($LASTEXITCODE -eq 0) {
+                  $prs=@(($pages|ConvertFrom-Json) | ForEach-Object { $_ } | Where-Object { $_.head.repo.id -eq $fork.id -and $_.head.ref -eq $branch -and $_.base.repo.id -eq $upstream.id -and $_.base.ref -eq $upstream.default_branch })
+                  if ($prs.Count -gt 1) { $item.readStatus='CONFLICT' }
+                  elseif ($prs.Count -eq 0) { $item.readStatus='NOT_FOUND_CONFIRMED';$item.exists=$false;$item.accepted=$false;$item.indexed=$false }
+                  else {
+                    $pr=gh api "repos/microsoft/winget-pkgs/pulls/$($prs[0].number)" | ConvertFrom-Json
+                    if ($LASTEXITCODE) { throw 'WINGET_PR_READ_UNKNOWN' }
+                    if ($pr.state -eq 'closed' -and -not $pr.merged) { $item.readStatus='CONFLICT' }
+                    else {
+                      $item.readStatus='PENDING';$item.exists=$true;$item.accepted=[bool]$pr.merged;$item.indexed=$false;$item.evidenceKind="github-pr:$($pr.number)"
+                      if ($pr.merged) {
+                        winget source update --name winget --disable-interactivity | Out-Null
+                        if ($LASTEXITCODE) { throw 'WINGET_INDEX_READ_UNKNOWN' }
+                        winget show --id SPLRAD.LayerScape.Deployer --exact --version $target.version --source winget --accept-source-agreements --disable-interactivity | Out-Null
+                        if ($LASTEXITCODE -eq 0) { $item.readStatus='OK';$item.indexed=$true }
+                      }
+                    }
+                  }
+                }
+              }
+            } else { throw 'UNDECLARED_NATIVE_CHANNEL' }
+            $item.observedAt=[DateTime]::UtcNow.ToString('o');$items+=,$item
+          }
+          [IO.File]::WriteAllText((Join-Path $pwd 'reads.json'),(ConvertTo-Json -InputObject $items -Depth 12 -Compress),[Text.UTF8Encoding]::new($false))
+      - name: business-channel-readiness
+        id: ready
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |-
+          node controller/packages/runner/dist/index.js release-pipeline channel-ready --inputs inputs.json --state-dir state --controller-dir controller --reads reads.json --output readiness.json
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+  observe:
+    name: observe
+    needs: source-check
+    if: inputs.mode == 'observe'
+    runs-on: windows-2025
+    timeout-minutes: 15
+    environment:
+      name: channel-read
+      deployment: false
+    permissions:
+      contents: read
+      actions: read
+      packages: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.sha }}
+          path: product
+          persist-credentials: false
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          repository: splrad/steward
+          ref: 115b3447bdd5414c0767f35f304c828a3fb45953
+          path: controller
+          persist-credentials: false
+      - name: Enable Git long paths
+        shell: pwsh
+        run: git config --global core.longpaths true
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: steward/release-state
+          path: state
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: jdx/mise-action@82a612c5ab8bcda7cc5db6b7e81a8e7584c3dc6e
+        env:
+          MISE_SAFE: "1"
+          MISE_NODE_COMPILE: "false"
+        with:
+          version: 2026.10.18
+          working_directory: controller
+          install_args: --locked
+          cache: false
+          env: false
+          persist_github_token: false
+      - name: Activate trusted controller tool paths
+        working-directory: controller
+        shell: pwsh
+        env:
+          MISE_SAFE: "1"
+          MISE_LOCKED: "1"
+        run: |
+          $toolPaths = mise bin-paths
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          $toolPaths | Add-Content -LiteralPath $env:GITHUB_PATH
+      - name: Install locked controller dependencies
+        working-directory: controller
+        shell: pwsh
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Closed native inputs
+        shell: pwsh
+        env:
+          CHANNEL_INPUTS: ${{ toJSON(inputs) }}
+        run: "[IO.File]::WriteAllText((Join-Path $pwd 'inputs.json'),
+          $env:CHANNEL_INPUTS, [Text.UTF8Encoding]::new($false))"
+      - name: Verify native source
+        id: identity
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |-
+          node controller/packages/runner/dist/index.js release-pipeline channel-source --inputs inputs.json --state-dir state --controller-dir controller --stage source --output selection.json
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+      - name: Read native registry PR and index
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CHANNEL_READ_TOKEN: ${{ secrets.CHANNEL_READ_TOKEN || github.token }}
+          WINGET_FORK_REPOSITORY: ${{ vars.WINGET_FORK_REPOSITORY }}
+          GHCR_OWNER_PACKAGE_INVENTORY: ${{ vars.GHCR_OWNER_PACKAGE_INVENTORY }}
+        run: |
+
+          $ErrorActionPreference='Stop'
+          $selection=Get-Content -LiteralPath selection.json -Raw | ConvertFrom-Json
+          $items=@()
+          $auth=Join-Path $env:RUNNER_TEMP 'oras-read.json'
+          [IO.File]::WriteAllText($auth,'{"auths":{}}')
+          $env:CHANNEL_READ_TOKEN | oras login ghcr.io --username $env:GITHUB_ACTOR --password-stdin --registry-config $auth
+          if ($LASTEXITCODE) { throw 'CHANNEL_READ_AUTH_UNKNOWN' }
+          foreach ($target in $selection.targets) {
+            $item=[ordered]@{unitId=$target.unitId;channelId=$target.channelId;version=$target.version;readStatus='AUTH_UNKNOWN';exists=$null;digest=$null;accepted=$null;indexed=$null;observedAt=[DateTime]::UtcNow.ToString('o');evidenceKind=$target.channelId}
+            if ($target.channelId -eq 'ghcr-assets') {
+              . controller/scripts/ghcr-package-state.ps1
+              $package=Get-LayerScapePackageState -Token $env:CHANNEL_READ_TOKEN -OwnerInventory $env:GHCR_OWNER_PACKAGE_INVENTORY
+              if ($package.state -eq 'ABSENT') { $item.readStatus='NOT_FOUND_CONFIRMED';$item.exists=$false;$item.accepted=$false;$item.indexed=$false }
+              else {
+                $tags=oras repo tags ghcr.io/splrad/layerscape-assets --registry-config $auth --format json 2>$null
+                if ($LASTEXITCODE -ne 0) { throw 'GHCR_TAG_VISIBILITY_UNKNOWN' }
+                $listed=$tags|ConvertFrom-Json
+                if ($listed.tags -notcontains $target.version) { $item.readStatus='NOT_FOUND_CONFIRMED';$item.exists=$false;$item.accepted=$false;$item.indexed=$false }
+                else {
+                  $nativeDigest=oras resolve --registry-config $auth "ghcr.io/splrad/layerscape-assets:$($target.version)" 2>$null
+                  if ($LASTEXITCODE -ne 0 -or $nativeDigest.Trim() -notmatch '^sha256:[a-f0-9]{64}$') { throw 'GHCR_DIGEST_UNKNOWN' }
+                  $item.readStatus='PENDING';$item.exists=$true;$item.digest=$nativeDigest.Trim();$item.accepted=$true;$item.indexed=$false
+                  if ($package.visibility -eq 'public') {
+                    $anonymous=Join-Path $env:RUNNER_TEMP 'oras-probe-anonymous.json';[IO.File]::WriteAllText($anonymous,'{"auths":{}}')
+                    $publicDigest=oras resolve --registry-config $anonymous "ghcr.io/splrad/layerscape-assets:$($target.version)" 2>$null
+                    if ($LASTEXITCODE -eq 0 -and $publicDigest.Trim() -eq $nativeDigest.Trim()) { $item.readStatus='OK';$item.indexed=$true }
+                  }
+                }
+              }
+            } elseif ($target.channelId -eq 'winget') {
+              $fork=gh api "repos/$env:WINGET_FORK_REPOSITORY" 2>$null
+              if ($LASTEXITCODE -eq 0) {
+                $fork=$fork|ConvertFrom-Json
+                if ($env:WINGET_FORK_REPOSITORY -cne 'axiomoth/winget-pkgs' -or $fork.full_name -cne 'axiomoth/winget-pkgs' -or $fork.private -or $fork.owner.type -cne 'User' -or $fork.parent.full_name -ne 'microsoft/winget-pkgs' -or -not $fork.fork) { throw 'WINGET_FORK_IDENTITY' }
+                $upstream=gh api repos/microsoft/winget-pkgs | ConvertFrom-Json
+                if ($LASTEXITCODE) { throw 'WINGET_UPSTREAM_READ_UNKNOWN' }
+                $branch="steward/SPLRAD.LayerScape.Deployer/$($target.version)"
+                $query='repos/microsoft/winget-pkgs/pulls?state=all&head='+[Uri]::EscapeDataString("$($fork.owner.login):$branch")+'&base='+[Uri]::EscapeDataString($upstream.default_branch)+'&per_page=100'
+                $pages=gh api --paginate --slurp $query 2>$null
+                if ($LASTEXITCODE -eq 0) {
+                  $prs=@(($pages|ConvertFrom-Json) | ForEach-Object { $_ } | Where-Object { $_.head.repo.id -eq $fork.id -and $_.head.ref -eq $branch -and $_.base.repo.id -eq $upstream.id -and $_.base.ref -eq $upstream.default_branch })
+                  if ($prs.Count -gt 1) { $item.readStatus='CONFLICT' }
+                  elseif ($prs.Count -eq 0) { $item.readStatus='NOT_FOUND_CONFIRMED';$item.exists=$false;$item.accepted=$false;$item.indexed=$false }
+                  else {
+                    $pr=gh api "repos/microsoft/winget-pkgs/pulls/$($prs[0].number)" | ConvertFrom-Json
+                    if ($LASTEXITCODE) { throw 'WINGET_PR_READ_UNKNOWN' }
+                    if ($pr.state -eq 'closed' -and -not $pr.merged) { $item.readStatus='CONFLICT' }
+                    else {
+                      $item.readStatus='PENDING';$item.exists=$true;$item.accepted=[bool]$pr.merged;$item.indexed=$false;$item.evidenceKind="github-pr:$($pr.number)"
+                      if ($pr.merged) {
+                        winget source update --name winget --disable-interactivity | Out-Null
+                        if ($LASTEXITCODE) { throw 'WINGET_INDEX_READ_UNKNOWN' }
+                        winget show --id SPLRAD.LayerScape.Deployer --exact --version $target.version --source winget --accept-source-agreements --disable-interactivity | Out-Null
+                        if ($LASTEXITCODE -eq 0) { $item.readStatus='OK';$item.indexed=$true }
+                      }
+                    }
+                  }
+                }
+              }
+            } else { throw 'UNDECLARED_NATIVE_CHANNEL' }
+            $item.observedAt=[DateTime]::UtcNow.ToString('o');$items+=,$item
+          }
+          [IO.File]::WriteAllText((Join-Path $pwd 'reads.json'),(ConvertTo-Json -InputObject $items -Depth 12 -Compress),[Text.UTF8Encoding]::new($false))
+      - name: Seal probe payload
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |-
+          node controller/packages/runner/dist/index.js release-pipeline channel-probe --inputs inputs.json --state-dir state --controller-dir controller --reads reads.json --output report.json
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: probe-${{ inputs.cycle_id }}-${{ needs.source-check.outputs.targets_digest
+            }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: report.json
+          if-no-files-found: error
+          retention-days: 90
+  ghcr-assets-submit:
+    name: submit/ghcr-assets/${{ matrix.unitId }}
+    needs:
+      - source-check
+      - admit
+      - channel-prepare
+    if: inputs.mode == 'submit' && needs.channel-prepare.outputs.has_ghcr == 'true'
+    runs-on: windows-2025
+    timeout-minutes: 25
+    environment:
+      name: package-publish
+      deployment: false
+    permissions:
+      contents: read
+      actions: read
+      packages: write
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.channel-prepare.outputs.ghcr_matrix) }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.sha }}
+          path: product
+          persist-credentials: false
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          repository: splrad/steward
+          ref: 115b3447bdd5414c0767f35f304c828a3fb45953
+          path: controller
+          persist-credentials: false
+      - name: Enable Git long paths
+        shell: pwsh
+        run: git config --global core.longpaths true
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: steward/release-state
+          path: state
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: jdx/mise-action@82a612c5ab8bcda7cc5db6b7e81a8e7584c3dc6e
+        env:
+          MISE_SAFE: "1"
+          MISE_NODE_COMPILE: "false"
+        with:
+          version: 2026.10.18
+          working_directory: controller
+          install_args: --locked
+          cache: false
+          env: false
+          persist_github_token: false
+      - name: Activate trusted controller tool paths
+        working-directory: controller
+        shell: pwsh
+        env:
+          MISE_SAFE: "1"
+          MISE_LOCKED: "1"
+        run: |
+          $toolPaths = mise bin-paths
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          $toolPaths | Add-Content -LiteralPath $env:GITHUB_PATH
+      - name: Install locked controller dependencies
+        working-directory: controller
+        shell: pwsh
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Closed native inputs
+        shell: pwsh
+        env:
+          CHANNEL_INPUTS: ${{ toJSON(inputs) }}
+        run: "[IO.File]::WriteAllText((Join-Path $pwd 'inputs.json'),
+          $env:CHANNEL_INPUTS, [Text.UTF8Encoding]::new($false))"
+      - name: Read canonical channel request
+        id: identity
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |-
+          node controller/packages/runner/dist/index.js release-pipeline channel-source --inputs inputs.json --state-dir state --controller-dir controller --stage admit --output selection.json
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+      - name: Read exact formal Release bytes
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          UNIT: ${{ matrix.unitId }}
+          CHANNEL: ${{ matrix.channelId }}
+        run: |-
+          node controller/packages/runner/dist/index.js release-pipeline channel-download --inputs inputs.json --state-dir state --controller-dir controller --unit "$env:UNIT" --channel "$env:CHANNEL" --directory final --output manifest.json
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+      - name: business-ghcr-submit
+        shell: pwsh
+        env:
+          MODE: submit
+          GHCR_TOKEN: ${{ github.token }}
+          GHCR_OWNER_PACKAGE_INVENTORY: ${{ vars.GHCR_OWNER_PACKAGE_INVENTORY }}
+        run: |
+
+          $ErrorActionPreference='Stop'
+          $manifest=Get-Content -LiteralPath manifest.json -Raw|ConvertFrom-Json
+          $version=$manifest.version
+          $auth=Join-Path $env:RUNNER_TEMP 'oras-business.json'
+          [IO.File]::WriteAllText($auth,'{"auths":{}}')
+          $names=@($manifest.artifacts|ForEach-Object {$_.path})+@('sbom.spdx.json','release-notes.md','artifact-manifest.json','SHA256SUMS')|Sort-Object
+          $expected=@{};foreach($name in $names) {$expected[$name]=(Get-FileHash -LiteralPath "final/$name" -Algorithm SHA256).Hash.ToLowerInvariant()}
+          if ($env:MODE -eq 'submit') {
+            $env:GHCR_TOKEN | oras login ghcr.io --username $env:GITHUB_ACTOR --password-stdin --registry-config $auth
+            if ($LASTEXITCODE) { throw 'GHCR_AUTHENTICATION' }
+            Push-Location final
+            try {
+              oras push --oci-layout ../layout:release --artifact-type application/vnd.splrad.layerscape.release.v1 --annotation 'org.opencontainers.image.created=1970-01-01T00:00:00Z' --annotation 'org.opencontainers.image.source=https://github.com/splrad/LayerScape' @names
+              if ($LASTEXITCODE) { throw 'ORAS_LAYOUT' }
+            } finally { Pop-Location }
+            $expectedDigest=oras resolve --oci-layout layout:release
+            if ($LASTEXITCODE) { throw 'ORAS_LAYOUT_DIGEST' }
+            . controller/scripts/ghcr-package-state.ps1
+            $null=Get-LayerScapePackageState -Token $env:GHCR_TOKEN -OwnerInventory $env:GHCR_OWNER_PACKAGE_INVENTORY
+            $existing=oras resolve --registry-config $auth "ghcr.io/splrad/layerscape-assets:$version" 2>remote-error.txt
+            if ($LASTEXITCODE -eq 0) { if ($existing.Trim() -ne $expectedDigest.Trim()) { throw 'ASSET_CONFLICT' } }
+            else {
+              . controller/scripts/ghcr-package-state.ps1
+              $package=Get-LayerScapePackageState -Token $env:GHCR_TOKEN -OwnerInventory $env:GHCR_OWNER_PACKAGE_INVENTORY
+              if ($package.state -eq 'EXISTS') {
+                $tags=oras repo tags ghcr.io/splrad/layerscape-assets --registry-config $auth --format json 2>$null
+                if ($LASTEXITCODE -ne 0 -or ($tags|ConvertFrom-Json).tags -contains $version) { throw 'GHCR_ABSENCE_UNKNOWN' }
+              }
+              oras cp --from-oci-layout --to-registry-config $auth layout:release "ghcr.io/splrad/layerscape-assets:$version"
+              $actual=oras resolve --registry-config $auth "ghcr.io/splrad/layerscape-assets:$version"
+              if ($LASTEXITCODE -ne 0 -or $actual.Trim() -ne $expectedDigest.Trim()) { throw 'GHCR_UPLOAD_UNCONFIRMED' }
+            }
+          }
+          if ($env:MODE -eq 'submit') {
+            # Acceptance is the authenticated digest readback. Public visibility and consumption are observed separately.
+            @{id=$expectedDigest.Trim();accepted=$true;indexed=$false;consumed=$false;observedAt=[DateTime]::UtcNow.ToString('o')}|ConvertTo-Json -Compress|Set-Content -LiteralPath native.json -Encoding utf8
+          } else {
+          # Verification always pulls with an empty registry credential file.
+          $empty=Join-Path $env:RUNNER_TEMP 'oras-anonymous.json';[IO.File]::WriteAllText($empty,'{"auths":{}}')
+          $digest=oras resolve --registry-config $empty "ghcr.io/splrad/layerscape-assets:$version"
+          if ($LASTEXITCODE) { throw 'GHCR_ANONYMOUS_VISIBILITY' }
+          oras pull --registry-config $empty "ghcr.io/splrad/layerscape-assets@$($digest.Trim())" --output pulled
+          if ($LASTEXITCODE) { throw 'GHCR_ANONYMOUS_PULL' }
+          $actualNames=@(Get-ChildItem -LiteralPath pulled -File|ForEach-Object {$_.Name}|Sort-Object)
+          if (($actualNames -join '|') -ne ($names -join '|')) { throw 'GHCR_FILE_SET' }
+          foreach($name in $names) { if ((Get-FileHash -LiteralPath "pulled/$name" -Algorithm SHA256).Hash.ToLowerInvariant() -ne $expected[$name]) { throw 'GHCR_BYTES_CONFLICT' } }
+          @{id=$digest.Trim();accepted=$true;indexed=$true;consumed=($env:MODE -eq 'verify');observedAt=[DateTime]::UtcNow.ToString('o')}|ConvertTo-Json -Compress|Set-Content -LiteralPath native.json -Encoding utf8
+
+          }
+      - name: Capture native result
+        shell: pwsh
+        env:
+          UNIT: ${{ matrix.unitId }}
+          CHANNEL: ${{ matrix.channelId }}
+        run: |
+
+          $selection=Get-Content -LiteralPath selection.json -Raw|ConvertFrom-Json
+          $target=$selection.targets|Where-Object {$_.unitId -eq $env:UNIT -and $_.channelId -eq $env:CHANNEL}
+          $native=Get-Content -LiteralPath native.json -Raw|ConvertFrom-Json
+          $item=[ordered]@{unitId=$target.unitId;channelId=$target.channelId;version=$target.version;releaseId=$target.releaseId;manifestDigest=$target.manifestDigest;nativeObjectId=$native.id;digest=$target.manifestDigest;accepted=[bool]$native.accepted;indexed=[bool]$native.indexed;consumed=[bool]$native.consumed;observedAt=$native.observedAt}
+          $payload=[ordered]@{schemaVersion=1;cycleId=$selection.context.cycle.id;sourceSha=$selection.context.cycle.sourceSha;executionSha=$env:GITHUB_SHA;controllerSha=$selection.context.cycle.controllerSha;targetsDigest=$selection.targetsDigest;nativeRunId=[long]$env:GITHUB_RUN_ID;runAttempt=[int]$env:GITHUB_RUN_ATTEMPT;items=@($item)}
+          [IO.File]::WriteAllText((Join-Path $pwd 'report.json'),($payload|ConvertTo-Json -Depth 20 -Compress),[Text.UTF8Encoding]::new($false))
+      - id: report
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: channel-${{ inputs.request_key }}-${{ matrix.unitId }}-${{
+            matrix.channelId }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: report.json
+          if-no-files-found: error
+          retention-days: 90
+      - name: Archive actual business steps
+        if: always()
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          UNIT: ${{ matrix.unitId }}
+          CHANNEL: ${{ matrix.channelId }}
+          ARTIFACT_ID: ${{ steps.report.outputs.artifact-id }}
+          ARTIFACT_DIGEST: ${{ steps.report.outputs.artifact-digest }}
+        run: |-
+          $objects='[]'
+          if ($env:ARTIFACT_ID) { $objects=ConvertTo-Json -InputObject @(@{kind='artifact';id=[long]$env:ARTIFACT_ID;digest=$env:ARTIFACT_DIGEST.Replace('sha256:','')}) -Compress }
+          node controller/packages/runner/dist/index.js release-pipeline channel-result --inputs inputs.json --state-dir state --controller-dir controller --unit "$env:UNIT" --channel "$env:CHANNEL" --job-name "submit/ghcr-assets/$env:UNIT" --objects $objects --output receipt.json
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+  winget-submit:
+    name: submit/winget/${{ matrix.unitId }}
+    needs:
+      - source-check
+      - admit
+      - channel-prepare
+    if: inputs.mode == 'submit' && needs.channel-prepare.outputs.has_winget ==
+      'true'
+    runs-on: windows-2025
+    timeout-minutes: 25
+    environment:
+      name: winget-submit
+      deployment: false
+    permissions:
+      contents: read
+      actions: read
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.channel-prepare.outputs.winget_matrix) }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.sha }}
+          path: product
+          persist-credentials: false
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          repository: splrad/steward
+          ref: 115b3447bdd5414c0767f35f304c828a3fb45953
+          path: controller
+          persist-credentials: false
+      - name: Enable Git long paths
+        shell: pwsh
+        run: git config --global core.longpaths true
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: steward/release-state
+          path: state
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: jdx/mise-action@82a612c5ab8bcda7cc5db6b7e81a8e7584c3dc6e
+        env:
+          MISE_SAFE: "1"
+          MISE_NODE_COMPILE: "false"
+        with:
+          version: 2026.10.18
+          working_directory: controller
+          install_args: --locked
+          cache: false
+          env: false
+          persist_github_token: false
+      - name: Activate trusted controller tool paths
+        working-directory: controller
+        shell: pwsh
+        env:
+          MISE_SAFE: "1"
+          MISE_LOCKED: "1"
+        run: |
+          $toolPaths = mise bin-paths
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          $toolPaths | Add-Content -LiteralPath $env:GITHUB_PATH
+      - name: Install locked controller dependencies
+        working-directory: controller
+        shell: pwsh
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Closed native inputs
+        shell: pwsh
+        env:
+          CHANNEL_INPUTS: ${{ toJSON(inputs) }}
+        run: "[IO.File]::WriteAllText((Join-Path $pwd 'inputs.json'),
+          $env:CHANNEL_INPUTS, [Text.UTF8Encoding]::new($false))"
+      - name: Read canonical channel request
+        id: identity
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |-
+          node controller/packages/runner/dist/index.js release-pipeline channel-source --inputs inputs.json --state-dir state --controller-dir controller --stage admit --output selection.json
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+      - name: Read exact formal Release bytes
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          UNIT: ${{ matrix.unitId }}
+          CHANNEL: ${{ matrix.channelId }}
+        run: |-
+          node controller/packages/runner/dist/index.js release-pipeline channel-download --inputs inputs.json --state-dir state --controller-dir controller --unit "$env:UNIT" --channel "$env:CHANNEL" --directory final --output manifest.json
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+      - name: Resolve locked controller channel tool
+        id: winget-tool
+        shell: pwsh
+        run: |-
+          $exe = mise -C controller which wingetcreate
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          "exe=$exe" >> $env:GITHUB_OUTPUT
+      - name: business-winget-submit
+        shell: pwsh
+        env:
+          MODE: submit
+          WINGETCREATE_EXE: ${{ steps.winget-tool.outputs.exe }}
+          GH_TOKEN: ${{ secrets.WINGET_FORK_TOKEN }}
+          WINGET_FORK_REPOSITORY: ${{ vars.WINGET_FORK_REPOSITORY }}
+        run: |
+          $ErrorActionPreference='Stop'
+          $manifest=Get-Content -LiteralPath manifest.json -Raw|ConvertFrom-Json
+          $version=$manifest.version
+          if ($version -notmatch '^[0-9]+\.[0-9]+\.[0-9]+(?:-[A-Za-z0-9.-]+)?$') { throw 'WINGET_VERSION' }
+          $installer=@($manifest.artifacts|Where-Object {$_.id -eq 'deployer'})
+          if ($installer.Count -ne 1) { throw 'WINGET_INSTALLER' }
+          $url="https://github.com/splrad/LayerScape/releases/download/$($manifest.tag)/$($installer[0].path)"
+          $upstream=gh api repos/microsoft/winget-pkgs|ConvertFrom-Json
+          if ($LASTEXITCODE -or $upstream.full_name -ne 'microsoft/winget-pkgs') { throw 'WINGET_UPSTREAM_IDENTITY' }
+          if ($env:WINGET_FORK_REPOSITORY -cne 'axiomoth/winget-pkgs') { throw 'WINGET_FIXED_FORK_REQUIRED' }
+          $fork=gh api "repos/$env:WINGET_FORK_REPOSITORY"|ConvertFrom-Json
+          if ($LASTEXITCODE -or $fork.full_name -cne 'axiomoth/winget-pkgs' -or $fork.private -or $fork.owner.type -cne 'User' -or -not $fork.fork -or $fork.parent.id -ne $upstream.id) { throw 'WINGET_FORK_IDENTITY' }
+          $branch="steward/SPLRAD.LayerScape.Deployer/$version"
+          $query='repos/microsoft/winget-pkgs/pulls?state=all&head='+[Uri]::EscapeDataString("$($fork.owner.login):$branch")+'&base='+[Uri]::EscapeDataString($upstream.default_branch)+'&per_page=100'
+          function Get-VersionPr {
+            $pages=gh api --paginate --slurp $query
+            if ($LASTEXITCODE) { throw 'WINGET_PR_READ_UNKNOWN' }
+            $prs=@(($pages|ConvertFrom-Json)|ForEach-Object {$_}|Where-Object {$_.head.repo.id -eq $fork.id -and $_.head.ref -eq $branch -and $_.base.repo.id -eq $upstream.id -and $_.base.ref -eq $upstream.default_branch})
+            if ($prs.Count -gt 1) { throw 'WINGET_DUPLICATE_PR' }
+            if ($prs.Count -eq 0) { return $null }
+            $pr=gh api "repos/microsoft/winget-pkgs/pulls/$($prs[0].number)"|ConvertFrom-Json
+            if ($LASTEXITCODE) { throw 'WINGET_PR_READ_UNKNOWN' };return $pr
+          }
+          $pr=Get-VersionPr
+          if ($env:MODE -eq 'submit' -and $null -eq $pr) {
+            $packagePath='manifests/s/SPLRAD/LayerScape/Deployer'
+            $package=gh api --include "repos/microsoft/winget-pkgs/contents/$packagePath" 2>$null
+            $status=[regex]::Match(($package -join "`n"),'HTTP/\S+ (\d+)').Groups[1].Value
+            if ($status -eq '200') {
+              & $env:WINGETCREATE_EXE update SPLRAD.LayerScape.Deployer --version $version --urls "$url|x64" --out generated --format yaml
+              if ($LASTEXITCODE) { throw 'WINGET_CREATE_UPDATE' }
+              $directory=Join-Path $pwd "generated/$packagePath/$version"
+            } elseif ($status -eq '404') {
+              # Public upstream repository read succeeded; this exact native path does not exist.
+              $directory=Join-Path $pwd 'generated-first';New-Item -ItemType Directory -Path $directory|Out-Null
+              $template=Get-Content -LiteralPath product/.github/winget/SPLRAD.LayerScape.Deployer.yaml.mustache -Raw
+              $content=$template.Replace('${version}',$version).Replace('${installerUrl}',$url).Replace('${installerSha256}',$installer[0].sha256.ToUpperInvariant())
+              [IO.File]::WriteAllText((Join-Path $directory 'SPLRAD.LayerScape.Deployer.yaml'),$content,[Text.UTF8Encoding]::new($false))
+            } else { throw 'WINGET_PACKAGE_READ_UNKNOWN' }
+            winget validate --manifest $directory --disable-interactivity
+            if ($LASTEXITCODE) { throw 'WINGET_VALIDATION' }
+            $files=@(Get-ChildItem -LiteralPath $directory -File)
+            if ($files.Count -lt 1 -or ($files|Where-Object {$_.Extension -ne '.yaml'})) { throw 'WINGET_MANIFEST_SET' }
+            $entries=@()
+            foreach($file in $files) {
+              $text=[IO.File]::ReadAllText($file.FullName)
+              if ($text -notmatch [regex]::Escape($version) -or $text -notmatch 'SPLRAD.LayerScape.Deployer') { throw 'WINGET_MANIFEST_VERSION' }
+              if ($text -match 'InstallerUrl:' -and ($text -notmatch [regex]::Escape($url) -or $text -notmatch $installer[0].sha256)) { throw 'WINGET_MANIFEST_BYTES' }
+              $entries+=@{path="$packagePath/$version/$($file.Name)";mode='100644';type='blob';content=$text}
+            }
+            $ref=gh api --include "repos/$env:WINGET_FORK_REPOSITORY/git/ref/heads/$branch" 2>$null
+            $refStatus=[regex]::Match(($ref -join "`n"),'HTTP/\S+ (\d+)').Groups[1].Value
+            if ($refStatus -eq '404') {
+              $base=gh api "repos/microsoft/winget-pkgs/commits/$($upstream.default_branch)"|ConvertFrom-Json
+              if ($LASTEXITCODE) { throw 'WINGET_BASE_READ' }
+              @{base_tree=$base.commit.tree.sha;tree=$entries}|ConvertTo-Json -Depth 15|Set-Content -LiteralPath tree.json -Encoding utf8
+              $tree=gh api --method POST "repos/$env:WINGET_FORK_REPOSITORY/git/trees" --input tree.json|ConvertFrom-Json
+              if ($LASTEXITCODE) { throw 'WINGET_TREE_WRITE' }
+              @{message="Add SPLRAD.LayerScape.Deployer $version";tree=$tree.sha;parents=@($base.sha)}|ConvertTo-Json|Set-Content -LiteralPath commit.json -Encoding utf8
+              $commit=gh api --method POST "repos/$env:WINGET_FORK_REPOSITORY/git/commits" --input commit.json|ConvertFrom-Json
+              if ($LASTEXITCODE) { throw 'WINGET_COMMIT_WRITE' }
+              @{ref="refs/heads/$branch";sha=$commit.sha}|ConvertTo-Json|Set-Content -LiteralPath ref.json -Encoding utf8
+              gh api --method POST "repos/$env:WINGET_FORK_REPOSITORY/git/refs" --input ref.json|Out-Null
+              # A lost creation response or 422 is reconciled by reading each exact intended file below.
+            } elseif ($refStatus -ne '200') { throw 'WINGET_FORK_READ_UNKNOWN' }
+            foreach($entry in $entries) {
+              $actual=gh api "repos/$env:WINGET_FORK_REPOSITORY/contents/$($entry.path)?ref=$([Uri]::EscapeDataString($branch))"|ConvertFrom-Json
+              if ($LASTEXITCODE -or $actual.encoding -ne 'base64' -or [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($actual.content)) -cne $entry.content) { throw 'WINGET_FORK_CONTENT_CONFLICT' }
+            }
+            # Query again before POST; repeated responses never authorize a second version PR.
+            $pr=Get-VersionPr
+            if ($null -eq $pr) {
+              @{title="New version: SPLRAD.LayerScape.Deployer $version";head="$($fork.owner.login):$branch";base=$upstream.default_branch;body="Release: https://github.com/splrad/LayerScape/releases/tag/$($manifest.tag)"}|ConvertTo-Json|Set-Content -LiteralPath pr.json -Encoding utf8
+              gh api --method POST repos/microsoft/winget-pkgs/pulls --input pr.json|Out-Null
+              $pr=Get-VersionPr
+              if ($null -eq $pr) { throw 'WINGET_SUBMISSION_UNCONFIRMED' }
+            }
+          }
+          if ($null -eq $pr -or ($pr.state -eq 'closed' -and -not $pr.merged)) { throw 'WINGET_REJECTED_OR_MISSING' }
+          # Existing PRs must still describe these exact formal bytes, including after a lost POST response.
+          $prFiles=gh api --paginate --slurp "repos/microsoft/winget-pkgs/pulls/$($pr.number)/files?per_page=100" | ConvertFrom-Json
+          if ($LASTEXITCODE) { throw 'WINGET_PR_FILES_UNKNOWN' }
+          $prFiles=@($prFiles|ForEach-Object {$_})
+          $prefix="manifests/s/SPLRAD/LayerScape/Deployer/$version/"
+          if (-not $prFiles.Count -or @($prFiles|Where-Object {$_.filename -notlike "$prefix*.yaml" -or $_.filename.Substring($prefix.Length).Contains('/') -or $_.status -eq 'removed'}).Count) { throw 'WINGET_PR_SCOPE_CONFLICT' }
+          $checkDirectory=Join-Path $pwd 'verified-pr';New-Item -ItemType Directory -Path $checkDirectory|Out-Null
+          $urls=@();$hashes=@()
+          foreach($file in $prFiles) {
+            $actual=gh api "repos/$env:WINGET_FORK_REPOSITORY/contents/$($file.filename)?ref=$($pr.head.sha)"|ConvertFrom-Json
+            if ($LASTEXITCODE -or $actual.encoding -ne 'base64') { throw 'WINGET_PR_CONTENT_UNKNOWN' }
+            $content=[Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($actual.content))
+            [IO.File]::WriteAllText((Join-Path $checkDirectory ([IO.Path]::GetFileName($file.filename))),$content,[Text.UTF8Encoding]::new($false))
+            $urls+=@([regex]::Matches($content,'(?m)^\s*InstallerUrl:\s*([^\r\n]+?)\s*$')|ForEach-Object {$_.Groups[1].Value.Trim('"',"'")})
+            $hashes+=@([regex]::Matches($content,'(?m)^\s*InstallerSha256:\s*([A-Fa-f0-9]{64})\s*$')|ForEach-Object {$_.Groups[1].Value})
+          }
+          if ($urls.Count -ne 1 -or $hashes.Count -ne 1 -or $urls[0] -cne $url -or $hashes[0] -ine $installer[0].sha256) { throw 'WINGET_PR_BYTES_CONFLICT' }
+          winget validate --manifest $checkDirectory --disable-interactivity
+          if ($LASTEXITCODE) { throw 'WINGET_PR_VALIDATION' }
+          $consumed=$false;$indexed=$false
+          if ($env:MODE -eq 'verify') {
+            if (-not $pr.merged) { throw 'DEPENDENCY_NOT_READY' }
+            winget source update --name winget --disable-interactivity
+            if ($LASTEXITCODE) { throw 'WINGET_INDEX_UNKNOWN' }
+            winget show --id SPLRAD.LayerScape.Deployer --exact --version $version --source winget --accept-source-agreements --disable-interactivity
+            if ($LASTEXITCODE) { throw 'DEPENDENCY_NOT_READY' }
+            $indexed=$true
+            foreach ($selectionMode in @('exact','default')) {
+              $arguments=@('install','--id','SPLRAD.LayerScape.Deployer','--exact','--source','winget','--scope','user','--accept-package-agreements','--accept-source-agreements','--disable-interactivity')
+              if ($selectionMode -eq 'exact') { $arguments+=@('--version',$version) }
+              else {
+                $defaultShow=winget show --id SPLRAD.LayerScape.Deployer --exact --source winget --accept-source-agreements --disable-interactivity
+                $defaultShow | Write-Output
+                if ($LASTEXITCODE -or ($defaultShow -join [Environment]::NewLine) -notmatch ('(?m)^Version:\s*'+[Regex]::Escape($version)+'\s*$')) { throw 'WINGET_DEFAULT_VERSION' }
+              }
+              winget @arguments
+              if ($LASTEXITCODE) { throw 'WINGET_INSTALL_FAILED' }
+              try {
+                $installed=Get-Command layerscape-deployer.exe -ErrorAction Stop
+                if ((Get-FileHash -LiteralPath $installed.Source -Algorithm SHA256).Hash.ToLowerInvariant() -ne $installer[0].sha256) { throw 'WINGET_INSTALLED_BYTES' }
+              } finally {
+                winget uninstall --id SPLRAD.LayerScape.Deployer --exact --source winget --disable-interactivity
+                if ($LASTEXITCODE) { throw 'WINGET_UNINSTALL_FAILED' }
+              }
+            }
+            $consumed=$true
+          }
+          @{id=[string]$pr.number;accepted=[bool]$pr.merged;indexed=$indexed;consumed=$consumed;observedAt=[DateTime]::UtcNow.ToString('o')}|ConvertTo-Json -Compress|Set-Content -LiteralPath native.json -Encoding utf8
+      - name: Capture native result
+        shell: pwsh
+        env:
+          UNIT: ${{ matrix.unitId }}
+          CHANNEL: ${{ matrix.channelId }}
+        run: |
+
+          $selection=Get-Content -LiteralPath selection.json -Raw|ConvertFrom-Json
+          $target=$selection.targets|Where-Object {$_.unitId -eq $env:UNIT -and $_.channelId -eq $env:CHANNEL}
+          $native=Get-Content -LiteralPath native.json -Raw|ConvertFrom-Json
+          $item=[ordered]@{unitId=$target.unitId;channelId=$target.channelId;version=$target.version;releaseId=$target.releaseId;manifestDigest=$target.manifestDigest;nativeObjectId=$native.id;digest=$target.manifestDigest;accepted=[bool]$native.accepted;indexed=[bool]$native.indexed;consumed=[bool]$native.consumed;observedAt=$native.observedAt}
+          $payload=[ordered]@{schemaVersion=1;cycleId=$selection.context.cycle.id;sourceSha=$selection.context.cycle.sourceSha;executionSha=$env:GITHUB_SHA;controllerSha=$selection.context.cycle.controllerSha;targetsDigest=$selection.targetsDigest;nativeRunId=[long]$env:GITHUB_RUN_ID;runAttempt=[int]$env:GITHUB_RUN_ATTEMPT;items=@($item)}
+          [IO.File]::WriteAllText((Join-Path $pwd 'report.json'),($payload|ConvertTo-Json -Depth 20 -Compress),[Text.UTF8Encoding]::new($false))
+      - id: report
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: channel-${{ inputs.request_key }}-${{ matrix.unitId }}-${{
+            matrix.channelId }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: report.json
+          if-no-files-found: error
+          retention-days: 90
+      - name: Archive actual business steps
+        if: always()
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          UNIT: ${{ matrix.unitId }}
+          CHANNEL: ${{ matrix.channelId }}
+          ARTIFACT_ID: ${{ steps.report.outputs.artifact-id }}
+          ARTIFACT_DIGEST: ${{ steps.report.outputs.artifact-digest }}
+        run: |-
+          $objects='[]'
+          if ($env:ARTIFACT_ID) { $objects=ConvertTo-Json -InputObject @(@{kind='artifact';id=[long]$env:ARTIFACT_ID;digest=$env:ARTIFACT_DIGEST.Replace('sha256:','')}) -Compress }
+          node controller/packages/runner/dist/index.js release-pipeline channel-result --inputs inputs.json --state-dir state --controller-dir controller --unit "$env:UNIT" --channel "$env:CHANNEL" --job-name "submit/winget/$env:UNIT" --objects $objects --output receipt.json
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+  ghcr-assets-verify:
+    name: verify/ghcr-assets/${{ matrix.unitId }}
+    needs:
+      - source-check
+      - admit
+      - channel-prepare
+    if: inputs.mode == 'verify' && needs.channel-prepare.outputs.has_ghcr == 'true'
+    runs-on: windows-2025
+    timeout-minutes: 25
+    permissions:
+      contents: read
+      actions: read
+      packages: read
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.channel-prepare.outputs.ghcr_matrix) }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.sha }}
+          path: product
+          persist-credentials: false
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          repository: splrad/steward
+          ref: 115b3447bdd5414c0767f35f304c828a3fb45953
+          path: controller
+          persist-credentials: false
+      - name: Enable Git long paths
+        shell: pwsh
+        run: git config --global core.longpaths true
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: steward/release-state
+          path: state
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: jdx/mise-action@82a612c5ab8bcda7cc5db6b7e81a8e7584c3dc6e
+        env:
+          MISE_SAFE: "1"
+          MISE_NODE_COMPILE: "false"
+        with:
+          version: 2026.10.18
+          working_directory: controller
+          install_args: --locked
+          cache: false
+          env: false
+          persist_github_token: false
+      - name: Activate trusted controller tool paths
+        working-directory: controller
+        shell: pwsh
+        env:
+          MISE_SAFE: "1"
+          MISE_LOCKED: "1"
+        run: |
+          $toolPaths = mise bin-paths
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          $toolPaths | Add-Content -LiteralPath $env:GITHUB_PATH
+      - name: Install locked controller dependencies
+        working-directory: controller
+        shell: pwsh
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Closed native inputs
+        shell: pwsh
+        env:
+          CHANNEL_INPUTS: ${{ toJSON(inputs) }}
+        run: "[IO.File]::WriteAllText((Join-Path $pwd 'inputs.json'),
+          $env:CHANNEL_INPUTS, [Text.UTF8Encoding]::new($false))"
+      - name: Read canonical channel request
+        id: identity
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |-
+          node controller/packages/runner/dist/index.js release-pipeline channel-source --inputs inputs.json --state-dir state --controller-dir controller --stage admit --output selection.json
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+      - name: Read exact formal Release bytes
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          UNIT: ${{ matrix.unitId }}
+          CHANNEL: ${{ matrix.channelId }}
+        run: |-
+          node controller/packages/runner/dist/index.js release-pipeline channel-download --inputs inputs.json --state-dir state --controller-dir controller --unit "$env:UNIT" --channel "$env:CHANNEL" --directory final --output manifest.json
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+      - name: business-ghcr-verify
+        shell: pwsh
+        env:
+          MODE: verify
+        run: |
+
+          $ErrorActionPreference='Stop'
+          $manifest=Get-Content -LiteralPath manifest.json -Raw|ConvertFrom-Json
+          $version=$manifest.version
+          $auth=Join-Path $env:RUNNER_TEMP 'oras-business.json'
+          [IO.File]::WriteAllText($auth,'{"auths":{}}')
+          $names=@($manifest.artifacts|ForEach-Object {$_.path})+@('sbom.spdx.json','release-notes.md','artifact-manifest.json','SHA256SUMS')|Sort-Object
+          $expected=@{};foreach($name in $names) {$expected[$name]=(Get-FileHash -LiteralPath "final/$name" -Algorithm SHA256).Hash.ToLowerInvariant()}
+          if ($env:MODE -eq 'submit') {
+            $env:GHCR_TOKEN | oras login ghcr.io --username $env:GITHUB_ACTOR --password-stdin --registry-config $auth
+            if ($LASTEXITCODE) { throw 'GHCR_AUTHENTICATION' }
+            Push-Location final
+            try {
+              oras push --oci-layout ../layout:release --artifact-type application/vnd.splrad.layerscape.release.v1 --annotation 'org.opencontainers.image.created=1970-01-01T00:00:00Z' --annotation 'org.opencontainers.image.source=https://github.com/splrad/LayerScape' @names
+              if ($LASTEXITCODE) { throw 'ORAS_LAYOUT' }
+            } finally { Pop-Location }
+            $expectedDigest=oras resolve --oci-layout layout:release
+            if ($LASTEXITCODE) { throw 'ORAS_LAYOUT_DIGEST' }
+            . controller/scripts/ghcr-package-state.ps1
+            $null=Get-LayerScapePackageState -Token $env:GHCR_TOKEN -OwnerInventory $env:GHCR_OWNER_PACKAGE_INVENTORY
+            $existing=oras resolve --registry-config $auth "ghcr.io/splrad/layerscape-assets:$version" 2>remote-error.txt
+            if ($LASTEXITCODE -eq 0) { if ($existing.Trim() -ne $expectedDigest.Trim()) { throw 'ASSET_CONFLICT' } }
+            else {
+              . controller/scripts/ghcr-package-state.ps1
+              $package=Get-LayerScapePackageState -Token $env:GHCR_TOKEN -OwnerInventory $env:GHCR_OWNER_PACKAGE_INVENTORY
+              if ($package.state -eq 'EXISTS') {
+                $tags=oras repo tags ghcr.io/splrad/layerscape-assets --registry-config $auth --format json 2>$null
+                if ($LASTEXITCODE -ne 0 -or ($tags|ConvertFrom-Json).tags -contains $version) { throw 'GHCR_ABSENCE_UNKNOWN' }
+              }
+              oras cp --from-oci-layout --to-registry-config $auth layout:release "ghcr.io/splrad/layerscape-assets:$version"
+              $actual=oras resolve --registry-config $auth "ghcr.io/splrad/layerscape-assets:$version"
+              if ($LASTEXITCODE -ne 0 -or $actual.Trim() -ne $expectedDigest.Trim()) { throw 'GHCR_UPLOAD_UNCONFIRMED' }
+            }
+          }
+          if ($env:MODE -eq 'submit') {
+            # Acceptance is the authenticated digest readback. Public visibility and consumption are observed separately.
+            @{id=$expectedDigest.Trim();accepted=$true;indexed=$false;consumed=$false;observedAt=[DateTime]::UtcNow.ToString('o')}|ConvertTo-Json -Compress|Set-Content -LiteralPath native.json -Encoding utf8
+          } else {
+          # Verification always pulls with an empty registry credential file.
+          $empty=Join-Path $env:RUNNER_TEMP 'oras-anonymous.json';[IO.File]::WriteAllText($empty,'{"auths":{}}')
+          $digest=oras resolve --registry-config $empty "ghcr.io/splrad/layerscape-assets:$version"
+          if ($LASTEXITCODE) { throw 'GHCR_ANONYMOUS_VISIBILITY' }
+          oras pull --registry-config $empty "ghcr.io/splrad/layerscape-assets@$($digest.Trim())" --output pulled
+          if ($LASTEXITCODE) { throw 'GHCR_ANONYMOUS_PULL' }
+          $actualNames=@(Get-ChildItem -LiteralPath pulled -File|ForEach-Object {$_.Name}|Sort-Object)
+          if (($actualNames -join '|') -ne ($names -join '|')) { throw 'GHCR_FILE_SET' }
+          foreach($name in $names) { if ((Get-FileHash -LiteralPath "pulled/$name" -Algorithm SHA256).Hash.ToLowerInvariant() -ne $expected[$name]) { throw 'GHCR_BYTES_CONFLICT' } }
+          @{id=$digest.Trim();accepted=$true;indexed=$true;consumed=($env:MODE -eq 'verify');observedAt=[DateTime]::UtcNow.ToString('o')}|ConvertTo-Json -Compress|Set-Content -LiteralPath native.json -Encoding utf8
+
+          }
+      - name: Capture native result
+        shell: pwsh
+        env:
+          UNIT: ${{ matrix.unitId }}
+          CHANNEL: ${{ matrix.channelId }}
+        run: |
+
+          $selection=Get-Content -LiteralPath selection.json -Raw|ConvertFrom-Json
+          $target=$selection.targets|Where-Object {$_.unitId -eq $env:UNIT -and $_.channelId -eq $env:CHANNEL}
+          $native=Get-Content -LiteralPath native.json -Raw|ConvertFrom-Json
+          $item=[ordered]@{unitId=$target.unitId;channelId=$target.channelId;version=$target.version;releaseId=$target.releaseId;manifestDigest=$target.manifestDigest;nativeObjectId=$native.id;digest=$target.manifestDigest;accepted=[bool]$native.accepted;indexed=[bool]$native.indexed;consumed=[bool]$native.consumed;observedAt=$native.observedAt}
+          $payload=[ordered]@{schemaVersion=1;cycleId=$selection.context.cycle.id;sourceSha=$selection.context.cycle.sourceSha;executionSha=$env:GITHUB_SHA;controllerSha=$selection.context.cycle.controllerSha;targetsDigest=$selection.targetsDigest;nativeRunId=[long]$env:GITHUB_RUN_ID;runAttempt=[int]$env:GITHUB_RUN_ATTEMPT;items=@($item)}
+          [IO.File]::WriteAllText((Join-Path $pwd 'report.json'),($payload|ConvertTo-Json -Depth 20 -Compress),[Text.UTF8Encoding]::new($false))
+      - id: report
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: channel-${{ inputs.request_key }}-${{ matrix.unitId }}-${{
+            matrix.channelId }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: report.json
+          if-no-files-found: error
+          retention-days: 90
+      - name: Archive actual business steps
+        if: always()
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          UNIT: ${{ matrix.unitId }}
+          CHANNEL: ${{ matrix.channelId }}
+          ARTIFACT_ID: ${{ steps.report.outputs.artifact-id }}
+          ARTIFACT_DIGEST: ${{ steps.report.outputs.artifact-digest }}
+        run: |-
+          $objects='[]'
+          if ($env:ARTIFACT_ID) { $objects=ConvertTo-Json -InputObject @(@{kind='artifact';id=[long]$env:ARTIFACT_ID;digest=$env:ARTIFACT_DIGEST.Replace('sha256:','')}) -Compress }
+          node controller/packages/runner/dist/index.js release-pipeline channel-result --inputs inputs.json --state-dir state --controller-dir controller --unit "$env:UNIT" --channel "$env:CHANNEL" --job-name "verify/ghcr-assets/$env:UNIT" --objects $objects --output receipt.json
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+  winget-verify:
+    name: verify/winget/${{ matrix.unitId }}
+    needs:
+      - source-check
+      - admit
+      - channel-prepare
+    if: inputs.mode == 'verify' && needs.channel-prepare.outputs.has_winget ==
+      'true'
+    runs-on: windows-2025
+    timeout-minutes: 25
+    permissions:
+      contents: read
+      actions: read
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.channel-prepare.outputs.winget_matrix) }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.sha }}
+          path: product
+          persist-credentials: false
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          repository: splrad/steward
+          ref: 115b3447bdd5414c0767f35f304c828a3fb45953
+          path: controller
+          persist-credentials: false
+      - name: Enable Git long paths
+        shell: pwsh
+        run: git config --global core.longpaths true
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: steward/release-state
+          path: state
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: jdx/mise-action@82a612c5ab8bcda7cc5db6b7e81a8e7584c3dc6e
+        env:
+          MISE_SAFE: "1"
+          MISE_NODE_COMPILE: "false"
+        with:
+          version: 2026.10.18
+          working_directory: controller
+          install_args: --locked
+          cache: false
+          env: false
+          persist_github_token: false
+      - name: Activate trusted controller tool paths
+        working-directory: controller
+        shell: pwsh
+        env:
+          MISE_SAFE: "1"
+          MISE_LOCKED: "1"
+        run: |
+          $toolPaths = mise bin-paths
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          $toolPaths | Add-Content -LiteralPath $env:GITHUB_PATH
+      - name: Install locked controller dependencies
+        working-directory: controller
+        shell: pwsh
+        run: npm ci --ignore-scripts --no-audit --no-fund
+      - name: Closed native inputs
+        shell: pwsh
+        env:
+          CHANNEL_INPUTS: ${{ toJSON(inputs) }}
+        run: "[IO.File]::WriteAllText((Join-Path $pwd 'inputs.json'),
+          $env:CHANNEL_INPUTS, [Text.UTF8Encoding]::new($false))"
+      - name: Read canonical channel request
+        id: identity
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |-
+          node controller/packages/runner/dist/index.js release-pipeline channel-source --inputs inputs.json --state-dir state --controller-dir controller --stage admit --output selection.json
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+      - name: Read exact formal Release bytes
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          UNIT: ${{ matrix.unitId }}
+          CHANNEL: ${{ matrix.channelId }}
+        run: |-
+          node controller/packages/runner/dist/index.js release-pipeline channel-download --inputs inputs.json --state-dir state --controller-dir controller --unit "$env:UNIT" --channel "$env:CHANNEL" --directory final --output manifest.json
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+      - name: Resolve locked controller channel tool
+        id: winget-tool
+        shell: pwsh
+        run: |-
+          $exe = mise -C controller which wingetcreate
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          "exe=$exe" >> $env:GITHUB_OUTPUT
+      - name: business-winget-verify
+        shell: pwsh
+        env:
+          MODE: verify
+          WINGETCREATE_EXE: ${{ steps.winget-tool.outputs.exe }}
+          GH_TOKEN: ${{ github.token }}
+          WINGET_FORK_REPOSITORY: ${{ vars.WINGET_FORK_REPOSITORY }}
+        run: |
+          $ErrorActionPreference='Stop'
+          $manifest=Get-Content -LiteralPath manifest.json -Raw|ConvertFrom-Json
+          $version=$manifest.version
+          if ($version -notmatch '^[0-9]+\.[0-9]+\.[0-9]+(?:-[A-Za-z0-9.-]+)?$') { throw 'WINGET_VERSION' }
+          $installer=@($manifest.artifacts|Where-Object {$_.id -eq 'deployer'})
+          if ($installer.Count -ne 1) { throw 'WINGET_INSTALLER' }
+          $url="https://github.com/splrad/LayerScape/releases/download/$($manifest.tag)/$($installer[0].path)"
+          $upstream=gh api repos/microsoft/winget-pkgs|ConvertFrom-Json
+          if ($LASTEXITCODE -or $upstream.full_name -ne 'microsoft/winget-pkgs') { throw 'WINGET_UPSTREAM_IDENTITY' }
+          if ($env:WINGET_FORK_REPOSITORY -cne 'axiomoth/winget-pkgs') { throw 'WINGET_FIXED_FORK_REQUIRED' }
+          $fork=gh api "repos/$env:WINGET_FORK_REPOSITORY"|ConvertFrom-Json
+          if ($LASTEXITCODE -or $fork.full_name -cne 'axiomoth/winget-pkgs' -or $fork.private -or $fork.owner.type -cne 'User' -or -not $fork.fork -or $fork.parent.id -ne $upstream.id) { throw 'WINGET_FORK_IDENTITY' }
+          $branch="steward/SPLRAD.LayerScape.Deployer/$version"
+          $query='repos/microsoft/winget-pkgs/pulls?state=all&head='+[Uri]::EscapeDataString("$($fork.owner.login):$branch")+'&base='+[Uri]::EscapeDataString($upstream.default_branch)+'&per_page=100'
+          function Get-VersionPr {
+            $pages=gh api --paginate --slurp $query
+            if ($LASTEXITCODE) { throw 'WINGET_PR_READ_UNKNOWN' }
+            $prs=@(($pages|ConvertFrom-Json)|ForEach-Object {$_}|Where-Object {$_.head.repo.id -eq $fork.id -and $_.head.ref -eq $branch -and $_.base.repo.id -eq $upstream.id -and $_.base.ref -eq $upstream.default_branch})
+            if ($prs.Count -gt 1) { throw 'WINGET_DUPLICATE_PR' }
+            if ($prs.Count -eq 0) { return $null }
+            $pr=gh api "repos/microsoft/winget-pkgs/pulls/$($prs[0].number)"|ConvertFrom-Json
+            if ($LASTEXITCODE) { throw 'WINGET_PR_READ_UNKNOWN' };return $pr
+          }
+          $pr=Get-VersionPr
+          if ($env:MODE -eq 'submit' -and $null -eq $pr) {
+            $packagePath='manifests/s/SPLRAD/LayerScape/Deployer'
+            $package=gh api --include "repos/microsoft/winget-pkgs/contents/$packagePath" 2>$null
+            $status=[regex]::Match(($package -join "`n"),'HTTP/\S+ (\d+)').Groups[1].Value
+            if ($status -eq '200') {
+              & $env:WINGETCREATE_EXE update SPLRAD.LayerScape.Deployer --version $version --urls "$url|x64" --out generated --format yaml
+              if ($LASTEXITCODE) { throw 'WINGET_CREATE_UPDATE' }
+              $directory=Join-Path $pwd "generated/$packagePath/$version"
+            } elseif ($status -eq '404') {
+              # Public upstream repository read succeeded; this exact native path does not exist.
+              $directory=Join-Path $pwd 'generated-first';New-Item -ItemType Directory -Path $directory|Out-Null
+              $template=Get-Content -LiteralPath product/.github/winget/SPLRAD.LayerScape.Deployer.yaml.mustache -Raw
+              $content=$template.Replace('${version}',$version).Replace('${installerUrl}',$url).Replace('${installerSha256}',$installer[0].sha256.ToUpperInvariant())
+              [IO.File]::WriteAllText((Join-Path $directory 'SPLRAD.LayerScape.Deployer.yaml'),$content,[Text.UTF8Encoding]::new($false))
+            } else { throw 'WINGET_PACKAGE_READ_UNKNOWN' }
+            winget validate --manifest $directory --disable-interactivity
+            if ($LASTEXITCODE) { throw 'WINGET_VALIDATION' }
+            $files=@(Get-ChildItem -LiteralPath $directory -File)
+            if ($files.Count -lt 1 -or ($files|Where-Object {$_.Extension -ne '.yaml'})) { throw 'WINGET_MANIFEST_SET' }
+            $entries=@()
+            foreach($file in $files) {
+              $text=[IO.File]::ReadAllText($file.FullName)
+              if ($text -notmatch [regex]::Escape($version) -or $text -notmatch 'SPLRAD.LayerScape.Deployer') { throw 'WINGET_MANIFEST_VERSION' }
+              if ($text -match 'InstallerUrl:' -and ($text -notmatch [regex]::Escape($url) -or $text -notmatch $installer[0].sha256)) { throw 'WINGET_MANIFEST_BYTES' }
+              $entries+=@{path="$packagePath/$version/$($file.Name)";mode='100644';type='blob';content=$text}
+            }
+            $ref=gh api --include "repos/$env:WINGET_FORK_REPOSITORY/git/ref/heads/$branch" 2>$null
+            $refStatus=[regex]::Match(($ref -join "`n"),'HTTP/\S+ (\d+)').Groups[1].Value
+            if ($refStatus -eq '404') {
+              $base=gh api "repos/microsoft/winget-pkgs/commits/$($upstream.default_branch)"|ConvertFrom-Json
+              if ($LASTEXITCODE) { throw 'WINGET_BASE_READ' }
+              @{base_tree=$base.commit.tree.sha;tree=$entries}|ConvertTo-Json -Depth 15|Set-Content -LiteralPath tree.json -Encoding utf8
+              $tree=gh api --method POST "repos/$env:WINGET_FORK_REPOSITORY/git/trees" --input tree.json|ConvertFrom-Json
+              if ($LASTEXITCODE) { throw 'WINGET_TREE_WRITE' }
+              @{message="Add SPLRAD.LayerScape.Deployer $version";tree=$tree.sha;parents=@($base.sha)}|ConvertTo-Json|Set-Content -LiteralPath commit.json -Encoding utf8
+              $commit=gh api --method POST "repos/$env:WINGET_FORK_REPOSITORY/git/commits" --input commit.json|ConvertFrom-Json
+              if ($LASTEXITCODE) { throw 'WINGET_COMMIT_WRITE' }
+              @{ref="refs/heads/$branch";sha=$commit.sha}|ConvertTo-Json|Set-Content -LiteralPath ref.json -Encoding utf8
+              gh api --method POST "repos/$env:WINGET_FORK_REPOSITORY/git/refs" --input ref.json|Out-Null
+              # A lost creation response or 422 is reconciled by reading each exact intended file below.
+            } elseif ($refStatus -ne '200') { throw 'WINGET_FORK_READ_UNKNOWN' }
+            foreach($entry in $entries) {
+              $actual=gh api "repos/$env:WINGET_FORK_REPOSITORY/contents/$($entry.path)?ref=$([Uri]::EscapeDataString($branch))"|ConvertFrom-Json
+              if ($LASTEXITCODE -or $actual.encoding -ne 'base64' -or [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($actual.content)) -cne $entry.content) { throw 'WINGET_FORK_CONTENT_CONFLICT' }
+            }
+            # Query again before POST; repeated responses never authorize a second version PR.
+            $pr=Get-VersionPr
+            if ($null -eq $pr) {
+              @{title="New version: SPLRAD.LayerScape.Deployer $version";head="$($fork.owner.login):$branch";base=$upstream.default_branch;body="Release: https://github.com/splrad/LayerScape/releases/tag/$($manifest.tag)"}|ConvertTo-Json|Set-Content -LiteralPath pr.json -Encoding utf8
+              gh api --method POST repos/microsoft/winget-pkgs/pulls --input pr.json|Out-Null
+              $pr=Get-VersionPr
+              if ($null -eq $pr) { throw 'WINGET_SUBMISSION_UNCONFIRMED' }
+            }
+          }
+          if ($null -eq $pr -or ($pr.state -eq 'closed' -and -not $pr.merged)) { throw 'WINGET_REJECTED_OR_MISSING' }
+          # Existing PRs must still describe these exact formal bytes, including after a lost POST response.
+          $prFiles=gh api --paginate --slurp "repos/microsoft/winget-pkgs/pulls/$($pr.number)/files?per_page=100" | ConvertFrom-Json
+          if ($LASTEXITCODE) { throw 'WINGET_PR_FILES_UNKNOWN' }
+          $prFiles=@($prFiles|ForEach-Object {$_})
+          $prefix="manifests/s/SPLRAD/LayerScape/Deployer/$version/"
+          if (-not $prFiles.Count -or @($prFiles|Where-Object {$_.filename -notlike "$prefix*.yaml" -or $_.filename.Substring($prefix.Length).Contains('/') -or $_.status -eq 'removed'}).Count) { throw 'WINGET_PR_SCOPE_CONFLICT' }
+          $checkDirectory=Join-Path $pwd 'verified-pr';New-Item -ItemType Directory -Path $checkDirectory|Out-Null
+          $urls=@();$hashes=@()
+          foreach($file in $prFiles) {
+            $actual=gh api "repos/$env:WINGET_FORK_REPOSITORY/contents/$($file.filename)?ref=$($pr.head.sha)"|ConvertFrom-Json
+            if ($LASTEXITCODE -or $actual.encoding -ne 'base64') { throw 'WINGET_PR_CONTENT_UNKNOWN' }
+            $content=[Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($actual.content))
+            [IO.File]::WriteAllText((Join-Path $checkDirectory ([IO.Path]::GetFileName($file.filename))),$content,[Text.UTF8Encoding]::new($false))
+            $urls+=@([regex]::Matches($content,'(?m)^\s*InstallerUrl:\s*([^\r\n]+?)\s*$')|ForEach-Object {$_.Groups[1].Value.Trim('"',"'")})
+            $hashes+=@([regex]::Matches($content,'(?m)^\s*InstallerSha256:\s*([A-Fa-f0-9]{64})\s*$')|ForEach-Object {$_.Groups[1].Value})
+          }
+          if ($urls.Count -ne 1 -or $hashes.Count -ne 1 -or $urls[0] -cne $url -or $hashes[0] -ine $installer[0].sha256) { throw 'WINGET_PR_BYTES_CONFLICT' }
+          winget validate --manifest $checkDirectory --disable-interactivity
+          if ($LASTEXITCODE) { throw 'WINGET_PR_VALIDATION' }
+          $consumed=$false;$indexed=$false
+          if ($env:MODE -eq 'verify') {
+            if (-not $pr.merged) { throw 'DEPENDENCY_NOT_READY' }
+            winget source update --name winget --disable-interactivity
+            if ($LASTEXITCODE) { throw 'WINGET_INDEX_UNKNOWN' }
+            winget show --id SPLRAD.LayerScape.Deployer --exact --version $version --source winget --accept-source-agreements --disable-interactivity
+            if ($LASTEXITCODE) { throw 'DEPENDENCY_NOT_READY' }
+            $indexed=$true
+            foreach ($selectionMode in @('exact','default')) {
+              $arguments=@('install','--id','SPLRAD.LayerScape.Deployer','--exact','--source','winget','--scope','user','--accept-package-agreements','--accept-source-agreements','--disable-interactivity')
+              if ($selectionMode -eq 'exact') { $arguments+=@('--version',$version) }
+              else {
+                $defaultShow=winget show --id SPLRAD.LayerScape.Deployer --exact --source winget --accept-source-agreements --disable-interactivity
+                $defaultShow | Write-Output
+                if ($LASTEXITCODE -or ($defaultShow -join [Environment]::NewLine) -notmatch ('(?m)^Version:\s*'+[Regex]::Escape($version)+'\s*$')) { throw 'WINGET_DEFAULT_VERSION' }
+              }
+              winget @arguments
+              if ($LASTEXITCODE) { throw 'WINGET_INSTALL_FAILED' }
+              try {
+                $installed=Get-Command layerscape-deployer.exe -ErrorAction Stop
+                if ((Get-FileHash -LiteralPath $installed.Source -Algorithm SHA256).Hash.ToLowerInvariant() -ne $installer[0].sha256) { throw 'WINGET_INSTALLED_BYTES' }
+              } finally {
+                winget uninstall --id SPLRAD.LayerScape.Deployer --exact --source winget --disable-interactivity
+                if ($LASTEXITCODE) { throw 'WINGET_UNINSTALL_FAILED' }
+              }
+            }
+            $consumed=$true
+          }
+          @{id=[string]$pr.number;accepted=[bool]$pr.merged;indexed=$indexed;consumed=$consumed;observedAt=[DateTime]::UtcNow.ToString('o')}|ConvertTo-Json -Compress|Set-Content -LiteralPath native.json -Encoding utf8
+      - name: Capture native result
+        shell: pwsh
+        env:
+          UNIT: ${{ matrix.unitId }}
+          CHANNEL: ${{ matrix.channelId }}
+        run: |
+
+          $selection=Get-Content -LiteralPath selection.json -Raw|ConvertFrom-Json
+          $target=$selection.targets|Where-Object {$_.unitId -eq $env:UNIT -and $_.channelId -eq $env:CHANNEL}
+          $native=Get-Content -LiteralPath native.json -Raw|ConvertFrom-Json
+          $item=[ordered]@{unitId=$target.unitId;channelId=$target.channelId;version=$target.version;releaseId=$target.releaseId;manifestDigest=$target.manifestDigest;nativeObjectId=$native.id;digest=$target.manifestDigest;accepted=[bool]$native.accepted;indexed=[bool]$native.indexed;consumed=[bool]$native.consumed;observedAt=$native.observedAt}
+          $payload=[ordered]@{schemaVersion=1;cycleId=$selection.context.cycle.id;sourceSha=$selection.context.cycle.sourceSha;executionSha=$env:GITHUB_SHA;controllerSha=$selection.context.cycle.controllerSha;targetsDigest=$selection.targetsDigest;nativeRunId=[long]$env:GITHUB_RUN_ID;runAttempt=[int]$env:GITHUB_RUN_ATTEMPT;items=@($item)}
+          [IO.File]::WriteAllText((Join-Path $pwd 'report.json'),($payload|ConvertTo-Json -Depth 20 -Compress),[Text.UTF8Encoding]::new($false))
+      - id: report
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: channel-${{ inputs.request_key }}-${{ matrix.unitId }}-${{
+            matrix.channelId }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: report.json
+          if-no-files-found: error
+          retention-days: 90
+      - name: Archive actual business steps
+        if: always()
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          UNIT: ${{ matrix.unitId }}
+          CHANNEL: ${{ matrix.channelId }}
+          ARTIFACT_ID: ${{ steps.report.outputs.artifact-id }}
+          ARTIFACT_DIGEST: ${{ steps.report.outputs.artifact-digest }}
+        run: |-
+          $objects='[]'
+          if ($env:ARTIFACT_ID) { $objects=ConvertTo-Json -InputObject @(@{kind='artifact';id=[long]$env:ARTIFACT_ID;digest=$env:ARTIFACT_DIGEST.Replace('sha256:','')}) -Compress }
+          node controller/packages/runner/dist/index.js release-pipeline channel-result --inputs inputs.json --state-dir state --controller-dir controller --unit "$env:UNIT" --channel "$env:CHANNEL" --job-name "verify/winget/$env:UNIT" --objects $objects --output receipt.json
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+  collect:
+    needs:
+      - source-check
+      - admit
+      - channel-prepare
+      - observe
+      - ghcr-assets-submit
+      - ghcr-assets-verify
+      - winget-submit
+      - winget-verify
+    if: always()
+    runs-on: windows-2025
+    timeout-minutes: 5
+    steps:
+      - name: Record native job conclusions
+        shell: pwsh
+        env:
+          RESULTS: ${{ toJSON(needs) }}
+          MODE: ${{ inputs.mode }}
+        run: |-
+          $results=$env:RESULTS|ConvertFrom-Json
+          if ($results.'source-check'.result -ne 'success') { throw 'CHANNEL_SOURCE_FAILED' }
+          foreach ($item in $results.PSObject.Properties) { if ($item.Value.result -in @('failure','cancelled')) { throw 'CHANNEL_NATIVE_JOB_FAILED' } }
+          $requiredJobs=@('source-check')
+          switch -CaseSensitive ($env:MODE) {
+            'observe' { $requiredJobs+='observe' }
+            { $_ -cin @('submit','verify') } {
+              $requiredJobs+=@('admit','channel-prepare')
+              $outputs=$results.'channel-prepare'.outputs
+              foreach ($channel in @(@{flag='has_ghcr';job='ghcr-assets'},@{flag='has_winget';job='winget'})) {
+                $selected=$outputs.($channel.flag)
+                if ($selected -cnotin @('true','false')) { throw 'CHANNEL_SELECTION_UNKNOWN' }
+                if ($selected -ceq 'true') { $requiredJobs+="$($channel.job)-$env:MODE" }
+              }
+            }
+            default { throw 'CHANNEL_MODE_INVALID' }
+          }
+          foreach ($job in $requiredJobs) {
+            if ($results.$job.result -cne 'success') { throw "CHANNEL_REQUIRED_JOB_INCOMPLETE: $job" }
+          }

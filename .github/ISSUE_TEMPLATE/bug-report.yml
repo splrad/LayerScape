@@ -45,7 +45,7 @@ body:
     attributes:
       label: LayerScape 版本
       description: 可以在 AutoCAD 启动日志或下载文件名中查看。
-      placeholder: 例如：v9.2.2
+      placeholder: 例如：v1.0.0
     validations:
       required: true
 
