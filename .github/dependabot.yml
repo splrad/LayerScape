@@ -27,3 +27,19 @@ updates:
       dotnet-dependencies:
         patterns:
           - "*"
+  - package-ecosystem: github-actions
+    directory: /
+    exclude-paths:
+      - .github/workflows/pr-title.yml
+      - .github/workflows/pr-labeler.yml
+    ignore:
+      - dependency-name: splrad/steward
+      - dependency-name: splrad/steward/.github/workflows/product-release.yml
+    schedule:
+      interval: weekly
+      day: monday
+      time: "09:30"
+      timezone: Asia/Bangkok
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: "chore(actions)"
