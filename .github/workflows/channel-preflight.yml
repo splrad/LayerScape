@@ -30,7 +30,21 @@ jobs:
         run: |
           $ErrorActionPreference='Stop'
           . ./controller/scripts/ghcr-package-state.ps1
-          $package=Get-LayerScapePackageState -Token $env:GHCR_TOKEN -OwnerInventory $env:OWNER_INVENTORY
+          try {
+            $package=Get-LayerScapePackageState -Token $env:GHCR_TOKEN -OwnerInventory $env:OWNER_INVENTORY
+          } catch {
+            # Preserve the failure while recording only status codes from the same read-only token.
+            $headers=@{Authorization="Bearer $env:GHCR_TOKEN";Accept='application/vnd.github+json';'X-GitHub-Api-Version'='2026-03-10'}
+            foreach ($endpoint in @('https://api.github.com/orgs/splrad/packages?package_type=container&per_page=100&page=1','https://api.github.com/orgs/splrad/packages/container/layerscape-assets')) {
+              try {
+                $response=Invoke-WebRequest -Uri $endpoint -Headers $headers -SkipHttpErrorCheck
+                Write-Host "GHCR_METADATA_DIAGNOSTIC endpoint=$endpoint status=$([int]$response.StatusCode)"
+              } catch {
+                Write-Host "GHCR_METADATA_DIAGNOSTIC endpoint=$endpoint status=TRANSPORT_ERROR"
+              }
+            }
+            throw
+          }
           $record=[ordered]@{
             repositoryId=1187527897
             sourceSha=$env:GITHUB_SHA
