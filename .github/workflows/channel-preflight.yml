@@ -33,12 +33,19 @@ jobs:
           try {
             $package=Get-LayerScapePackageState -Token $env:GHCR_TOKEN -OwnerInventory $env:OWNER_INVENTORY
           } catch {
-            # Preserve the failure while recording only status codes from the same read-only token.
+            # Preserve the failure; bound and redact API error messages from the same read-only token.
             $headers=@{Authorization="Bearer $env:GHCR_TOKEN";Accept='application/vnd.github+json';'X-GitHub-Api-Version'='2026-03-10'}
             foreach ($endpoint in @('https://api.github.com/orgs/splrad/packages?package_type=container&per_page=100&page=1','https://api.github.com/orgs/splrad/packages/container/layerscape-assets')) {
               try {
                 $response=Invoke-WebRequest -Uri $endpoint -Headers $headers -SkipHttpErrorCheck
                 Write-Host "GHCR_METADATA_DIAGNOSTIC endpoint=$endpoint status=$([int]$response.StatusCode)"
+                if ([int]$response.StatusCode -ge 400) {
+                  $apiMessage=($response.Content | ConvertFrom-Json -ErrorAction SilentlyContinue).message
+                  if ($apiMessage -is [string]) {
+                    $safeMessage=$apiMessage.Replace($env:GHCR_TOKEN,'[REDACTED]') -replace '[\r\n\x00-\x1f]',' '
+                    Write-Host "GHCR_METADATA_API_MESSAGE $($safeMessage.Substring(0,[Math]::Min(300,$safeMessage.Length)))"
+                  }
+                }
               } catch {
                 Write-Host "GHCR_METADATA_DIAGNOSTIC endpoint=$endpoint status=TRANSPORT_ERROR"
               }
