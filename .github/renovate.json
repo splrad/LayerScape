@@ -1,0 +1,75 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "enabledManagers": [
+    "github-actions",
+    "custom.regex"
+  ],
+  "automerge": false,
+  "pinDigests": true,
+  "packageRules": [
+    {
+      "matchManagers": [
+        "github-actions"
+      ],
+      "enabled": false
+    },
+    {
+      "matchManagers": [
+        "github-actions"
+      ],
+      "matchDepTypes": [
+        "workflow"
+      ],
+      "matchPackageNames": [
+        "splrad/steward"
+      ],
+      "matchFileNames": [
+        ".github/workflows/steward-release-publish.yml"
+      ],
+      "enabled": true,
+      "overrideDatasource": "git-refs",
+      "overridePackageName": "https://github.com/splrad/steward.git",
+      "versioning": "exact"
+    },
+    {
+      "matchDepNames": [
+        "splrad/steward"
+      ],
+      "groupName": "validated controller",
+      "groupSlug": "validated-controller"
+    },
+    {
+      "matchManagers": [
+        "github-actions"
+      ],
+      "matchFileNames": [
+        ".github/workflows/channel-preflight.yml",
+        ".github/workflows/steward-release-publish.yml",
+        ".github/workflows/steward-release-channels.yml"
+      ],
+      "matchDepTypes": [
+        "uses-with"
+      ],
+      "matchPackageNames": [
+        "jdx/mise"
+      ],
+      "enabled": true
+    }
+  ],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "managerFilePatterns": [
+        "/^\\.github/workflows/(?:steward-release-publish|steward-release-channels|channel-preflight)\\.yml$/"
+      ],
+      "matchStrings": [
+        "repository: splrad/steward\\s+ref: (?<currentDigest>[a-f0-9]{40})"
+      ],
+      "depNameTemplate": "splrad/steward",
+      "packageNameTemplate": "https://github.com/splrad/steward.git",
+      "datasourceTemplate": "git-refs",
+      "currentValueTemplate": "steward/validated-controller",
+      "versioningTemplate": "exact"
+    }
+  ]
+}
