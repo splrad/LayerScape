@@ -20,7 +20,7 @@
       "matchDepTypes": [
         "workflow"
       ],
-      "matchPackageNames": [
+      "matchDepNames": [
         "splrad/steward"
       ],
       "matchFileNames": [
@@ -53,7 +53,8 @@
       "matchPackageNames": [
         "jdx/mise"
       ],
-      "enabled": true
+      "enabled": true,
+      "pinDigests": false
     }
   ],
   "customManagers": [
