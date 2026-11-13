@@ -39,7 +39,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           repository: splrad/steward
-          ref: fabc3d5056abfc9e5e49fa9cf77ec1c86731d48f
+          ref: b87901916b26c7d3bf00cc61c711521c22bdebd2
           path: controller
           persist-credentials: false
       - name: Enable Git long paths
@@ -124,7 +124,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           repository: splrad/steward
-          ref: fabc3d5056abfc9e5e49fa9cf77ec1c86731d48f
+          ref: b87901916b26c7d3bf00cc61c711521c22bdebd2
           path: controller
           persist-credentials: false
       - name: Enable Git long paths
@@ -263,7 +263,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON(needs.admit.outputs.units) }}
-    uses: splrad/steward/.github/workflows/product-release.yml@fabc3d5056abfc9e5e49fa9cf77ec1c86731d48f # steward/validated-controller
+    uses: splrad/steward/.github/workflows/product-release.yml@b87901916b26c7d3bf00cc61c711521c22bdebd2 # steward/validated-controller
     with:
       record: ${{ needs.admit.outputs.record }}
       unit: ${{ matrix.unit }}
@@ -290,7 +290,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           repository: splrad/steward
-          ref: fabc3d5056abfc9e5e49fa9cf77ec1c86731d48f
+          ref: b87901916b26c7d3bf00cc61c711521c22bdebd2
           path: controller
           persist-credentials: false
       - name: Enable Git long paths
