@@ -2,12 +2,12 @@
   "schemaVersion": 3,
   "repositoryId": 1187527897,
   "defaultBranch": "main",
-  "revision": 8,
+  "revision": 9,
   "releaseAdoption": {
     "prNumber": 176,
     "sourceSha": "de10de20b5405d764bfda731ed91d11ac56b5b2c"
   },
-  "lastObservedDefaultSha": "de10de20b5405d764bfda731ed91d11ac56b5b2c",
+  "lastObservedDefaultSha": "a9af0cda299f42256a05a11237c6d1d18ac92d27",
   "lastCompletedCycleId": null,
   "activeCycleId": null,
   "candidate": {
