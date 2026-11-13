@@ -56,7 +56,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           repository: splrad/steward
-          ref: b87eb99b0fd0d96e363b64912348f34163f3b9e9
+          ref: fabc3d5056abfc9e5e49fa9cf77ec1c86731d48f
           path: controller
           persist-credentials: false
       - name: Enable Git long paths
@@ -121,7 +121,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           repository: splrad/steward
-          ref: b87eb99b0fd0d96e363b64912348f34163f3b9e9
+          ref: fabc3d5056abfc9e5e49fa9cf77ec1c86731d48f
           path: controller
           persist-credentials: false
       - name: Enable Git long paths
@@ -209,7 +209,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           repository: splrad/steward
-          ref: b87eb99b0fd0d96e363b64912348f34163f3b9e9
+          ref: fabc3d5056abfc9e5e49fa9cf77ec1c86731d48f
           path: controller
           persist-credentials: false
       - name: Enable Git long paths
@@ -264,23 +264,26 @@ jobs:
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
-          CHANNEL_READ_TOKEN: ${{ secrets.CHANNEL_READ_TOKEN || github.token }}
+          GHCR_TOKEN: ${{ github.token }}
+          GHCR_METADATA_TOKEN: ${{ secrets.CHANNEL_READ_TOKEN }}
           WINGET_FORK_REPOSITORY: ${{ vars.WINGET_FORK_REPOSITORY }}
           GHCR_OWNER_PACKAGE_INVENTORY: ${{ vars.GHCR_OWNER_PACKAGE_INVENTORY }}
         run: |
 
           $ErrorActionPreference='Stop'
+          $metadataToken=$env:GHCR_METADATA_TOKEN
+          Remove-Item Env:GHCR_METADATA_TOKEN -ErrorAction SilentlyContinue
           $selection=Get-Content -LiteralPath selection.json -Raw | ConvertFrom-Json
           $items=@()
           $auth=Join-Path $env:RUNNER_TEMP 'oras-read.json'
           [IO.File]::WriteAllText($auth,'{"auths":{}}')
-          $env:CHANNEL_READ_TOKEN | oras login ghcr.io --username $env:GITHUB_ACTOR --password-stdin --registry-config $auth
+          $env:GHCR_TOKEN | oras login ghcr.io --username $env:GITHUB_ACTOR --password-stdin --registry-config $auth
           if ($LASTEXITCODE) { throw 'CHANNEL_READ_AUTH_UNKNOWN' }
           foreach ($target in $selection.targets) {
             $item=[ordered]@{unitId=$target.unitId;channelId=$target.channelId;version=$target.version;readStatus='AUTH_UNKNOWN';exists=$null;digest=$null;accepted=$null;indexed=$null;observedAt=[DateTime]::UtcNow.ToString('o');evidenceKind=$target.channelId}
             if ($target.channelId -eq 'ghcr-assets') {
               . controller/scripts/ghcr-package-state.ps1
-              $package=Get-LayerScapePackageState -Token $env:CHANNEL_READ_TOKEN -OwnerInventory $env:GHCR_OWNER_PACKAGE_INVENTORY
+              $package=Get-LayerScapePackageState -Token $metadataToken -OwnerInventory $env:GHCR_OWNER_PACKAGE_INVENTORY
               if ($package.state -eq 'ABSENT') { $item.readStatus='NOT_FOUND_CONFIRMED';$item.exists=$false;$item.accepted=$false;$item.indexed=$false }
               else {
                 $tags=oras repo tags ghcr.io/splrad/layerscape-assets --registry-config $auth --format json 2>$null
@@ -362,7 +365,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           repository: splrad/steward
-          ref: b87eb99b0fd0d96e363b64912348f34163f3b9e9
+          ref: fabc3d5056abfc9e5e49fa9cf77ec1c86731d48f
           path: controller
           persist-credentials: false
       - name: Enable Git long paths
@@ -417,23 +420,26 @@ jobs:
         shell: pwsh
         env:
           GH_TOKEN: ${{ github.token }}
-          CHANNEL_READ_TOKEN: ${{ secrets.CHANNEL_READ_TOKEN || github.token }}
+          GHCR_TOKEN: ${{ github.token }}
+          GHCR_METADATA_TOKEN: ${{ secrets.CHANNEL_READ_TOKEN }}
           WINGET_FORK_REPOSITORY: ${{ vars.WINGET_FORK_REPOSITORY }}
           GHCR_OWNER_PACKAGE_INVENTORY: ${{ vars.GHCR_OWNER_PACKAGE_INVENTORY }}
         run: |
 
           $ErrorActionPreference='Stop'
+          $metadataToken=$env:GHCR_METADATA_TOKEN
+          Remove-Item Env:GHCR_METADATA_TOKEN -ErrorAction SilentlyContinue
           $selection=Get-Content -LiteralPath selection.json -Raw | ConvertFrom-Json
           $items=@()
           $auth=Join-Path $env:RUNNER_TEMP 'oras-read.json'
           [IO.File]::WriteAllText($auth,'{"auths":{}}')
-          $env:CHANNEL_READ_TOKEN | oras login ghcr.io --username $env:GITHUB_ACTOR --password-stdin --registry-config $auth
+          $env:GHCR_TOKEN | oras login ghcr.io --username $env:GITHUB_ACTOR --password-stdin --registry-config $auth
           if ($LASTEXITCODE) { throw 'CHANNEL_READ_AUTH_UNKNOWN' }
           foreach ($target in $selection.targets) {
             $item=[ordered]@{unitId=$target.unitId;channelId=$target.channelId;version=$target.version;readStatus='AUTH_UNKNOWN';exists=$null;digest=$null;accepted=$null;indexed=$null;observedAt=[DateTime]::UtcNow.ToString('o');evidenceKind=$target.channelId}
             if ($target.channelId -eq 'ghcr-assets') {
               . controller/scripts/ghcr-package-state.ps1
-              $package=Get-LayerScapePackageState -Token $env:CHANNEL_READ_TOKEN -OwnerInventory $env:GHCR_OWNER_PACKAGE_INVENTORY
+              $package=Get-LayerScapePackageState -Token $metadataToken -OwnerInventory $env:GHCR_OWNER_PACKAGE_INVENTORY
               if ($package.state -eq 'ABSENT') { $item.readStatus='NOT_FOUND_CONFIRMED';$item.exists=$false;$item.accepted=$false;$item.indexed=$false }
               else {
                 $tags=oras repo tags ghcr.io/splrad/layerscape-assets --registry-config $auth --format json 2>$null
@@ -527,7 +533,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           repository: splrad/steward
-          ref: b87eb99b0fd0d96e363b64912348f34163f3b9e9
+          ref: fabc3d5056abfc9e5e49fa9cf77ec1c86731d48f
           path: controller
           persist-credentials: false
       - name: Enable Git long paths
@@ -592,10 +598,14 @@ jobs:
         env:
           MODE: submit
           GHCR_TOKEN: ${{ github.token }}
+          GHCR_METADATA_TOKEN: ${{ secrets.CHANNEL_READ_TOKEN }}
           GHCR_OWNER_PACKAGE_INVENTORY: ${{ vars.GHCR_OWNER_PACKAGE_INVENTORY }}
         run: |
 
           $ErrorActionPreference='Stop'
+          $metadataToken=$env:GHCR_METADATA_TOKEN
+          Remove-Item Env:GHCR_METADATA_TOKEN -ErrorAction SilentlyContinue
+          if ([string]::IsNullOrWhiteSpace($metadataToken)) { throw 'GHCR_METADATA_TOKEN_REQUIRED' }
           $manifest=Get-Content -LiteralPath manifest.json -Raw|ConvertFrom-Json
           $version=$manifest.version
           $auth=Join-Path $env:RUNNER_TEMP 'oras-business.json'
@@ -613,12 +623,12 @@ jobs:
             $expectedDigest=oras resolve --oci-layout layout:release
             if ($LASTEXITCODE) { throw 'ORAS_LAYOUT_DIGEST' }
             . controller/scripts/ghcr-package-state.ps1
-            $null=Get-LayerScapePackageState -Token $env:GHCR_TOKEN -OwnerInventory $env:GHCR_OWNER_PACKAGE_INVENTORY
+            $null=Get-LayerScapePackageState -Token $metadataToken -OwnerInventory $env:GHCR_OWNER_PACKAGE_INVENTORY
             $existing=oras resolve --registry-config $auth "ghcr.io/splrad/layerscape-assets:$version" 2>remote-error.txt
             if ($LASTEXITCODE -eq 0) { if ($existing.Trim() -ne $expectedDigest.Trim()) { throw 'ASSET_CONFLICT' } }
             else {
               . controller/scripts/ghcr-package-state.ps1
-              $package=Get-LayerScapePackageState -Token $env:GHCR_TOKEN -OwnerInventory $env:GHCR_OWNER_PACKAGE_INVENTORY
+              $package=Get-LayerScapePackageState -Token $metadataToken -OwnerInventory $env:GHCR_OWNER_PACKAGE_INVENTORY
               if ($package.state -eq 'EXISTS') {
                 $tags=oras repo tags ghcr.io/splrad/layerscape-assets --registry-config $auth --format json 2>$null
                 if ($LASTEXITCODE -ne 0 -or ($tags|ConvertFrom-Json).tags -contains $version) { throw 'GHCR_ABSENCE_UNKNOWN' }
@@ -707,7 +717,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           repository: splrad/steward
-          ref: b87eb99b0fd0d96e363b64912348f34163f3b9e9
+          ref: fabc3d5056abfc9e5e49fa9cf77ec1c86731d48f
           path: controller
           persist-credentials: false
       - name: Enable Git long paths
@@ -969,7 +979,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           repository: splrad/steward
-          ref: b87eb99b0fd0d96e363b64912348f34163f3b9e9
+          ref: fabc3d5056abfc9e5e49fa9cf77ec1c86731d48f
           path: controller
           persist-credentials: false
       - name: Enable Git long paths
@@ -1053,12 +1063,12 @@ jobs:
             $expectedDigest=oras resolve --oci-layout layout:release
             if ($LASTEXITCODE) { throw 'ORAS_LAYOUT_DIGEST' }
             . controller/scripts/ghcr-package-state.ps1
-            $null=Get-LayerScapePackageState -Token $env:GHCR_TOKEN -OwnerInventory $env:GHCR_OWNER_PACKAGE_INVENTORY
+            $null=Get-LayerScapePackageState -Token $metadataToken -OwnerInventory $env:GHCR_OWNER_PACKAGE_INVENTORY
             $existing=oras resolve --registry-config $auth "ghcr.io/splrad/layerscape-assets:$version" 2>remote-error.txt
             if ($LASTEXITCODE -eq 0) { if ($existing.Trim() -ne $expectedDigest.Trim()) { throw 'ASSET_CONFLICT' } }
             else {
               . controller/scripts/ghcr-package-state.ps1
-              $package=Get-LayerScapePackageState -Token $env:GHCR_TOKEN -OwnerInventory $env:GHCR_OWNER_PACKAGE_INVENTORY
+              $package=Get-LayerScapePackageState -Token $metadataToken -OwnerInventory $env:GHCR_OWNER_PACKAGE_INVENTORY
               if ($package.state -eq 'EXISTS') {
                 $tags=oras repo tags ghcr.io/splrad/layerscape-assets --registry-config $auth --format json 2>$null
                 if ($LASTEXITCODE -ne 0 -or ($tags|ConvertFrom-Json).tags -contains $version) { throw 'GHCR_ABSENCE_UNKNOWN' }
@@ -1144,7 +1154,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           repository: splrad/steward
-          ref: b87eb99b0fd0d96e363b64912348f34163f3b9e9
+          ref: fabc3d5056abfc9e5e49fa9cf77ec1c86731d48f
           path: controller
           persist-credentials: false
       - name: Enable Git long paths

@@ -19,54 +19,28 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           repository: splrad/steward
-          ref: b87eb99b0fd0d96e363b64912348f34163f3b9e9
+          ref: fabc3d5056abfc9e5e49fa9cf77ec1c86731d48f
           path: controller
           persist-credentials: false
-      - name: Verify product token metadata visibility
+      - name: Verify dedicated metadata credential visibility
         shell: pwsh
         env:
-          GHCR_TOKEN: ${{ github.token }}
+          GHCR_METADATA_TOKEN: ${{ secrets.CHANNEL_READ_TOKEN }}
           OWNER_INVENTORY: ${{ vars.GHCR_OWNER_PACKAGE_INVENTORY }}
         run: |
           $ErrorActionPreference='Stop'
+          $metadataToken=$env:GHCR_METADATA_TOKEN
+          Remove-Item Env:GHCR_METADATA_TOKEN -ErrorAction SilentlyContinue
           . ./controller/scripts/ghcr-package-state.ps1
-          try {
-            $package=Get-LayerScapePackageState -Token $env:GHCR_TOKEN -OwnerInventory $env:OWNER_INVENTORY
-          } catch {
-            # Preserve the failure; bound and redact API error messages from the same read-only token.
-            $headers=@{Authorization="Bearer $env:GHCR_TOKEN";Accept='application/vnd.github+json';'X-GitHub-Api-Version'='2026-03-10'}
-            # Diagnostic first-page controls only: no subset result can establish absence or completeness.
-            $controls=@(
-              @{endpoint='https://api.github.com/orgs/splrad/packages?package_type=container&per_page=100&page=1';version='2026-03-10'},
-              @{endpoint='https://api.github.com/orgs/splrad/packages?package_type=container';version='2026-03-10'},
-              @{endpoint='https://api.github.com/orgs/splrad/packages?package_type=container&per_page=1&page=1';version='2026-03-10'},
-              @{endpoint='https://api.github.com/orgs/splrad/packages?package_type=container&per_page=1&page=1&visibility=public';version='2026-03-10'},
-              @{endpoint='https://api.github.com/orgs/splrad/packages?package_type=container&per_page=1&page=1&visibility=private';version='2026-03-10'},
-              @{endpoint='https://api.github.com/orgs/splrad/packages?package_type=container&per_page=1&page=1&visibility=internal';version='2026-03-10'},
-              @{endpoint='https://api.github.com/orgs/splrad/packages?package_type=container&per_page=100&page=1';version='2022-11-28'},
-              @{endpoint='https://api.github.com/orgs/splrad/packages/container/layerscape-assets';version='2026-03-10'}
-            )
-            foreach ($control in $controls) {
-              $endpoint=$control.endpoint
-              $headers['X-GitHub-Api-Version']=$control.version
-              try {
-                $response=Invoke-WebRequest -Uri $endpoint -Headers $headers -SkipHttpErrorCheck
-                Write-Host "GHCR_METADATA_DIAGNOSTIC endpoint=$endpoint apiVersion=$($control.version) status=$([int]$response.StatusCode)"
-                if ([int]$response.StatusCode -ge 400) {
-                  $apiMessage=($response.Content | ConvertFrom-Json -ErrorAction SilentlyContinue).message
-                  if ($apiMessage -is [string]) {
-                    $safeMessage=$apiMessage.Replace($env:GHCR_TOKEN,'[REDACTED]') -replace '[\r\n\x00-\x1f]',' '
-                    Write-Host "GHCR_METADATA_API_MESSAGE $($safeMessage.Substring(0,[Math]::Min(300,$safeMessage.Length)))"
-                  }
-                }
-              } catch {
-                Write-Host "GHCR_METADATA_DIAGNOSTIC endpoint=$endpoint apiVersion=$($control.version) status=TRANSPORT_ERROR"
-              }
-            }
-            throw
-          }
+          if ([string]::IsNullOrWhiteSpace($metadataToken)) { throw 'GHCR_METADATA_TOKEN_REQUIRED' }
+          $apiVersion=(Get-Content -LiteralPath controller/config/github-api.json -Raw | ConvertFrom-Json).version
+          $headers=@{Authorization="Bearer $metadataToken";Accept='application/vnd.github+json';'X-GitHub-Api-Version'=$apiVersion}
+          $identity=Invoke-RestMethod -Uri 'https://api.github.com/user' -Headers $headers
+          if ($identity.id -ne 44151430 -or $identity.login -cne 'axiomoth') { throw 'GHCR_METADATA_IDENTITY_MISMATCH' }
+          $package=Get-LayerScapePackageState -Token $metadataToken -OwnerInventory $env:OWNER_INVENTORY
           $record=[ordered]@{
             repositoryId=1187527897
+            metadataPrincipalId=$identity.id
             sourceSha=$env:GITHUB_SHA
             runId=[long]$env:GITHUB_RUN_ID
             attempt=[int]$env:GITHUB_RUN_ATTEMPT
