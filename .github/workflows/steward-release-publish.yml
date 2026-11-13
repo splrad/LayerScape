@@ -190,7 +190,7 @@ jobs:
           --controller-dir controller --state-dir state --directory
           "$env:RUNNER_TEMP/recovered" --home "$env:RUNNER_TEMP/recover-home"
           --output recover.json
-      - uses: actions/setup-dotnet@a98b56852c35b8e3190ac28c8c2271da59106c68
+      - uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73
         if: steps.unit.outputs.selected == 'true' && steps.recover.outputs.found !=
           'true'
         with:
