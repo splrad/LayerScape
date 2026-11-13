@@ -73,7 +73,7 @@ jobs:
           MISE_SAFE: "1"
           MISE_NODE_COMPILE: "false"
         with:
-          version: 2026.10.18
+          version: 2026.11.8
           working_directory: controller
           install_args: --locked
           cache: false
@@ -138,7 +138,7 @@ jobs:
           MISE_SAFE: "1"
           MISE_NODE_COMPILE: "false"
         with:
-          version: 2026.10.18
+          version: 2026.11.8
           working_directory: controller
           install_args: --locked
           cache: false
@@ -226,7 +226,7 @@ jobs:
           MISE_SAFE: "1"
           MISE_NODE_COMPILE: "false"
         with:
-          version: 2026.10.18
+          version: 2026.11.8
           working_directory: controller
           install_args: --locked
           cache: false
@@ -382,7 +382,7 @@ jobs:
           MISE_SAFE: "1"
           MISE_NODE_COMPILE: "false"
         with:
-          version: 2026.10.18
+          version: 2026.11.8
           working_directory: controller
           install_args: --locked
           cache: false
@@ -550,7 +550,7 @@ jobs:
           MISE_SAFE: "1"
           MISE_NODE_COMPILE: "false"
         with:
-          version: 2026.10.18
+          version: 2026.11.8
           working_directory: controller
           install_args: --locked
           cache: false
@@ -734,7 +734,7 @@ jobs:
           MISE_SAFE: "1"
           MISE_NODE_COMPILE: "false"
         with:
-          version: 2026.10.18
+          version: 2026.11.8
           working_directory: controller
           install_args: --locked
           cache: false
@@ -996,7 +996,7 @@ jobs:
           MISE_SAFE: "1"
           MISE_NODE_COMPILE: "false"
         with:
-          version: 2026.10.18
+          version: 2026.11.8
           working_directory: controller
           install_args: --locked
           cache: false
@@ -1171,7 +1171,7 @@ jobs:
           MISE_SAFE: "1"
           MISE_NODE_COMPILE: "false"
         with:
-          version: 2026.10.18
+          version: 2026.11.8
           working_directory: controller
           install_args: --locked
           cache: false
