@@ -16,7 +16,7 @@ README 当前声明兼容范围为 AutoCAD 2018–2027，对应运行环境分�
 
 ## 安装说明
 
-推荐安装方式是运行 AFR-Deployer_vX.Y.Z.exe：先关闭全部 AutoCAD，再由工具扫描版本并执行安装；文档说明安装过程会复制对应 DLL、写入自动加载项、释放内嵌字体并写入 FixedProfile.aws。发布资产清单包含 AFR-Deployer_v${version}.exe、AFR-DLL_v${version}.zip、Fonts.zip。
+推荐安装方式是运行 AFR-Deployer_v1.0.0.exe：先关闭全部 AutoCAD，再由工具扫描版本并执行安装；文档说明安装过程会复制对应 DLL、写入自动加载项、释放内嵌字体并写入 FixedProfile.aws。发布资产清单包含 AFR-Deployer_v1.0.0.exe、AFR-DLL_v1.0.0.zip、Fonts.zip。
 
 ## 已知问题
 
