@@ -86,6 +86,5 @@
     "Update": "更新类型",
     "Change": "版本变化"
   },
-  "prBodyTemplate": "{{{header}}}{{{table}}}{{{warnings}}}{{{notes}}}{{{changelogs}}}{{{controls}}}{{{footer}}}",
   "prFooter": "本 PR 由 [Renovate](https://github.com/renovatebot/renovate) 自动生成。"
 }
