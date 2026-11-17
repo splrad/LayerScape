@@ -56,7 +56,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           repository: splrad/steward
-          ref: b87901916b26c7d3bf00cc61c711521c22bdebd2
+          ref: 84c3d3a7f74a6c2dd2405248f6aa6620f5b8bbe0
           path: controller
           persist-credentials: false
       - name: Enable Git long paths
@@ -121,7 +121,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           repository: splrad/steward
-          ref: b87901916b26c7d3bf00cc61c711521c22bdebd2
+          ref: 84c3d3a7f74a6c2dd2405248f6aa6620f5b8bbe0
           path: controller
           persist-credentials: false
       - name: Enable Git long paths
@@ -209,7 +209,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           repository: splrad/steward
-          ref: b87901916b26c7d3bf00cc61c711521c22bdebd2
+          ref: 84c3d3a7f74a6c2dd2405248f6aa6620f5b8bbe0
           path: controller
           persist-credentials: false
       - name: Enable Git long paths
@@ -348,7 +348,7 @@ jobs:
     needs: source-check
     if: inputs.mode == 'observe'
     runs-on: windows-2025
-    timeout-minutes: 15
+    timeout-minutes: 5
     environment:
       name: channel-read
       deployment: false
@@ -365,7 +365,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           repository: splrad/steward
-          ref: b87901916b26c7d3bf00cc61c711521c22bdebd2
+          ref: 84c3d3a7f74a6c2dd2405248f6aa6620f5b8bbe0
           path: controller
           persist-credentials: false
       - name: Enable Git long paths
@@ -433,8 +433,10 @@ jobs:
           $items=@()
           $auth=Join-Path $env:RUNNER_TEMP 'oras-read.json'
           [IO.File]::WriteAllText($auth,'{"auths":{}}')
-          $env:GHCR_TOKEN | oras login ghcr.io --username $env:GITHUB_ACTOR --password-stdin --registry-config $auth
-          if ($LASTEXITCODE) { throw 'CHANNEL_READ_AUTH_UNKNOWN' }
+          if (@($selection.targets | Where-Object { $_.channelId -eq 'ghcr-assets' }).Count) {
+            $env:GHCR_TOKEN | oras login ghcr.io --username $env:GITHUB_ACTOR --password-stdin --registry-config $auth
+            if ($LASTEXITCODE) { throw 'CHANNEL_READ_AUTH_UNKNOWN' }
+          }
           foreach ($target in $selection.targets) {
             $item=[ordered]@{unitId=$target.unitId;channelId=$target.channelId;version=$target.version;readStatus='AUTH_UNKNOWN';exists=$null;digest=$null;accepted=$null;indexed=$null;observedAt=[DateTime]::UtcNow.ToString('o');evidenceKind=$target.channelId}
             if ($target.channelId -eq 'ghcr-assets') {
@@ -533,7 +535,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           repository: splrad/steward
-          ref: b87901916b26c7d3bf00cc61c711521c22bdebd2
+          ref: 84c3d3a7f74a6c2dd2405248f6aa6620f5b8bbe0
           path: controller
           persist-credentials: false
       - name: Enable Git long paths
@@ -717,7 +719,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           repository: splrad/steward
-          ref: b87901916b26c7d3bf00cc61c711521c22bdebd2
+          ref: 84c3d3a7f74a6c2dd2405248f6aa6620f5b8bbe0
           path: controller
           persist-credentials: false
       - name: Enable Git long paths
@@ -979,7 +981,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           repository: splrad/steward
-          ref: b87901916b26c7d3bf00cc61c711521c22bdebd2
+          ref: 84c3d3a7f74a6c2dd2405248f6aa6620f5b8bbe0
           path: controller
           persist-credentials: false
       - name: Enable Git long paths
@@ -1154,7 +1156,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           repository: splrad/steward
-          ref: b87901916b26c7d3bf00cc61c711521c22bdebd2
+          ref: 84c3d3a7f74a6c2dd2405248f6aa6620f5b8bbe0
           path: controller
           persist-credentials: false
       - name: Enable Git long paths
