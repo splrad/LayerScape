@@ -829,9 +829,11 @@ jobs:
             } elseif ($status -eq '404') {
               # Public upstream repository read succeeded; this exact native path does not exist.
               $directory=Join-Path $pwd 'generated-first';New-Item -ItemType Directory -Path $directory|Out-Null
-              $template=Get-Content -LiteralPath product/.github/winget/SPLRAD.LayerScape.Deployer.yaml.mustache -Raw
-              $content=$template.Replace('${version}',$version).Replace('${installerUrl}',$url).Replace('${installerSha256}',$installer[0].sha256.ToUpperInvariant())
-              [IO.File]::WriteAllText((Join-Path $directory 'SPLRAD.LayerScape.Deployer.yaml'),$content,[Text.UTF8Encoding]::new($false))
+              foreach ($file in @('SPLRAD.LayerScape.Deployer.yaml','SPLRAD.LayerScape.Deployer.installer.yaml','SPLRAD.LayerScape.Deployer.locale.zh-CN.yaml')) {
+                $template=Get-Content -LiteralPath "product/.github/winget/$file.mustache" -Raw
+                $content=$template.Replace('${version}',$version).Replace('${installerUrl}',$url).Replace('${installerSha256}',$installer[0].sha256.ToUpperInvariant())
+                [IO.File]::WriteAllText((Join-Path $directory $file),$content,[Text.UTF8Encoding]::new($false))
+              }
             } else { throw 'WINGET_PACKAGE_READ_UNKNOWN' }
             winget validate --manifest $directory --disable-interactivity
             if ($LASTEXITCODE) { throw 'WINGET_VALIDATION' }
@@ -897,26 +899,23 @@ jobs:
             if (-not $pr.merged) { throw 'DEPENDENCY_NOT_READY' }
             winget source update --name winget --disable-interactivity
             if ($LASTEXITCODE) { throw 'WINGET_INDEX_UNKNOWN' }
-            winget show --id SPLRAD.LayerScape.Deployer --exact --version $version --source winget --accept-source-agreements --disable-interactivity
-            if ($LASTEXITCODE) { throw 'DEPENDENCY_NOT_READY' }
+            foreach ($selection in @('exact','default')) {
+              $arguments=@('show','--id','SPLRAD.LayerScape.Deployer','--exact','--source','winget','--accept-source-agreements','--disable-interactivity')
+              if ($selection -eq 'exact') { $arguments+=@('--version',$version) }
+              $details=(winget @arguments) -join [Environment]::NewLine
+              if ($LASTEXITCODE) { throw 'DEPENDENCY_NOT_READY' }
+              foreach ($field in @($version,$urls[0],$hashes[0])) {
+                if ($details -notmatch ('(?m):[ \t]*'+[regex]::Escape($field)+'[ \t]*\r?$')) { throw "WINGET_INDEX_CONFLICT: $selection" }
+              }
+            }
             $indexed=$true
-            foreach ($selectionMode in @('exact','default')) {
-              $arguments=@('install','--id','SPLRAD.LayerScape.Deployer','--exact','--source','winget','--scope','user','--accept-package-agreements','--accept-source-agreements','--disable-interactivity')
-              if ($selectionMode -eq 'exact') { $arguments+=@('--version',$version) }
-              else {
-                $defaultShow=winget show --id SPLRAD.LayerScape.Deployer --exact --source winget --accept-source-agreements --disable-interactivity
-                $defaultShow | Write-Output
-                if ($LASTEXITCODE -or ($defaultShow -join [Environment]::NewLine) -notmatch ('(?m)^Version:\s*'+[Regex]::Escape($version)+'\s*$')) { throw 'WINGET_DEFAULT_VERSION' }
-              }
-              winget @arguments
-              if ($LASTEXITCODE) { throw 'WINGET_INSTALL_FAILED' }
-              try {
-                $installed=Get-Command layerscape-deployer.exe -ErrorAction Stop
-                if ((Get-FileHash -LiteralPath $installed.Source -Algorithm SHA256).Hash.ToLowerInvariant() -ne $installer[0].sha256) { throw 'WINGET_INSTALLED_BYTES' }
-              } finally {
-                winget uninstall --id SPLRAD.LayerScape.Deployer --exact --source winget --disable-interactivity
-                if ($LASTEXITCODE) { throw 'WINGET_UNINSTALL_FAILED' }
-              }
+            $download=New-TemporaryFile
+            try {
+              Invoke-WebRequest -Uri $urls[0] -OutFile $download.FullName -ErrorAction Stop
+              if ((Get-Item -LiteralPath $download.FullName).Length -ne $installer[0].size -or
+                  (Get-FileHash -LiteralPath $download.FullName -Algorithm SHA256).Hash -ine $hashes[0]) { throw 'WINGET_DOWNLOAD_BYTES' }
+            } finally {
+              Remove-Item -LiteralPath $download.FullName
             }
             $consumed=$true
           }
@@ -1266,9 +1265,11 @@ jobs:
             } elseif ($status -eq '404') {
               # Public upstream repository read succeeded; this exact native path does not exist.
               $directory=Join-Path $pwd 'generated-first';New-Item -ItemType Directory -Path $directory|Out-Null
-              $template=Get-Content -LiteralPath product/.github/winget/SPLRAD.LayerScape.Deployer.yaml.mustache -Raw
-              $content=$template.Replace('${version}',$version).Replace('${installerUrl}',$url).Replace('${installerSha256}',$installer[0].sha256.ToUpperInvariant())
-              [IO.File]::WriteAllText((Join-Path $directory 'SPLRAD.LayerScape.Deployer.yaml'),$content,[Text.UTF8Encoding]::new($false))
+              foreach ($file in @('SPLRAD.LayerScape.Deployer.yaml','SPLRAD.LayerScape.Deployer.installer.yaml','SPLRAD.LayerScape.Deployer.locale.zh-CN.yaml')) {
+                $template=Get-Content -LiteralPath "product/.github/winget/$file.mustache" -Raw
+                $content=$template.Replace('${version}',$version).Replace('${installerUrl}',$url).Replace('${installerSha256}',$installer[0].sha256.ToUpperInvariant())
+                [IO.File]::WriteAllText((Join-Path $directory $file),$content,[Text.UTF8Encoding]::new($false))
+              }
             } else { throw 'WINGET_PACKAGE_READ_UNKNOWN' }
             winget validate --manifest $directory --disable-interactivity
             if ($LASTEXITCODE) { throw 'WINGET_VALIDATION' }
@@ -1334,26 +1335,23 @@ jobs:
             if (-not $pr.merged) { throw 'DEPENDENCY_NOT_READY' }
             winget source update --name winget --disable-interactivity
             if ($LASTEXITCODE) { throw 'WINGET_INDEX_UNKNOWN' }
-            winget show --id SPLRAD.LayerScape.Deployer --exact --version $version --source winget --accept-source-agreements --disable-interactivity
-            if ($LASTEXITCODE) { throw 'DEPENDENCY_NOT_READY' }
+            foreach ($selection in @('exact','default')) {
+              $arguments=@('show','--id','SPLRAD.LayerScape.Deployer','--exact','--source','winget','--accept-source-agreements','--disable-interactivity')
+              if ($selection -eq 'exact') { $arguments+=@('--version',$version) }
+              $details=(winget @arguments) -join [Environment]::NewLine
+              if ($LASTEXITCODE) { throw 'DEPENDENCY_NOT_READY' }
+              foreach ($field in @($version,$urls[0],$hashes[0])) {
+                if ($details -notmatch ('(?m):[ \t]*'+[regex]::Escape($field)+'[ \t]*\r?$')) { throw "WINGET_INDEX_CONFLICT: $selection" }
+              }
+            }
             $indexed=$true
-            foreach ($selectionMode in @('exact','default')) {
-              $arguments=@('install','--id','SPLRAD.LayerScape.Deployer','--exact','--source','winget','--scope','user','--accept-package-agreements','--accept-source-agreements','--disable-interactivity')
-              if ($selectionMode -eq 'exact') { $arguments+=@('--version',$version) }
-              else {
-                $defaultShow=winget show --id SPLRAD.LayerScape.Deployer --exact --source winget --accept-source-agreements --disable-interactivity
-                $defaultShow | Write-Output
-                if ($LASTEXITCODE -or ($defaultShow -join [Environment]::NewLine) -notmatch ('(?m)^Version:\s*'+[Regex]::Escape($version)+'\s*$')) { throw 'WINGET_DEFAULT_VERSION' }
-              }
-              winget @arguments
-              if ($LASTEXITCODE) { throw 'WINGET_INSTALL_FAILED' }
-              try {
-                $installed=Get-Command layerscape-deployer.exe -ErrorAction Stop
-                if ((Get-FileHash -LiteralPath $installed.Source -Algorithm SHA256).Hash.ToLowerInvariant() -ne $installer[0].sha256) { throw 'WINGET_INSTALLED_BYTES' }
-              } finally {
-                winget uninstall --id SPLRAD.LayerScape.Deployer --exact --source winget --disable-interactivity
-                if ($LASTEXITCODE) { throw 'WINGET_UNINSTALL_FAILED' }
-              }
+            $download=New-TemporaryFile
+            try {
+              Invoke-WebRequest -Uri $urls[0] -OutFile $download.FullName -ErrorAction Stop
+              if ((Get-Item -LiteralPath $download.FullName).Length -ne $installer[0].size -or
+                  (Get-FileHash -LiteralPath $download.FullName -Algorithm SHA256).Hash -ine $hashes[0]) { throw 'WINGET_DOWNLOAD_BYTES' }
+            } finally {
+              Remove-Item -LiteralPath $download.FullName
             }
             $consumed=$true
           }

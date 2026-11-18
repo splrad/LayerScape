@@ -1,0 +1,32 @@
+---
+import data from '../generated/site-data.json';
+const product=data.product;
+---
+<div class="landing-sections">
+  <section class="scenarios-section" id="scenarios" aria-labelledby="scenarios-heading">
+    <div class="scenarios-intro">
+      <h2 id="scenarios-heading">{product.scenesTitle.replace('，','，\n').split('\n').map(line=><span>{line}</span>)}</h2>
+      <p>{product.scenesIntro}</p>
+      <a href="/modules/">了解全部功能<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 12h15m-6-6 6 6-6 6"/></svg></a>
+    </div>
+    <div class="scenario-list">{product.scenes.map((scene,index)=><details class="scenario" id={'scenario-'+index} open={index===0}>
+      <summary>{scene.title}<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M5 12h14"/><path class="plus-stem" d="M12 5v14"/></svg></summary>
+      <div class="scenario-body"><p>{scene.description}</p><a href={scene.href}>{scene.action}<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 12h15m-6-6 6 6-6 6"/></svg></a></div>
+    </details>)}</div>
+  </section>
+  <section class="onboarding-section" id="getting-started" aria-labelledby="start-heading">
+    <div class="onboarding-inner">
+      <div class="onboarding-heading"><div><h2 id="start-heading">{product.stepsTitle}</h2><p>{product.stepsIntro}</p></div><a class="button-secondary" href="/install/">查看安装指南<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 12h15m-6-6 6 6-6 6"/></svg></a></div>
+      <ol class="start-steps">{product.steps.map((step,index)=><li><a class="step-link" href={step.href}><span class="step-number" aria-hidden="true">{'0'+(index+1)}</span><h3>{step.title}<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 12h15m-6-6 6 6-6 6"/></svg></h3><p>{step.description}</p></a></li>)}</ol>
+      <p class="download-note">{product.downloadNote}<a href="/downloads/">查看可用版本<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 12h15m-6-6 6 6-6 6"/></svg></a></p>
+    </div>
+  </section>
+  <section class="learn-section"><div class="section-heading"><h2>常用指南</h2><p>{product.pathsIntro}</p></div><div class="guide-links">{product.paths.map(path=><a href={path.href}><div><h3>{path.title}</h3><p>{path.description}</p></div><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="m9 5 7 7-7 7"/></svg></a>)}</div></section>
+  <section class="community-section"><div><h2>{product.feedbackTitle}</h2><p>{product.feedbackIntro}</p></div><div class="community-actions"><a class="button-primary" href="/community/">反馈问题</a><a href="/faq/">查看常见问题</a></div></section>
+</div>
+<script define:vars={{routes:data.legacyRoutes}}>
+  try {
+    const fragment=decodeURIComponent(window.location.hash.slice(1));
+    if(routes[fragment])window.location.replace(routes[fragment]);
+  } catch { /* A malformed fragment has no legacy target. */ }
+</script>

@@ -1,0 +1,10 @@
+{
+  "kind": "actual-product-screenshot-presentation",
+  "asset": "chore/assets/readme/layerscape-deployer.jpg",
+  "sha256": "f12be2455fa1b2e917639b7638e23d2ef7e69d82c0c4bcb9a5d645f1b73981e8",
+  "source": "Existing product README screenshot, unchanged",
+  "presentation": "Actual image capped at 496 CSS pixels on desktop and 320 on mobile, directly on an indigo background with offset soft shadow. A bounded entrance reveals the screenshot; pointer and scroll effects apply to separate brand typography. Image keeps original aspect and full UI; no generative modifications.",
+  "encoding": "Astro responsive WebP quality 92 for display; enlargement opens original JPEG bytes",
+  "historicalContext": "Screenshot displays AFR v9.0 and preserves its original interface. Installer availability and version-specific instructions are provided by the download page and actual release notes.",
+  "authorization": "User requires actual software UI, with homepage limited to the deployer image."
+}
