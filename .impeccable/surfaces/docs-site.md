@@ -52,4 +52,3 @@ All remaining public reading routes share the compact body-width title card. Dow
 ## Homepage motion contract
 
 Focal moment: product-benefit title, real UI and outline brand are revealed by a left-to-right mask within 900ms; the connecting line then crosses the three functional nodes in 1000ms, with each node briefly scaling and changing color. An 1100ms light pulse runs along the connection on entry and pointer/keyboard interaction. Continuity: expandable user scenarios reveal their instructions in 350ms; ordered start numbers appear sequentially on first entry. Feedback: bounded brand movement (28px pointer / 85px scroll), CTA sweep, press and directional arrows. Budget: native APIs, no dependencies, no idle loops, no blur or animated shadow field. Hidden-page and runtime reduced-motion changes cancel active sequences. Reduced motion preserves static composition, focus, color and progress. All content and native disclosure work without JavaScript.
-

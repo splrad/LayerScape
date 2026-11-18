@@ -78,7 +78,7 @@ jobs:
   build:
     name: build/${{ needs.select.outputs.input_digest }}
     needs: select
-    if: needs.select.outputs.ready == 'true'
+    if: needs.select.outputs.ready == 'true' && needs.select.outputs.source_sha == github.sha
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     permissions:
@@ -89,7 +89,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: ${{ needs.select.outputs.source_sha }}
+          ref: ${{ github.sha }}
           persist-credentials: false
       - name: Check out the pinned Node toolchain
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
