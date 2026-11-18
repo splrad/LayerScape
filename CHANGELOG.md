@@ -118,7 +118,7 @@
 * **workflow:** 增加令牌回退及权限处理保障 PR 通知可靠性 ([7cadc54](https://github.com/splrad/LayerScape/commit/7cadc54fcf6811fa5d323b6861dc470239ea6952))
 * **workflow:** 拓展 GitHub Actions PAT 支持并提升 PR 标题准确性 ([1ae4fe0](https://github.com/splrad/LayerScape/commit/1ae4fe07fd842a658ffdc3f182eceecabc145bf7))
 * **workflow:** 调整自动审批与权限审查术语及并发策略以提升一致性 ([dcc646e](https://github.com/splrad/LayerScape/commit/dcc646eed488274da15bcd2783edabb43a319a4b))
-* 增加 acdb24[#2024](https://github.com/splrad/LayerScape/issues/2024).dll 和 acdb25[#2026](https://github.com/splrad/LayerScape/issues/2026).dll 二进制文件，迁移 acdb25.dll 命名为 ([7cadc54](https://github.com/splrad/LayerScape/commit/7cadc54fcf6811fa5d323b6861dc470239ea6952))
+* 新增 `chore/acdb24#2024.dll` 和 `chore/acdb25#2026.dll`，并将 `chore/acdb25.dll` 重命名为 `chore/acdb25#2025.dll` ([7cadc54](https://github.com/splrad/LayerScape/commit/7cadc54fcf6811fa5d323b6861dc470239ea6952))
 * 更新 .gitignore 并移除 inspect-types.ps1 ([#84](https://github.com/splrad/LayerScape/issues/84)) ([648345f](https://github.com/splrad/LayerScape/commit/648345fdf647b9cdc079b8f209797f6d532cd5ea))
 * 更新公共仓库模板 ([#175](https://github.com/splrad/LayerScape/issues/175)) ([81a12db](https://github.com/splrad/LayerScape/commit/81a12db1104ed6692f745a722a5407c827d55681))
 * 清理过时文档与项目配置 ([#103](https://github.com/splrad/LayerScape/issues/103)) ([e8ecd73](https://github.com/splrad/LayerScape/commit/e8ecd73b24437684d965f3b5e2940a011ee9a191))
