@@ -6,7 +6,7 @@
 
 `scripts/prepare-docs.mjs` 使用 remark、parse5 和 parse-srcset 处理 Markdown、HTML、图片与链接。生成的 `src/content/docs`、`src/generated/site-data.json` 和 `public/media` 不入库；原始文档和图片保持原位。首页组件消费生成的数据，组件内只维护导航和交互文案。README 旧章节链接转向对应任务页面。字体清单的筛选只控制显示，不修改原始条目。依赖由本目录 package-lock 锁定，Dependabot 的 `/docs-site` 条目负责更新。
 
-`src/components` 中的首页、页头和页脚通过 Starlight 原生覆盖接口接入；文档目录、章节导航、搜索和主题选择继续使用 Starlight。`src/styles/site.css` 定义浅色、深色与响应式布局。中文字体使用本地 Noto Sans SC 资源，许可证和来源摘要位于 `public/fonts`；运行时无需连接字体服务。新增正文字符不在现有字库分片内时由系统字体显示，可按相同许可证补入分片。
+`src/components` 中的首页、页头和页脚通过 Starlight 原生覆盖接口接入；文档目录、章节导航、搜索和主题选择继续使用 Starlight。`src/styles/site.css` 定义浅色、深色与响应式布局。中文字体使用本地 Noto Sans SC 资源，字体内嵌版本为 2.004-H2，版权记录为 Adobe（2014–2021），保留字体名 Source。随附的 SIL OFL 1.1 来自 [Google Fonts 的 Noto Sans SC 目录](https://github.com/google/fonts/blob/2894aab31764f10f29c421bdfd2340d3b382d384/ofl/notosanssc/OFL.txt)，许可证和来源摘要位于 `public/fonts`；运行时无需连接字体服务。新增正文字符不在现有字库分片内时由系统字体显示，可按相同许可证补入分片。
 
 生产构建通过 `DOCS_SOURCE_SHA` 传入已经核验的完整提交 SHA，使源码文件链接绑定该提交。本地未传入时使用 main 链接。生成的 `source-digest.json` 保留正文源及本地图片摘要，在 `pages` 中记录每条页面路由对应的源文件、选取章节、选取内容摘要及生成 Markdown 摘要，并记录首页数据文件摘要。组合页面分别按每段原文件解析相对链接；下载帮助维护在 `docs/product/downloads.md`，CHANGELOG 各版本下的三级标题“插件使用说明”标记面向使用者的正文；构建提取该段及对应版本标题。Release Please 的仓库变更清单保留在 CHANGELOG。公开阅读页关闭源码编辑入口。该清单用于内容核对，部署身份和原生 Run 验收由 Pages 工作流负责。
 
@@ -20,7 +20,7 @@ Sites 仅用于同一工程的辅助设计和本地预览。使用 Sites 技能�
 
 ## 定稿版本的维护入口
 
-2026-11-03用户确认全站定稿。定稿范围、读者与维护要求的唯一规范正文为本地 `SPLRAD_MASTER_IMPLEMENTATION_BASELINE.md` §7.2.3；`../DESIGN.md` 记录当前视觉参数。这里仅说明实际编辑入口。
+全站设计已于 2026-11-03 定稿。视觉参数、组件和使用者阅读路径见[网站设计说明](../DESIGN.md)。按下列入口维护对应内容。
 
 - 正文：修改对应产品 Markdown，再执行现有生成与构建。FAQ 在产品 README，字体清单与说明在 `../docs/autodesk-fonts.md`，下载说明在 `../docs/product/downloads.md`；版本事实以公开发行内容为准。
 - 阅读页：`src/data/reading-pages.ts` 维护路由与操作入口，导语引用生成的产品数据；`ReadingTitle.astro` 与 `MarkdownContent.astro` 负责原生覆盖；`src/styles/reading.css` 只作用于阅读页。页首色块保持正文列宽。

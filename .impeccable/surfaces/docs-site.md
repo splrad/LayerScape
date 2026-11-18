@@ -41,7 +41,7 @@ The homepage leads with AFR benefits, then three specific use scenarios, a three
 
 ## Motion refinement, 2026-11-03
 
-The entire documentation site is approved by the user as of 2026-11-03. Preserve the adopted homepage and reading-page composition, real UI, user audience and motion. The local canonical SPLRAD_MASTER_IMPLEMENTATION_BASELINE.md §7.2.3 owns approval and maintenance requirements; DESIGN.md and docs-site/README.md record implementation details and editing steps.
+The entire documentation site is approved by the user as of 2026-11-03. Preserve the adopted homepage and reading-page composition, real UI, user audience and motion. See the [design specification](../../DESIGN.md) for the adopted visual system and the [site maintenance guide](../../docs-site/README.md) for editing and build steps.
 
 ## Reading refinement, 2026-11-03
 
