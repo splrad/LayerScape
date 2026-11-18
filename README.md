@@ -195,7 +195,7 @@ AFR 缺失字体自动替换 v9.1.0
 <details>
 <summary><b>如何卸载插件？</b></summary>
 
-使用 `AFR.Deployer` 执行卸载：勾选已安装项后点击“卸载”，工具会同步清理本插件的自动加载配置和写入的用户界面配置。
+使用 `AFR.Deployer` 执行卸载：勾选已安装项后点击“卸载”，工具会同步清理本插件的自动加载配置，并移除 `FixedProfile.aws` 中由本插件写入的节点。
 
 单 DLL / `NETLOAD` 场景可在 CAD 命令行完整输入 `AFRUNLOAD` 执行卸载维护。命令不会出现在自动补全列表中，输入 `AFR`、`AFRU` 等前缀不会触发，必须完整输入 `AFRUNLOAD`。
 
