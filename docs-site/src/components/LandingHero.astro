@@ -1,0 +1,36 @@
+---
+import { Image } from 'astro:assets';
+import deployer from '../../../chore/assets/readme/layerscape-deployer.jpg';
+import data from '../generated/site-data.json';
+import ImageViewer from './ImageViewer.astro';
+import LandingMotion from './LandingMotion.astro';
+const screenshot = data.screenshots.find(screen=>screen.src.includes('layerscape-deployer'))!;
+const title = data.title.replace('，', '，\n').split('\n');
+const imageTitle = 'LayerScape 现有部署器实际界面';
+---
+<div class="hero-shell">
+  <div class="hero-wordmark" aria-hidden="true">LayerScape</div>
+<section class="landing-hero">
+  <div class="hero-copy">
+    <h1 id="_top">{title.map(line=><span>{line}</span>)}</h1>
+    <p>{data.intro}</p>
+    <div class="hero-actions"><a class="button-primary" href="/downloads/">下载插件<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6"/></svg></a><a class="button-secondary" href="#getting-started">快速上手<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 5v14m-6-6 6 6 6-6"/></svg></a></div>
+    <a class="compatibility-link" href="/compatibility/">查看支持的 AutoCAD 版本</a>
+  </div>
+  <figure class="product-showcase">
+    <a class="screen-image deployer-image" href={screenshot.src} data-image-viewer data-caption={imageTitle} aria-label={'放大查看：'+imageTitle}>
+      <Image src={deployer} alt="现有 AFR 部署工具实际界面：CAD 年度选择、安装目录及安装与卸载操作" widths={[480, 800, 1200, 1600]} sizes="(max-width: 799px) min(320px, calc(100vw - 72px)), (max-width: 1150px) 42vw, 472px" format="webp" quality={92} loading="eager" fetchpriority="high" />
+      <span class="image-expand" aria-hidden="true"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M8 4H4v4m12-4h4v4M4 16v4h4m12-4v4h-4M4 4l5 5m11-5-5 5M4 20l5-5m11 5-5-5"/></svg></span>
+    </a>
+  </figure>
+</section>
+<div class="benefit-strip" id="features" aria-label="AFR 产品功能">
+  <span class="benefit-track" aria-hidden="true"><span></span><i class="flow-pulse"></i></span>
+  {data.features.map((feature,index)=><a class="benefit" href={'#scenario-'+index}>
+    <span class="benefit-node" aria-hidden="true"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6"><path d={['M5 5v5h5M5 10a8 8 0 1 1 0 5m4-3 2 2 4-4','M4 19 10 5l6 14M7 13h6m4-8h4m-2 0v14m-2 0h4','m5 12 4 4 10-10M5 5h7M5 20h14'][index]}/></svg></span>
+    <strong>{feature.title}</strong><p>{feature.body}</p>
+  </a>)}
+</div>
+</div>
+<ImageViewer />
+<LandingMotion />
