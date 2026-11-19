@@ -45,7 +45,8 @@
       "matchFileNames": [
         ".github/workflows/channel-preflight.yml",
         ".github/workflows/steward-release-publish.yml",
-        ".github/workflows/steward-release-channels.yml"
+        ".github/workflows/steward-release-channels.yml",
+        ".github/workflows/pages.yml"
       ],
       "matchDepTypes": [
         "uses-with"
@@ -61,10 +62,11 @@
     {
       "customType": "regex",
       "managerFilePatterns": [
-        "/^\\.github/workflows/(?:steward-release-publish|steward-release-channels|channel-preflight)\\.yml$/"
+        "/^\\.github/workflows/(?:steward-release-publish|steward-release-channels|channel-preflight|pages)\\.yml$/"
       ],
       "matchStrings": [
-        "repository: splrad/steward\\s+ref: (?<currentDigest>[a-f0-9]{40})"
+        "repository: splrad/steward\\s+ref: (?<currentDigest>[a-f0-9]{40})",
+        "(?:^|\\n)  STEWARD_CONTROLLER_SHA: (?<currentDigest>[a-f0-9]{40})(?:\\r?\\n|$)"
       ],
       "depNameTemplate": "splrad/steward",
       "packageNameTemplate": "https://github.com/splrad/steward.git",
