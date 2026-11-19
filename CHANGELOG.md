@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.1](https://github.com/splrad/LayerScape/compare/v1.0.0...v1.0.1) (2026-11-19)
+
+
+### 维护
+
+* **deps:** Bump astro from 7.4.4 to 7.4.13 in /docs-site ([#199](https://github.com/splrad/LayerScape/issues/199)) ([ac5fe1c](https://github.com/splrad/LayerScape/commit/ac5fe1cf70a8d15ac08626f4c456c480862ef174))
+
 ## 1.0.0 (2026-11-13)
 
 
