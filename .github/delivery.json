@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "repositoryAuthors": [
     {
       "id": 44151430,
@@ -33,14 +33,20 @@
       ],
       "channels": [
         {
-          "id": "ghcr-assets",
+          "id": "github-release",
           "required": true,
-          "location": "ghcr.io/splrad/layerscape-assets"
-        },
-        {
-          "id": "winget",
-          "required": true,
-          "location": "SPLRAD.LayerScape.Deployer"
+          "location": "https://github.com/splrad/LayerScape/releases",
+          "artifactIds": [
+            "deployer",
+            "plugins",
+            "fonts"
+          ],
+          "metadata": [
+            "sbom.spdx.json",
+            "release-notes.md",
+            "artifact-manifest.json",
+            "SHA256SUMS"
+          ]
         }
       ],
       "displayName": "LayerScape"

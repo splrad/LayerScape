@@ -4,7 +4,7 @@ using System.Text.Json;
 using System.Text.Json.Nodes;
 using AFR.Deployer.Services;
 
-var cases = new[] { "valid-github", "valid-gitee", "legacy-gitee", "extra-assets", "missing-asset", "duplicate-asset", "wrong-repo", "wrong-id", "wrong-unit", "wrong-tag", "wrong-version", "unsupported-schema", "missing-digest", "draft", "prerelease", "future-major", "old-client", "unsafe-asset", "unreachable", "no-release", "manifest-forbidden", "manifest-rate-limited", "manifest-server-error" };
+var cases = new[] { "valid-github", "valid-gitee", "legacy-gitee", "extra-assets", "missing-asset", "duplicate-asset", "wrong-repo", "wrong-id", "wrong-unit", "wrong-tag", "wrong-version", "unsupported-schema", "missing-digest", "empty-path", "duplicate-path", "extra-evidence", "installer-only", "draft", "prerelease", "future-major", "old-client", "unsafe-asset", "unreachable", "no-release", "manifest-forbidden", "manifest-rate-limited", "manifest-server-error" };
 foreach (var scenario in cases)
 {
     var source = scenario.Contains("gitee") ? UpdateCheckSource.Gitee : UpdateCheckSource.GitHub;
@@ -15,7 +15,7 @@ foreach (var scenario in cases)
     var assets = names.Select(name => new { name, browser_download_url = assetPrefix + "v" + version + "/" + name }).ToList();
     if (scenario == "extra-assets") assets.Add(new { name = "Source code.zip", browser_download_url = "https://github.com/splrad/LayerScape/archive/v1.0.0.zip" });
     if (scenario == "legacy-gitee") { assets.Clear(); version = "9.2.0"; }
-    if (scenario == "missing-asset") assets.RemoveAt(1);
+    if (scenario == "missing-asset") assets.RemoveAt(0);
     if (scenario == "duplicate-asset") assets.Add(assets[0]);
     if (scenario == "unsafe-asset") assets[5] = new { name = "artifact-manifest.json", browser_download_url = "http://localhost/private" };
     var release = JsonSerializer.Serialize(new { tag_name = "v" + version, name = "Release", draft = scenario == "draft", prerelease = scenario == "prerelease", assets });
@@ -35,6 +35,13 @@ foreach (var scenario in cases)
     if (scenario == "wrong-version") manifest["version"] = "2.0.0";
     if (scenario == "unsupported-schema") manifest["schemaVersion"] = 4;
     if (scenario == "missing-digest") manifest["artifacts"]![0]!.AsObject().Remove("sha256");
+    if (scenario == "empty-path") manifest["artifacts"]![1]!["path"] = null;
+    if (scenario == "duplicate-path") manifest["artifacts"]![1]!["path"] = names[0].ToUpperInvariant();
+    if (scenario == "extra-evidence") manifest["evidence"]!.AsArray().Add(manifest["artifacts"]![1]!.DeepClone());
+    if (scenario == "installer-only") {
+        manifest["artifacts"]!.AsArray().RemoveAt(2);
+        manifest["artifacts"]!.AsArray().RemoveAt(1);
+    }
     var requests = new List<string>();
     using var handler = new FixtureHandler(request => {
         var url = request.RequestUri!.AbsoluteUri; requests.Add(url);
@@ -54,7 +61,7 @@ foreach (var scenario in cases)
     });
     using var http = new HttpClient(handler);
     var result = await UpdateCheckService.CheckAsync(source, http, local);
-    var expectedUpdate = scenario is "valid-github" or "valid-gitee" or "extra-assets" or "future-major";
+    var expectedUpdate = scenario is "valid-github" or "valid-gitee" or "extra-assets" or "installer-only" or "future-major";
     Require(result.HasUpdate == expectedUpdate, scenario + " admission");
     var sourceUnavailable = scenario == "unreachable" || scenario.StartsWith("manifest-", StringComparison.Ordinal);
     Require(result.IsReachable == !sourceUnavailable, scenario + " reachability");
@@ -63,6 +70,26 @@ foreach (var scenario in cases)
     Console.WriteLine("PASS " + scenario);
 }
 Console.WriteLine($"Update check: {cases.Length} offline HTTP cases passed.");
+if (args.Length == 2)
+{
+    var release = JsonNode.Parse(File.ReadAllText(args[0]))!.AsObject();
+    var manifest = File.ReadAllText(args[1]);
+    Require(release["id"]!.GetValue<long>() == 450956063 && release["tag_name"]!.GetValue<string>() == "v1.0.0", "formal release identity");
+    var assets = release["assets"]!.AsArray();
+    Require(assets.Count == 7, "v1.0.0 inventory");
+    var names = assets.Select(asset => asset!["name"]!.GetValue<string>()).ToArray();
+    foreach (var omitted in names.Prepend(string.Empty))
+    {
+        var sample = release.DeepClone().AsObject();
+        sample["assets"] = new JsonArray(assets.Where(a => a!["name"]!.GetValue<string>() != omitted)
+            .Select(a => a!.DeepClone()).ToArray());
+        using var client = new HttpClient(new FixtureHandler(request => Response(HttpStatusCode.OK,
+            request.RequestUri!.AbsolutePath.EndsWith("/latest") ? sample.ToJsonString() : manifest)));
+        var result = await UpdateCheckService.CheckAsync(UpdateCheckSource.GitHub, client, "0.9.0");
+        Require(result.HasUpdate == (omitted != "artifact-manifest.json" && omitted != "AFR-Deployer_v1.0.0.exe"), "formal release omission: " + omitted);
+        Console.WriteLine($"PASS formal release {(omitted == string.Empty ? "complete" : "without " + omitted)}: HasUpdate={result.HasUpdate}");
+    }
+}
 static void Require(bool condition, string message) { if (!condition) throw new InvalidOperationException(message); }
 static HttpResponseMessage Response(HttpStatusCode status, string body) => new(status) { Content = new StringContent(body, Encoding.UTF8, "application/json") };
 sealed class FixtureHandler(Func<HttpRequestMessage, HttpResponseMessage> response) : HttpMessageHandler
