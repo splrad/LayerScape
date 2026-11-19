@@ -23,6 +23,7 @@
         "required": ["id", "path", "notesPath", "assets", "channels"],
         "properties": {
           "id": { "$ref": "#/$defs/key" },
+          "displayName": { "type": "string", "minLength": 1, "maxLength": 160 },
           "path": { "type": "string", "minLength": 1 },
           "notesPath": { "type": "string", "minLength": 1 },
           "assets": {
@@ -32,6 +33,7 @@
               "properties": {
                 "id": { "$ref": "#/$defs/key" },
                 "name": { "type": "string", "minLength": 1, "maxLength": 200 },
+                "description": { "type": "string", "minLength": 1, "maxLength": 240 },
                 "mediaType": { "type": "string", "pattern": "^[a-z0-9][a-z0-9.+-]*/[a-z0-9][a-z0-9.+-]*$" }
               }
             }

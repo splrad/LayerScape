@@ -15,17 +15,20 @@
         {
           "id": "deployer",
           "name": "AFR-Deployer_v${version}.exe",
-          "mediaType": "application/vnd.microsoft.portable-executable"
+          "mediaType": "application/vnd.microsoft.portable-executable",
+          "description": "推荐安装。运行部署器可为本机 AutoCAD 安装插件和内置字体。"
         },
         {
           "id": "plugins",
           "name": "AFR-DLL_v${version}.zip",
-          "mediaType": "application/zip"
+          "mediaType": "application/zip",
+          "description": "按 AutoCAD 年份选择 DLL，用 NETLOAD 手动加载。"
         },
         {
           "id": "fonts",
           "name": "Fonts.zip",
-          "mediaType": "application/zip"
+          "mediaType": "application/zip",
+          "description": "单独获取字体时下载。部署器已包含默认字体。"
         }
       ],
       "channels": [
@@ -39,7 +42,8 @@
           "required": true,
           "location": "SPLRAD.LayerScape.Deployer"
         }
-      ]
+      ],
+      "displayName": "LayerScape"
     }
   ]
 }
