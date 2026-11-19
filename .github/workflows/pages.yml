@@ -51,7 +51,7 @@ jobs:
           ref: 20fd2feb3674f84790a647b8b93985820accc0f5
           path: controller
           persist-credentials: false
-      - uses: jdx/mise-action@b44d12e7d0d8ee7461bb893e1b1993500433185b # v5.2.7
+      - uses: jdx/mise-action@236a21c3b91f5db6d4e174b348674a0f0caac06d # v5.2.9
         env:
           MISE_SAFE: '1'
           MISE_NODE_COMPILE: 'false'
@@ -98,7 +98,7 @@ jobs:
           ref: 20fd2feb3674f84790a647b8b93985820accc0f5
           path: controller
           persist-credentials: false
-      - uses: jdx/mise-action@b44d12e7d0d8ee7461bb893e1b1993500433185b # v5.2.7
+      - uses: jdx/mise-action@236a21c3b91f5db6d4e174b348674a0f0caac06d # v5.2.9
         env:
           MISE_SAFE: '1'
           MISE_NODE_COMPILE: 'false'
@@ -153,7 +153,7 @@ jobs:
           ref: 20fd2feb3674f84790a647b8b93985820accc0f5
           path: controller
           persist-credentials: false
-      - uses: jdx/mise-action@b44d12e7d0d8ee7461bb893e1b1993500433185b # v5.2.7
+      - uses: jdx/mise-action@236a21c3b91f5db6d4e174b348674a0f0caac06d # v5.2.9
         env:
           MISE_SAFE: '1'
           MISE_NODE_COMPILE: 'false'
