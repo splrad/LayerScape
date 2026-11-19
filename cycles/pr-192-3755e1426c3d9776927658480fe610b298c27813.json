@@ -1,0 +1,36 @@
+{
+  "id": "pr-192-3755e1426c3d9776927658480fe610b298c27813",
+  "prNumber": 192,
+  "sourceSha": "3755e1426c3d9776927658480fe610b298c27813",
+  "controllerSha": "20fd2feb3674f84790a647b8b93985820accc0f5",
+  "deliveryConfigSha": "c07e839bb626f72560f6fc47347bd6fc01de71e2",
+  "units": [
+    {
+      "id": "layerscape",
+      "version": "1.0.0",
+      "tag": "v1.0.0",
+      "releaseId": null,
+      "assets": [],
+      "notesDigest": null,
+      "manifestDigest": null
+    }
+  ],
+  "requiredChannels": [
+    {
+      "unitId": "layerscape",
+      "channelId": "ghcr-assets"
+    },
+    {
+      "unitId": "layerscape",
+      "channelId": "winget"
+    }
+  ],
+  "dispatches": [],
+  "publications": [],
+  "channelFacts": [],
+  "executionEvidence": [],
+  "completionObservations": [],
+  "completedEvidencePath": null,
+  "repairOf": null,
+  "approvedRepairDecision": null
+}
