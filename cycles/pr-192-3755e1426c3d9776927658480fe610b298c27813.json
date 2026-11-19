@@ -91,6 +91,33 @@
       "nativeResponseEvidencePath": "evidence/dispatch/9699a37986d5636aca63337c9d8bd857ffb39dce71f2b973d1be36944a904871.json",
       "continuationOfRunId": null,
       "retryLimitEvidencePath": null
+    },
+    {
+      "requestKey": "7b46bd994cea24c3556189f36326491136c242ac40262487edd0d5de308bf619",
+      "operationKey": "2172e91e13857f6a2a93ea2d6316c384329b1d4c59cf20ba95fcce8381df5f67",
+      "purpose": "channel-submit",
+      "workflowId": 410998651,
+      "ref": "main",
+      "sourceSha": "3755e1426c3d9776927658480fe610b298c27813",
+      "targetKey": "[2,410998651,\"main\",\"3755e1426c3d9776927658480fe610b298c27813\",\"3755e1426c3d9776927658480fe610b298c27813\",\"channel-submit\",\"submit\",[[\"layerscape\",\"ghcr-assets\",\"1.0.0\",450956063,\"dae86327f0db7560e9ba4c461e347037ef6e09880f37788295edd24a2a29eeee\"],[\"layerscape\",\"winget\",\"1.0.0\",450956063,\"dae86327f0db7560e9ba4c461e347037ef6e09880f37788295edd24a2a29eeee\"]]]",
+      "executionSha": "3755e1426c3d9776927658480fe610b298c27813",
+      "inputs": {
+        "cycle_id": "pr-192-3755e1426c3d9776927658480fe610b298c27813",
+        "source_sha": "3755e1426c3d9776927658480fe610b298c27813",
+        "execution_sha": "3755e1426c3d9776927658480fe610b298c27813",
+        "controller_sha": "20fd2feb3674f84790a647b8b93985820accc0f5",
+        "targets_json": "[{\"unitId\":\"layerscape\",\"channelId\":\"ghcr-assets\",\"version\":\"1.0.0\",\"releaseId\":450956063,\"manifestDigest\":\"dae86327f0db7560e9ba4c461e347037ef6e09880f37788295edd24a2a29eeee\"},{\"unitId\":\"layerscape\",\"channelId\":\"winget\",\"version\":\"1.0.0\",\"releaseId\":450956063,\"manifestDigest\":\"dae86327f0db7560e9ba4c461e347037ef6e09880f37788295edd24a2a29eeee\"}]",
+        "mode": "submit",
+        "operation_key": "2172e91e13857f6a2a93ea2d6316c384329b1d4c59cf20ba95fcce8381df5f67",
+        "request_key": "7b46bd994cea24c3556189f36326491136c242ac40262487edd0d5de308bf619"
+      },
+      "inputDigest": "63aa0bbc553b4d1254a496daf1846a0b88e69710b4ba8c4d63bc48775ec2e81c",
+      "sentAt": "2026-11-19T07:02:17.000Z",
+      "searchWindows": [],
+      "canonicalRunId": null,
+      "nativeResponseEvidencePath": null,
+      "continuationOfRunId": null,
+      "retryLimitEvidencePath": null
     }
   ],
   "publications": [],
