@@ -121,7 +121,36 @@
     }
   ],
   "publications": [],
-  "channelFacts": [],
+  "channelFacts": [
+    {
+      "unitId": "layerscape",
+      "channelId": "ghcr-assets",
+      "nativeObjectId": "sha256:cb51ad837d54a379cb55b18b9da92b28a445fbe1dcc32cd7396a2786da9a3c97",
+      "nativeUrl": "https://github.com/splrad/LayerScape/pkgs/container/layerscape-assets",
+      "inputDigest": "870943aaa7051fd68b8fe93c7a1f517b74872289b65643880045d30115c418ef",
+      "submittedAt": "2026-11-19T15:20:58.8141144Z",
+      "acceptedAt": "2026-11-19T15:20:58.8141144Z",
+      "indexedAt": null,
+      "verificationRunId": null,
+      "verifiedEvidencePath": null,
+      "observedAt": "2026-11-19T15:20:58.8141144Z",
+      "nextCheckAt": null
+    },
+    {
+      "unitId": "layerscape",
+      "channelId": "winget",
+      "nativeObjectId": "484181",
+      "nativeUrl": "https://github.com/microsoft/winget-pkgs/pull/484181",
+      "inputDigest": "5aaca78b1c4aaff73db9aa014db0952be4f169c452a3888b7c24398f043f2e02",
+      "submittedAt": "2026-11-19T15:21:02.3973324Z",
+      "acceptedAt": null,
+      "indexedAt": null,
+      "verificationRunId": null,
+      "verifiedEvidencePath": null,
+      "observedAt": "2026-11-19T15:21:02.3973324Z",
+      "nextCheckAt": null
+    }
+  ],
   "executionEvidence": [],
   "completionObservations": [],
   "completedEvidencePath": null,
