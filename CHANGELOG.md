@@ -3,11 +3,18 @@
 ## [1.0.1](https://github.com/splrad/LayerScape/compare/v1.0.0...v1.0.1) (2026-11-19)
 
 
+### 文档
+
+* **release:** 采用面向下载者的发行说明和产品用途 ([#200](https://github.com/splrad/LayerScape/issues/200)) ([ac5152a](https://github.com/splrad/LayerScape/commit/ac5152a43a3b1891c779435188cd719d75e6f543))
+
+
 ### 维护
 
 * **actions:** Bump actions/setup-dotnet from 6.0.0 to 6.1.0 ([#180](https://github.com/splrad/LayerScape/issues/180)) ([cf11311](https://github.com/splrad/LayerScape/commit/cf113112159269944d25762ec24d52f329f8596e))
 * **actions:** Bump jdx/mise-action from 5.2.3 to 5.2.9 ([#193](https://github.com/splrad/LayerScape/issues/193)) ([79cb0d1](https://github.com/splrad/LayerScape/commit/79cb0d132d4069399c0b875d698d5edf97a56f9c))
 * **deps:** Bump astro from 7.4.4 to 7.4.13 in /docs-site ([#199](https://github.com/splrad/LayerScape/issues/199)) ([ac5fe1c](https://github.com/splrad/LayerScape/commit/ac5fe1cf70a8d15ac08626f4c456c480862ef174))
+* **nuget:** Bump the dotnet-dependencies group with 1 update ([#181](https://github.com/splrad/LayerScape/issues/181)) ([326854d](https://github.com/splrad/LayerScape/commit/326854d82cd85ff6ac5cba00211c3b6a4c0846a5))
+* **sdk:** Bump dotnet-sdk from 10.0.402 to 11.0.100 ([#194](https://github.com/splrad/LayerScape/issues/194)) ([5663e65](https://github.com/splrad/LayerScape/commit/5663e65853b2a10b702a01f8db2fbf68f66a90e1))
 
 ## 1.0.0 (2026-11-13)
 
