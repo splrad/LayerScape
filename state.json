@@ -2,7 +2,7 @@
   "schemaVersion": 3,
   "repositoryId": 1187527897,
   "defaultBranch": "main",
-  "revision": 33,
+  "revision": 34,
   "releaseAdoption": {
     "prNumber": 176,
     "sourceSha": "de10de20b5405d764bfda731ed91d11ac56b5b2c"
@@ -14,23 +14,16 @@
     "id": "79d4fd1c102c2bb76f0c49a67c1d97f10d92824afe72aaf010240e32eaa66589",
     "prNumber": 201,
     "branch": "steward/release-candidate",
-    "baseSha": "ac5fe1cf70a8d15ac08626f4c456c480862ef174",
-    "generatedSnapshotPath": "generated/79d4fd1c102c2bb76f0c49a67c1d97f10d92824afe72aaf010240e32eaa66589/4c3b904b7c00024834cf8bd085a7deb141af3b7bad89f6740f53e0e2865989b0.json",
-    "publishedHead": "684dcec96e34250c1d42cd4b93bd03801e971df6",
+    "baseSha": "79cb0d132d4069399c0b875d698d5edf97a56f9c",
+    "generatedSnapshotPath": "generated/79d4fd1c102c2bb76f0c49a67c1d97f10d92824afe72aaf010240e32eaa66589/b9fe47cfc213f205a5d14ec8ffea737ed1170ebc3663eafe5032b49f4b84ead8.json",
+    "publishedHead": "9282afff3ea5a2998fe2c97cb9db55b3626c632b",
     "statusCommentId": 7015204821,
     "contentGenerationDigest": "236814445b264389db34a1f1006f4df112c12d873a773c59d56a8c81392641a8",
     "adoptionOverride": null,
     "observedLabelEventIds": [],
-    "pendingWrite": {
-      "expectedHead": "684dcec96e34250c1d42cd4b93bd03801e971df6",
-      "proposedCommit": "9282afff3ea5a2998fe2c97cb9db55b3626c632b",
-      "newGeneratedSnapshotPath": "generated/79d4fd1c102c2bb76f0c49a67c1d97f10d92824afe72aaf010240e32eaa66589/b9fe47cfc213f205a5d14ec8ffea737ed1170ebc3663eafe5032b49f4b84ead8.json",
-      "newGeneratedDigest": "b9fe47cfc213f205a5d14ec8ffea737ed1170ebc3663eafe5032b49f4b84ead8",
-      "operationKey": "2f6a83dcb15674f8f5671937a61315f622b912ff0f5438a910aca37eac5787fc",
-      "observedAt": "2026-11-19T16:38:22.126Z"
-    }
+    "pendingWrite": null
   },
   "nextCheckAt": "2026-11-19T07:52:10.000Z",
-  "lastProgressAt": "2026-11-19T16:38:29.719Z",
+  "lastProgressAt": "2026-11-19T17:08:19.284Z",
   "lastErrorCode": null
 }
