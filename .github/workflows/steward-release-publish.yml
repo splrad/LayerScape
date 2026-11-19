@@ -194,6 +194,7 @@ jobs:
         if: steps.unit.outputs.selected == 'true' && steps.recover.outputs.found !=
           'true'
         with:
+          dotnet-version: '10.0.404'
           global-json-file: product/global.json
       - name: business-build
         if: steps.unit.outputs.selected == 'true' && steps.recover.outputs.found !=
