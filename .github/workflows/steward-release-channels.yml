@@ -57,7 +57,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           repository: splrad/steward
-          ref: 8eae6add9b8013e33098484f66dc5d09a904b448
+          ref: c9708ced78a74b519c7a22db071c7db2b4b58b77
           path: controller
           persist-credentials: false
       - name: Enable Git long paths
@@ -122,7 +122,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           repository: splrad/steward
-          ref: 8eae6add9b8013e33098484f66dc5d09a904b448
+          ref: c9708ced78a74b519c7a22db071c7db2b4b58b77
           path: controller
           persist-credentials: false
       - name: Enable Git long paths
@@ -210,7 +210,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           repository: splrad/steward
-          ref: 8eae6add9b8013e33098484f66dc5d09a904b448
+          ref: c9708ced78a74b519c7a22db071c7db2b4b58b77
           path: controller
           persist-credentials: false
       - name: Enable Git long paths
@@ -368,7 +368,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           repository: splrad/steward
-          ref: 8eae6add9b8013e33098484f66dc5d09a904b448
+          ref: c9708ced78a74b519c7a22db071c7db2b4b58b77
           path: controller
           persist-credentials: false
       - name: Enable Git long paths
@@ -538,7 +538,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           repository: splrad/steward
-          ref: 8eae6add9b8013e33098484f66dc5d09a904b448
+          ref: c9708ced78a74b519c7a22db071c7db2b4b58b77
           path: controller
           persist-credentials: false
       - name: Enable Git long paths
@@ -615,7 +615,7 @@ jobs:
           $version=$manifest.version
           $auth=Join-Path $env:RUNNER_TEMP 'oras-business.json'
           [IO.File]::WriteAllText($auth,'{"auths":{}}')
-          $names=@($manifest.channelFiles)
+          $names=@($manifest.channelFiles | Sort-Object)
           $expected=@{};foreach($name in $names) {$expected[$name]=(Get-FileHash -LiteralPath "final/$name" -Algorithm SHA256).Hash.ToLowerInvariant()}
           if ($env:MODE -eq 'submit') {
             $env:GHCR_TOKEN | oras login ghcr.io --username $env:GITHUB_ACTOR --password-stdin --registry-config $auth
@@ -722,7 +722,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           repository: splrad/steward
-          ref: 8eae6add9b8013e33098484f66dc5d09a904b448
+          ref: c9708ced78a74b519c7a22db071c7db2b4b58b77
           path: controller
           persist-credentials: false
       - name: Enable Git long paths
@@ -983,7 +983,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           repository: splrad/steward
-          ref: 8eae6add9b8013e33098484f66dc5d09a904b448
+          ref: c9708ced78a74b519c7a22db071c7db2b4b58b77
           path: controller
           persist-credentials: false
       - name: Enable Git long paths
@@ -1054,7 +1054,7 @@ jobs:
           $version=$manifest.version
           $auth=Join-Path $env:RUNNER_TEMP 'oras-business.json'
           [IO.File]::WriteAllText($auth,'{"auths":{}}')
-          $names=@($manifest.channelFiles)
+          $names=@($manifest.channelFiles | Sort-Object)
           $expected=@{};foreach($name in $names) {$expected[$name]=(Get-FileHash -LiteralPath "final/$name" -Algorithm SHA256).Hash.ToLowerInvariant()}
           if ($env:MODE -eq 'submit') {
             $env:GHCR_TOKEN | oras login ghcr.io --username $env:GITHUB_ACTOR --password-stdin --registry-config $auth
@@ -1158,7 +1158,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           repository: splrad/steward
-          ref: 8eae6add9b8013e33098484f66dc5d09a904b448
+          ref: c9708ced78a74b519c7a22db071c7db2b4b58b77
           path: controller
           persist-credentials: false
       - name: Enable Git long paths

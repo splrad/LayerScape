@@ -70,10 +70,10 @@ foreach (var scenario in cases)
     Console.WriteLine("PASS " + scenario);
 }
 Console.WriteLine($"Update check: {cases.Length} offline HTTP cases passed.");
-var fixtureDirectory = Path.Combine(AppContext.BaseDirectory, "Fixtures", "v1.0.0");
+var fixtureDirectory = Path.Join(AppContext.BaseDirectory, "Fixtures", "v1.0.0");
 string[] fixturePaths = args.Length switch
 {
-    0 => [Path.Combine(fixtureDirectory, "release.json"), Path.Combine(fixtureDirectory, "artifact-manifest.json")],
+    0 => [Path.Join(fixtureDirectory, "release.json"), Path.Join(fixtureDirectory, "artifact-manifest.json")],
     2 => args,
     _ => throw new ArgumentException("Expected a release JSON path and an artifact manifest path.")
 };
