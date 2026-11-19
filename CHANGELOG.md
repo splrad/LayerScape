@@ -3,6 +3,12 @@
 ## [1.0.1](https://github.com/splrad/LayerScape/compare/v1.0.0...v1.0.1) (2026-11-19)
 
 
+### 问题修复
+
+* 将 Pages 的控制器引用纳入 Renovate 更新 ([#203](https://github.com/splrad/LayerScape/issues/203)) ([3560ef1](https://github.com/splrad/LayerScape/commit/3560ef1f8e45444ab5be4f18d6c00f5f128f93a4))
+* 更新关于窗口和插件日志的项目地址 ([#202](https://github.com/splrad/LayerScape/issues/202)) ([7c42fc4](https://github.com/splrad/LayerScape/commit/7c42fc4f0495e06328407b776b6e3b5c9c96e950))
+
+
 ### 文档
 
 * **release:** 采用面向下载者的发行说明和产品用途 ([#200](https://github.com/splrad/LayerScape/issues/200)) ([ac5152a](https://github.com/splrad/LayerScape/commit/ac5152a43a3b1891c779435188cd719d75e6f543))

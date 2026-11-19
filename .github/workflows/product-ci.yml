@@ -1,0 +1,25 @@
+name: Build LayerScape
+run-name: Product CI ${{ github.event.pull_request.number }} ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }}
+on:
+  pull_request:
+  push:
+    branches: ['**']
+permissions:
+  contents: read
+jobs:
+  build:
+    if: github.event_name == 'pull_request' || github.ref_name == github.event.repository.default_branch
+    runs-on: windows-2025
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
+        with:
+          global-json-file: global.json
+      - name: Restore locked dependencies
+        run: dotnet restore CADFontAutoReplace.slnx --locked-mode
+      - name: Build release configuration
+        run: dotnet build CADFontAutoReplace.slnx --configuration Release --no-restore
