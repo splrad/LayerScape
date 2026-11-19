@@ -70,10 +70,19 @@ foreach (var scenario in cases)
     Console.WriteLine("PASS " + scenario);
 }
 Console.WriteLine($"Update check: {cases.Length} offline HTTP cases passed.");
-if (args.Length == 2)
+var fixtureDirectory = Path.Combine(AppContext.BaseDirectory, "Fixtures", "v1.0.0");
+string[] fixturePaths = args.Length switch
 {
-    var release = JsonNode.Parse(File.ReadAllText(args[0]))!.AsObject();
-    var manifest = File.ReadAllText(args[1]);
+    0 => [Path.Combine(fixtureDirectory, "release.json"), Path.Combine(fixtureDirectory, "artifact-manifest.json")],
+    2 => args,
+    _ => throw new ArgumentException("Expected a release JSON path and an artifact manifest path.")
+};
+await VerifyFormalRelease(fixturePaths);
+
+static async Task VerifyFormalRelease(string[] fixturePaths)
+{
+    var release = JsonNode.Parse(File.ReadAllText(fixturePaths[0]))!.AsObject();
+    var manifest = File.ReadAllText(fixturePaths[1]);
     Require(release["id"]!.GetValue<long>() == 450956063 && release["tag_name"]!.GetValue<string>() == "v1.0.0", "formal release identity");
     var assets = release["assets"]!.AsArray();
     Require(assets.Count == 7, "v1.0.0 inventory");

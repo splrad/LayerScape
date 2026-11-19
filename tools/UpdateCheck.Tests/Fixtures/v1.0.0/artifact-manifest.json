@@ -1,0 +1,65 @@
+{
+  "repositoryId": 1187527897,
+  "fullName": "splrad/LayerScape",
+  "unitId": "layerscape",
+  "cycleId": "pr-192-3755e1426c3d9776927658480fe610b298c27813",
+  "requestKey": "0b52b12f0a961bf0e29a19776ffc26e94de6d1d9f33f7dca23a1d8399972fc19",
+  "version": "1.0.0",
+  "packageVersion": "1.0.0",
+  "tag": "v1.0.0",
+  "sourceSha": "3755e1426c3d9776927658480fe610b298c27813",
+  "controllerSha": "20fd2feb3674f84790a647b8b93985820accc0f5",
+  "buildRef": "refs/heads/steward/build/pr-192-3755e1426c3d9776927658480fe610b298c27813",
+  "deliverySha256": "24c6a7bf6041568c6818cc65943b7269591f8b4759133bd1f502470528ef725c",
+  "templateSha256": "456bedbae6c57f772630a44153077d0b26fd44c340abb8ea2905d1d813b76711",
+  "runId": 44468734487,
+  "attempt": 3,
+  "toolLocks": {
+    "controller/mise.lock": "47d20eedbdfd963f0dfbc3bd021989a7fa233e2bb3865cc14ee8c6e2432791f8",
+    "source/global.json": "30fdf1d1d5cfadd6447ab39d18cc5eec405cf1a5ec5b2e4b1d228a6fe757846d"
+  },
+  "producers": [
+    {
+      "buildId": "windows-x64",
+      "jobId": 135378305563,
+      "attempt": 3,
+      "artifactId": 14503567844
+    }
+  ],
+  "schemaVersion": 3,
+  "artifacts": [
+    {
+      "id": "deployer",
+      "path": "AFR-Deployer_v1.0.0.exe",
+      "size": 85942772,
+      "sha256": "e9b9acce1a630bd375d484c6ac9bc230ab1e1b1d7297d35c58f88035bf3e1fd6",
+      "mediaType": "application/vnd.microsoft.portable-executable"
+    },
+    {
+      "id": "plugins",
+      "path": "AFR-DLL_v1.0.0.zip",
+      "size": 11866537,
+      "sha256": "9f2ca7051dc5e6b7ef138392b05678b4907e3599d6a441bff03faf903da672a0",
+      "mediaType": "application/zip"
+    },
+    {
+      "id": "fonts",
+      "path": "Fonts.zip",
+      "size": 6774370,
+      "sha256": "f5f50ca58aa9dd3deccfe95f64e1cf54665d7aa3217a4a184c35021301c5030f",
+      "mediaType": "application/zip"
+    }
+  ],
+  "evidence": [
+    {
+      "path": "sbom.spdx.json",
+      "size": 194059,
+      "sha256": "0292dd57c2108d97ceaed8735bc8cdca2c89ddf77191dfe85636f240e86b98f4"
+    },
+    {
+      "path": "release-notes.md",
+      "size": 3334,
+      "sha256": "e785967b2c50daa56569b2fd71273f5bab1afbd927d97da0a3eb45c2c9483e7e"
+    }
+  ]
+}
