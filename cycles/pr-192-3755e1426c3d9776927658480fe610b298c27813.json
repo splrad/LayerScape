@@ -10,9 +10,52 @@
       "version": "1.0.0",
       "tag": "v1.0.0",
       "releaseId": null,
-      "assets": [],
-      "notesDigest": null,
-      "manifestDigest": null
+      "assets": [
+        {
+          "id": "plugins",
+          "path": "AFR-DLL_v1.0.0.zip",
+          "size": 11866537,
+          "sha256": "9f2ca7051dc5e6b7ef138392b05678b4907e3599d6a441bff03faf903da672a0"
+        },
+        {
+          "id": "deployer",
+          "path": "AFR-Deployer_v1.0.0.exe",
+          "size": 85942772,
+          "sha256": "e9b9acce1a630bd375d484c6ac9bc230ab1e1b1d7297d35c58f88035bf3e1fd6"
+        },
+        {
+          "id": "fonts",
+          "path": "Fonts.zip",
+          "size": 6774370,
+          "sha256": "f5f50ca58aa9dd3deccfe95f64e1cf54665d7aa3217a4a184c35021301c5030f"
+        },
+        {
+          "id": "metadata-sha256sums",
+          "path": "SHA256SUMS",
+          "size": 504,
+          "sha256": "e0fda9bec347a86728d39d877c0d84f0ea4a9e32d6b38c9576eb29da4318293c"
+        },
+        {
+          "id": "metadata-artifact-manifest-json",
+          "path": "artifact-manifest.json",
+          "size": 2136,
+          "sha256": "dae86327f0db7560e9ba4c461e347037ef6e09880f37788295edd24a2a29eeee"
+        },
+        {
+          "id": "metadata-release-notes-md",
+          "path": "release-notes.md",
+          "size": 3334,
+          "sha256": "e785967b2c50daa56569b2fd71273f5bab1afbd927d97da0a3eb45c2c9483e7e"
+        },
+        {
+          "id": "metadata-sbom-spdx-json",
+          "path": "sbom.spdx.json",
+          "size": 194059,
+          "sha256": "0292dd57c2108d97ceaed8735bc8cdca2c89ddf77191dfe85636f240e86b98f4"
+        }
+      ],
+      "notesDigest": "e785967b2c50daa56569b2fd71273f5bab1afbd927d97da0a3eb45c2c9483e7e",
+      "manifestDigest": "dae86327f0db7560e9ba4c461e347037ef6e09880f37788295edd24a2a29eeee"
     }
   ],
   "requiredChannels": [
