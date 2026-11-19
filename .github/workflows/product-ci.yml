@@ -1,4 +1,5 @@
 name: Build LayerScape
+run-name: Product CI ${{ github.event.pull_request.number }} ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }}
 on:
   pull_request:
   push:
