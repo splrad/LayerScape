@@ -1,0 +1,27 @@
+---
+import Default from '@astrojs/starlight/components/MarkdownContent.astro';
+import ImageViewer from './ImageViewer.astro';
+import {readingPages} from '../data/reading-pages';
+const id=Astro.locals.starlightRoute.id;
+const userDoc=Object.hasOwn(readingPages,id);
+---
+<Default>{userDoc?<div class="user-doc-content" data-user-doc={id}><slot /></div>:<slot />}</Default>
+{['modules','install','guide','usage'].includes(id)&&<div data-pagefind-ignore><ImageViewer /></div>}
+<script>
+  document.querySelectorAll<HTMLTableElement>('.sl-markdown-content table:not(:has(img))').forEach(table=>{
+    const hint=document.createElement('p');
+    hint.className='table-scroll-hint';
+    hint.textContent='左右滑动查看完整表格，也可聚焦表格后使用方向键。';
+    hint.hidden=true;
+    table.before(hint);
+    const update=()=>{
+      const overflow=table.scrollWidth>table.clientWidth+1;
+      hint.hidden=!overflow;
+      table.tabIndex=overflow?0:-1;
+      if(overflow)table.setAttribute('aria-label','可横向滚动的数据表格');
+      else table.removeAttribute('aria-label');
+    };
+    new ResizeObserver(update).observe(table);
+    update();
+  });
+</script>
