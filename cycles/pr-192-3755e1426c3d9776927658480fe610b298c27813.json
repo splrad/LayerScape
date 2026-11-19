@@ -152,8 +152,15 @@
     }
   ],
   "executionEvidence": [],
-  "completionObservations": [],
-  "completedEvidencePath": null,
+  "completionObservations": [
+    {
+      "inputSetDigest": "d617edb3197e0478d7dd71cc70b71664dfa7d388383f6c9360d011cc31cb41b9",
+      "evidenceSetDigest": "da7d2d3a491f8e08bbd0ef93c367d8ff4acf2c46ed82cbe14425cfb4973ade1d",
+      "observedAt": "2026-11-19T15:22:53.099Z",
+      "evidencePath": "evidence/completion/5941df5a04172dad727cf1e833209ef8f0e2fb2a49b4cfad97a6ff3457f3d36b.json"
+    }
+  ],
+  "completedEvidencePath": "evidence/completion/5941df5a04172dad727cf1e833209ef8f0e2fb2a49b4cfad97a6ff3457f3d36b.json",
   "repairOf": null,
   "approvedRepairDecision": null
 }
