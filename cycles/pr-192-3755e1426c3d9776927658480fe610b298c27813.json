@@ -158,9 +158,15 @@
       "evidenceSetDigest": "da7d2d3a491f8e08bbd0ef93c367d8ff4acf2c46ed82cbe14425cfb4973ade1d",
       "observedAt": "2026-11-19T15:22:53.099Z",
       "evidencePath": "evidence/completion/5941df5a04172dad727cf1e833209ef8f0e2fb2a49b4cfad97a6ff3457f3d36b.json"
+    },
+    {
+      "inputSetDigest": "d617edb3197e0478d7dd71cc70b71664dfa7d388383f6c9360d011cc31cb41b9",
+      "evidenceSetDigest": "b7b1012123848ce5be52583837adb05da91bd22571546ef0cba856b544e5c767",
+      "observedAt": "2026-11-19T15:28:52.030Z",
+      "evidencePath": "evidence/completion/9797f3c501d7f9addcae08230556e4548fc08d434c35c7ee884f295404c75b6f.json"
     }
   ],
-  "completedEvidencePath": "evidence/completion/5941df5a04172dad727cf1e833209ef8f0e2fb2a49b4cfad97a6ff3457f3d36b.json",
+  "completedEvidencePath": "evidence/completion/9797f3c501d7f9addcae08230556e4548fc08d434c35c7ee884f295404c75b6f.json",
   "repairOf": null,
   "approvedRepairDecision": null
 }
