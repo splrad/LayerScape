@@ -1,0 +1,28 @@
+{
+  "kind": "product-presentation-render",
+  "authorization": "用户于 2026-11-03 明确允许制作渲染图",
+  "tool": "built-in image_gen.imagegen",
+  "asset": "docs-site/src/assets/layerscape-showcase.png",
+  "sha256": "b3fe1fec0166db2f83aa83a58e9b9f441efbe3d5d9ebcea37c9f1731a65d2bbc",
+  "sourceImages": [
+    {
+      "path": "chore/assets/readme/layerscape-deployer.jpg",
+      "sha256": "f12be2455fa1b2e917639b7638e23d2ef7e69d82c0c4bcb9a5d645f1b73981e8"
+    },
+    {
+      "path": "chore/assets/readme/afr-font-config.jpg",
+      "sha256": "f2a1ed0558f6ffee79f7d30603c65a83bbf86d0816c27082fb1bdc15ad96c2db"
+    },
+    {
+      "path": "chore/assets/readme/afr-log.jpg",
+      "sha256": "6cbb9ca9aebded6af038b73d7f23ce10bb700d5cfda5383554098003ebdaafc5"
+    }
+  ],
+  "prompt": "Use case: product-mockup / compositing.\nCreate a polished editorial product showcase render for the real Chinese Windows/CAD utility LayerScape, for a light product website.\nReference images: 1 is the real deployer window, 2 the real font configuration window, 3 the real font replacement log. Use these actual UIs as the basis, retaining their recognizable layout, labels, controls and data. Do not invent software features, product claims, or a new dashboard.\nComposition: landscape 4:3. A large deployer window is the dominant object, almost front-facing, very slight perspective, toward the upper right. A smaller portrait font-configuration window sits in front at the lower left. A subtle sliver of the font log window may sit behind on the far right but avoid clutter; only two clearly readable major windows. The windows occupy around 85% of canvas width and 85% of height, all rounded outer corners visible and no cropping. Keep titles and key text clear. Do not add marketing text outside the software windows.\nEnvironment: seamless very pale lavender-white (#f6f5fb) studio surface, understated soft directional shadow cast downward and to the right, restrained dimensionality, precision digital product photography, crisp window edges, natural subtle material lighting. White software windows with their original blue actions; muted violet may be present in the background only. Attractive and calm, not sci-fi, no bright glow, no glass panels, no dark background, no grain, no checkerboard, no transparency, no laptop, no screen bezel, no cursor, no artificial badges, no decorative geometry.\nThis is explicitly a product presentation render, not a claim of an exact screenshot. Preserve actual labels such as AFR 部署工具, 插件部署 v9.0, AutoCAD 2018–2027, AFR 字体替换配置, ming.shx, HZTXT.SHX, 宋体, 取消, 确认. Never alter version 9.0 to a newer release. Output a fully opaque high-resolution image.\n",
+  "disclosure": "按用户最新要求移除首页独立图注；替代文字、图片查看器标题及本来源记录保留渲染图属性。三张原始截图仍可切换和放大。图中 9.0 为源图版本，不代表当前正式发布版本。",
+  "transform": "Astro build produces 480/800/1200/1448px WebP; no raster processing outside image_gen except standard build encoding.",
+  "unusedAttempts": [
+    "deployer cutout superseded by approved presentation render",
+    "font-config transparent edit rejected for visible alpha artifacts"
+  ]
+}

@@ -195,16 +195,16 @@ AFR 缺失字体自动替换 v9.1.0
 <details>
 <summary><b>如何卸载插件？</b></summary>
 
-使用 `AFR.Deployer` 执行卸载：勾选已安装项后点击“卸载”，工具会同步清理自动加载配置与由本插件写入的 `FixedProfile.aws` 节点。
+使用 `AFR.Deployer` 执行卸载：勾选已安装项后点击“卸载”，工具会同步清理本插件的自动加载配置，并移除 `FixedProfile.aws` 中由本插件写入的节点。
 
 单 DLL / `NETLOAD` 场景可在 CAD 命令行完整输入 `AFRUNLOAD` 执行卸载维护。命令不会出现在自动补全列表中，输入 `AFR`、`AFRU` 等前缀不会触发，必须完整输入 `AFRUNLOAD`。
 
 </details>
 
 <details>
-<summary><b>为什么 AFR 能处理多行文字（MText）内联字体缺失？</b></summary>
+<summary><b>多行文字（MText）中的缺失字体也能替换吗？</b></summary>
 
-AFR 不改写 `MText.Contents`。当前流程会先修复样式表缺失字体，再通过 `Regen` 让 AutoCAD 原生展开和绘制 MText；内联字体在运行时文件加载阶段映射，`AFRLOG` 中的内联映射记录只来自真实运行时命中结果。
+可以。AFR 会处理多行文字中的缺失字体。你可以通过 `AFRLOG` 查看实际发生的字体映射记录，并检查图纸中的显示效果。
 
 > 注意：若图纸正文字符已经被错误编码保存（文字数据已损坏），字体替换无法恢复原文。
 

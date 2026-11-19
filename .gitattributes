@@ -11,6 +11,10 @@
 *.bash text eol=lf
 VERSION text eol=lf
 /AGENTS.md text eol=lf
+# Keep Renovate checkout extraction and Git blob replacement byte-compatible.
+/.github/workflows/channel-preflight.yml text eol=lf
+/.github/workflows/steward-release-publish.yml text eol=lf
+/.github/workflows/steward-release-channels.yml text eol=lf
 
 ###############################################################################
 # Set default behavior for command prompt diff.

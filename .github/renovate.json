@@ -20,7 +20,7 @@
       "matchDepTypes": [
         "workflow"
       ],
-      "matchPackageNames": [
+      "matchDepNames": [
         "splrad/steward"
       ],
       "matchFileNames": [
@@ -53,7 +53,8 @@
       "matchPackageNames": [
         "jdx/mise"
       ],
-      "enabled": true
+      "enabled": true,
+      "pinDigests": false
     }
   ],
   "customManagers": [
@@ -71,5 +72,19 @@
       "currentValueTemplate": "steward/validated-controller",
       "versioningTemplate": "exact"
     }
-  ]
+  ],
+  "prHeader": "本 PR 包含以下依赖更新：",
+  "prBodyColumns": [
+    "Package",
+    "Type",
+    "Update",
+    "Change"
+  ],
+  "prBodyHeadingDefinitions": {
+    "Package": "组件",
+    "Type": "依赖类别",
+    "Update": "更新类型",
+    "Change": "版本变化"
+  },
+  "prFooter": "本 PR 由 [Renovate](https://github.com/renovatebot/renovate) 自动生成。"
 }

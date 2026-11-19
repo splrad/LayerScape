@@ -19,20 +19,28 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           repository: splrad/steward
-          ref: 115b3447bdd5414c0767f35f304c828a3fb45953
+          ref: 20fd2feb3674f84790a647b8b93985820accc0f5
           path: controller
           persist-credentials: false
-      - name: Verify product token metadata visibility
+      - name: Verify dedicated metadata credential visibility
         shell: pwsh
         env:
-          GHCR_TOKEN: ${{ github.token }}
+          GHCR_METADATA_TOKEN: ${{ secrets.CHANNEL_READ_TOKEN }}
           OWNER_INVENTORY: ${{ vars.GHCR_OWNER_PACKAGE_INVENTORY }}
         run: |
           $ErrorActionPreference='Stop'
+          $metadataToken=$env:GHCR_METADATA_TOKEN
+          Remove-Item Env:GHCR_METADATA_TOKEN -ErrorAction SilentlyContinue
           . ./controller/scripts/ghcr-package-state.ps1
-          $package=Get-LayerScapePackageState -Token $env:GHCR_TOKEN -OwnerInventory $env:OWNER_INVENTORY
+          if ([string]::IsNullOrWhiteSpace($metadataToken)) { throw 'GHCR_METADATA_TOKEN_REQUIRED' }
+          $apiVersion=(Get-Content -LiteralPath controller/config/github-api.json -Raw | ConvertFrom-Json).version
+          $headers=@{Authorization="Bearer $metadataToken";Accept='application/vnd.github+json';'X-GitHub-Api-Version'=$apiVersion}
+          $identity=Invoke-RestMethod -Uri 'https://api.github.com/user' -Headers $headers
+          if ($identity.id -ne 44151430 -or $identity.login -cne 'axiomoth') { throw 'GHCR_METADATA_IDENTITY_MISMATCH' }
+          $package=Get-LayerScapePackageState -Token $metadataToken -OwnerInventory $env:OWNER_INVENTORY
           $record=[ordered]@{
             repositoryId=1187527897
+            metadataPrincipalId=$identity.id
             sourceSha=$env:GITHUB_SHA
             runId=[long]$env:GITHUB_RUN_ID
             attempt=[int]$env:GITHUB_RUN_ATTEMPT

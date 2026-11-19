@@ -1,0 +1,13 @@
+{
+  "heading.anchorLabel": "链接到“{{title}}”",
+  "pagefind.clear_search": "清除",
+  "pagefind.load_more": "显示更多结果",
+  "pagefind.search_label": "搜索本站",
+  "pagefind.filters_label": "筛选",
+  "pagefind.zero_results": "未找到“[SEARCH_TERM]”",
+  "pagefind.many_results": "“[SEARCH_TERM]”有 [COUNT] 条结果",
+  "pagefind.one_result": "“[SEARCH_TERM]”有 [COUNT] 条结果",
+  "pagefind.alt_search": "未找到“[SEARCH_TERM]”，显示“[DIFFERENT_TERM]”的结果",
+  "pagefind.search_suggestion": "未找到“[SEARCH_TERM]”，请尝试以下关键词：",
+  "pagefind.searching": "正在搜索“[SEARCH_TERM]”…"
+}
