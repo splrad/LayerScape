@@ -25,7 +25,31 @@
       "channelId": "winget"
     }
   ],
-  "dispatches": [],
+  "dispatches": [
+    {
+      "requestKey": "0b52b12f0a961bf0e29a19776ffc26e94de6d1d9f33f7dca23a1d8399972fc19",
+      "operationKey": "0ece971823ad88c88bcc96a280d9eacd59b62faeff9f36a6d1037839d1c3434f",
+      "purpose": "build",
+      "workflowId": 410998652,
+      "ref": "steward/build/pr-192-3755e1426c3d9776927658480fe610b298c27813",
+      "sourceSha": "3755e1426c3d9776927658480fe610b298c27813",
+      "targetKey": "[2,410998652,\"steward/build/pr-192-3755e1426c3d9776927658480fe610b298c27813\",\"3755e1426c3d9776927658480fe610b298c27813\",\"3755e1426c3d9776927658480fe610b298c27813\",\"build\",\"build\",[[\"layerscape\",\"1.0.0\"]]]",
+      "inputs": {
+        "cycle_id": "pr-192-3755e1426c3d9776927658480fe610b298c27813",
+        "operation_key": "0ece971823ad88c88bcc96a280d9eacd59b62faeff9f36a6d1037839d1c3434f",
+        "source_sha": "3755e1426c3d9776927658480fe610b298c27813",
+        "controller_sha": "20fd2feb3674f84790a647b8b93985820accc0f5"
+      },
+      "inputDigest": "0edadc4d7a3a055b5451bed2395430b4de0c2151c9f45a0dc34acff752a20715",
+      "executionSha": "3755e1426c3d9776927658480fe610b298c27813",
+      "sentAt": "2026-11-19T05:57:41.000Z",
+      "searchWindows": [],
+      "canonicalRunId": null,
+      "nativeResponseEvidencePath": null,
+      "continuationOfRunId": null,
+      "retryLimitEvidencePath": null
+    }
+  ],
   "publications": [],
   "channelFacts": [],
   "executionEvidence": [],
