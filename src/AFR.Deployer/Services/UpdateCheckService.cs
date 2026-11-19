@@ -65,7 +65,7 @@ internal static class UpdateCheckService
 
             if (latestVersion <= localVersion) return UpdateCheckResult.ReachableNoUpdate(source);
 
-            var required = RequiredAssets(latestVersionText);
+            var required = new[] { $"AFR-Deployer_v{latestVersionText}.exe", "artifact-manifest.json" };
             if (release.Assets is null || required.Any(name => release.Assets.Count(asset => asset.Name == name) != 1))
                 return UpdateCheckResult.ReachableNoUpdate(source);
             var asset = release.Assets.Single(asset => asset.Name == "artifact-manifest.json");
@@ -99,9 +99,6 @@ internal static class UpdateCheckService
         return output.ToArray();
     }
 
-    private static string[] RequiredAssets(string version) =>
-        [$"AFR-Deployer_v{version}.exe", $"AFR-DLL_v{version}.zip", "Fonts.zip", "sbom.spdx.json", "release-notes.md", "artifact-manifest.json", "SHA256SUMS"];
-
     private static bool SafeAssetUrl(string? value, UpdateCheckSource source, string tag)
     {
         if (!Uri.TryCreate(value, UriKind.Absolute, out var url) || url.Scheme != "https" || !url.IsDefaultPort
@@ -131,9 +128,9 @@ internal static class UpdateCheckService
                 || root.GetProperty("runId").GetInt64() < 1 || root.GetProperty("attempt").GetInt32() < 1) return false;
             foreach (var key in new[] { "requestKey", "deliverySha256", "templateSha256" })
                 if (!Regex.IsMatch(root.GetProperty(key).GetString() ?? "", "\\A[a-f0-9]{64}\\z")) return false;
-            var required = RequiredAssets(version);
-            return MatchesFiles(root.GetProperty("artifacts"), required.Take(3).ToArray())
-                && MatchesFiles(root.GetProperty("evidence"), required.Skip(3).Take(2).ToArray());
+            return MatchesFiles(root.GetProperty("artifacts"), [$"AFR-Deployer_v{version}.exe"])
+                && root.GetProperty("evidence").GetArrayLength() == 2
+                && MatchesFiles(root.GetProperty("evidence"), ["sbom.spdx.json", "release-notes.md"]);
         }
         catch (Exception error) when (error is JsonException or InvalidOperationException or KeyNotFoundException or FormatException or OverflowException)
         {
@@ -144,7 +141,11 @@ internal static class UpdateCheckService
     private static bool MatchesFiles(JsonElement entries, string[] names)
     {
         var files = entries.EnumerateArray().ToArray();
-        return files.Length == names.Length && names.All(name => files.Count(file => file.GetProperty("path").GetString() == name) == 1)
+        var paths = files.Select(file => file.GetProperty("path").GetString()).ToArray();
+        return paths.All(path => !string.IsNullOrWhiteSpace(path) && path != "." && path != ".."
+                && path.IndexOfAny(['/', '\\']) < 0 && !path.Any(char.IsControl))
+            && paths.Distinct(StringComparer.OrdinalIgnoreCase).Count() == paths.Length
+            && names.All(name => paths.Contains(name, StringComparer.Ordinal))
             && files.All(file => file.GetProperty("size").GetInt64() > 0
                 && Regex.IsMatch(file.GetProperty("sha256").GetString() ?? "", "\\A[a-f0-9]{64}\\z"));
     }

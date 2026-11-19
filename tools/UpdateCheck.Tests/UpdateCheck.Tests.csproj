@@ -7,6 +7,7 @@
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
   </PropertyGroup>
   <ItemGroup>
+    <None Update="Fixtures/v1.0.0/*.json" CopyToOutputDirectory="PreserveNewest" />
     <Compile Include="../../src/AFR.Deployer/Services/UpdateCheckService.cs" Link="UpdateCheckService.cs" />
     <Compile Include="../../src/AFR.Deployer/Services/DeployerVersionService.cs" Link="DeployerVersionService.cs" />
   </ItemGroup>
