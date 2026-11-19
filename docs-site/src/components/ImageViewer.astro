@@ -1,0 +1,38 @@
+---
+import data from '../generated/site-data.json';
+---
+<dialog class="image-viewer" aria-labelledby="image-viewer-title">
+  <header class="image-viewer-header">
+    <h2 id="image-viewer-title">查看产品界面</h2>
+    <div><button type="button" data-image-zoom aria-pressed="false">原始尺寸</button><button type="button" data-image-close aria-label="关闭图片" autofocus><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="m6 6 12 12M6 18 18 6"/></svg></button></div>
+  </header>
+  <div class="image-viewer-stage" tabindex="0" aria-label="图片查看区域"><img src={data.screenshots[0].src} alt={data.screenshots[0].alt} loading="lazy" /></div>
+  <p class="image-viewer-error" role="status" hidden>图片暂时无法加载，请关闭后重试。</p>
+</dialog>
+<script>
+  const viewer = document.querySelector<HTMLDialogElement>('.image-viewer')!;
+  const image = viewer.querySelector<HTMLImageElement>('img')!;
+  const title = viewer.querySelector<HTMLElement>('#image-viewer-title')!;
+  const zoom = viewer.querySelector<HTMLButtonElement>('[data-image-zoom]')!;
+  const error = viewer.querySelector<HTMLElement>('.image-viewer-error')!;
+  let opener: HTMLAnchorElement | null = null;
+  function resetZoom() {
+    viewer.classList.remove('is-zoomed'); zoom.setAttribute('aria-pressed', 'false'); zoom.textContent = '原始尺寸';
+  }
+  document.querySelectorAll<HTMLAnchorElement>('[data-image-viewer]').forEach(link => {
+    link.addEventListener('click', event => {
+      if (event.ctrlKey || event.metaKey || event.shiftKey || event.altKey || event.button !== 0) return;
+      event.preventDefault(); opener = link; resetZoom(); error.hidden = true; image.hidden = false;
+      title.textContent = link.dataset.caption ?? '产品界面'; image.alt = title.textContent;
+      image.src = link.href; viewer.showModal(); document.documentElement.classList.add('image-viewer-open');
+    });
+  });
+  image.addEventListener('error', () => { error.hidden = false; image.hidden = true; });
+  zoom.addEventListener('click', () => {
+    const expanded = viewer.classList.toggle('is-zoomed');
+    zoom.setAttribute('aria-pressed', String(expanded)); zoom.textContent = expanded ? '适应窗口' : '原始尺寸';
+  });
+  viewer.querySelector('[data-image-close]')!.addEventListener('click', () => viewer.close());
+  viewer.addEventListener('click', event => { if (event.target === viewer) viewer.close(); });
+  viewer.addEventListener('close', () => { document.documentElement.classList.remove('image-viewer-open'); opener?.focus(); });
+</script>

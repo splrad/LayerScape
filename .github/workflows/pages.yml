@@ -1,0 +1,202 @@
+name: Pages
+run-name: Pages ${{ inputs.source_mode || vars.STEWARD_DOCS_SOURCE }} ${{ inputs.source_sha || github.sha }} ${{ inputs.input_digest || github.event.release.id || github.run_id }}
+on:
+  push:
+    branches: ['**']
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      source_mode:
+        type: choice
+        options: [default-branch, release]
+        required: true
+      source_sha:
+        type: string
+        required: true
+      release_id:
+        type: string
+        required: false
+        default: ''
+      input_digest:
+        type: string
+        required: true
+permissions: {}
+concurrency:
+  group: steward-pages-${{ github.repository_id }}
+  queue: max
+  cancel-in-progress: false
+env:
+  STEWARD_CONTROLLER_SHA: 20fd2feb3674f84790a647b8b93985820accc0f5
+  STEWARD_DOCS_SOURCE: ${{ vars.STEWARD_DOCS_SOURCE }}
+  STEWARD_DOCS_UNIT: ${{ vars.STEWARD_DOCS_UNIT }}
+jobs:
+  select:
+    if: vars.STEWARD_DOCS_SOURCE == 'default-branch' || vars.STEWARD_DOCS_SOURCE == 'release'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      actions: read
+      attestations: read
+    outputs:
+      ready: ${{ steps.source.outputs.ready }}
+      source: ${{ steps.source.outputs.source }}
+      source_sha: ${{ steps.source.outputs.source_sha }}
+      input_digest: ${{ steps.source.outputs.input_digest }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: splrad/steward
+          ref: 20fd2feb3674f84790a647b8b93985820accc0f5
+          path: controller
+          persist-credentials: false
+      - uses: jdx/mise-action@b44d12e7d0d8ee7461bb893e1b1993500433185b # v5.2.7
+        env:
+          MISE_SAFE: '1'
+          MISE_NODE_COMPILE: 'false'
+        with:
+          version: 2026.10.24
+          working_directory: controller
+          install_args: --locked
+          cache: false
+          env: false
+          persist_github_token: false
+      - name: Activate locked controller tools
+        working-directory: controller
+        env:
+          MISE_SAFE: '1'
+          MISE_LOCKED: '1'
+        run: mise bin-paths node >> "$GITHUB_PATH"
+      - name: Install selector libraries
+        run: npm ci --prefix controller --ignore-scripts --no-audit --no-fund
+      - name: Select current Pages source
+        id: source
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node controller/scripts/select-pages-source.mjs
+  build:
+    name: build/${{ needs.select.outputs.input_digest }}
+    needs: select
+    if: needs.select.outputs.ready == 'true' && needs.select.outputs.source_sha == github.sha
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      pages: read
+    outputs:
+      artifact_id: ${{ steps.artifact.outputs.artifact_id }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Check out the pinned Node toolchain
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          repository: splrad/steward
+          ref: 20fd2feb3674f84790a647b8b93985820accc0f5
+          path: controller
+          persist-credentials: false
+      - uses: jdx/mise-action@b44d12e7d0d8ee7461bb893e1b1993500433185b # v5.2.7
+        env:
+          MISE_SAFE: '1'
+          MISE_NODE_COMPILE: 'false'
+        with:
+          version: 2026.10.24
+          working_directory: controller
+          install_args: --locked node
+          cache: false
+          env: false
+          persist_github_token: false
+      - name: Activate locked controller tools
+        working-directory: controller
+        env:
+          MISE_SAFE: '1'
+          MISE_LOCKED: '1'
+        run: mise bin-paths node >> "$GITHUB_PATH"
+      - uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
+        with:
+          enablement: false
+      - name: Build documentation
+        env:
+          DOCS_SOURCE_SHA: ${{ needs.select.outputs.source_sha }}
+        run: |
+          npm ci --prefix docs-site --ignore-scripts --no-audit --no-fund
+          npm run --prefix docs-site build
+      - name: Upload Pages artifact
+        id: artifact
+        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        with:
+          name: github-pages-${{ github.run_id }}-${{ github.run_attempt }}-${{ needs.select.outputs.input_digest }}
+          path: docs-site/dist
+          retention-days: 1
+  deploy:
+    name: deploy/${{ needs.select.outputs.input_digest }}
+    needs: [select, build]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    permissions:
+      contents: read
+      actions: read
+      attestations: read
+      deployments: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          repository: splrad/steward
+          ref: 20fd2feb3674f84790a647b8b93985820accc0f5
+          path: controller
+          persist-credentials: false
+      - uses: jdx/mise-action@b44d12e7d0d8ee7461bb893e1b1993500433185b # v5.2.7
+        env:
+          MISE_SAFE: '1'
+          MISE_NODE_COMPILE: 'false'
+        with:
+          version: 2026.10.24
+          working_directory: controller
+          install_args: --locked
+          cache: false
+          env: false
+          persist_github_token: false
+      - name: Activate locked controller tools
+        working-directory: controller
+        env:
+          MISE_SAFE: '1'
+          MISE_LOCKED: '1'
+        run: mise bin-paths node >> "$GITHUB_PATH"
+      - name: Install deployment checks
+        run: npm ci --prefix controller --ignore-scripts --no-audit --no-fund
+      - name: Recheck source and native artifact
+        id: guard
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PAGES_SOURCE: ${{ needs.select.outputs.source }}
+          PAGES_ARTIFACT_ID: ${{ needs.build.outputs.artifact_id }}
+        run: node controller/scripts/pages-runtime.mjs check
+      - name: Deploy Pages
+        id: deployment
+        if: steps.guard.outputs.deploy == 'true'
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
+        with:
+          artifact_name: ${{ steps.guard.outputs.artifact_name }}
+      - name: Read native deployment identity
+        if: steps.guard.outputs.deploy == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PAGES_SOURCE: ${{ needs.select.outputs.source }}
+          PAGES_ARTIFACT_ID: ${{ needs.build.outputs.artifact_id }}
+        run: node controller/scripts/pages-runtime.mjs record
+      - name: Archive Pages evidence
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: pages-evidence-${{ github.run_id }}-${{ github.run_attempt }}
+          path: pages-evidence.json
+          if-no-files-found: warn
+          retention-days: 30
