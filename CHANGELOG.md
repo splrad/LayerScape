@@ -31,6 +31,7 @@
 * **nuget:** Bump the dotnet-dependencies group with 1 update ([#181](https://github.com/splrad/LayerScape/issues/181)) ([326854d](https://github.com/splrad/LayerScape/commit/326854d82cd85ff6ac5cba00211c3b6a4c0846a5))
 * **sdk:** Bump dotnet-sdk from 10.0.402 to 11.0.100 ([#194](https://github.com/splrad/LayerScape/issues/194)) ([5663e65](https://github.com/splrad/LayerScape/commit/5663e65853b2a10b702a01f8db2fbf68f66a90e1))
 * 接入仓库配置与受控试跑入口 ([#207](https://github.com/splrad/LayerScape/issues/207)) ([4b87df2](https://github.com/splrad/LayerScape/commit/4b87df299a1fcb1d852fb27c8c8726e773a5a50f))
+* 更新公共仓库模板 ([#213](https://github.com/splrad/LayerScape/issues/213)) ([277df7f](https://github.com/splrad/LayerScape/commit/277df7fbbfd57e0856b7cbbf1592f2675a2fdd75))
 
 ## 1.0.0 (2026-11-13)
 

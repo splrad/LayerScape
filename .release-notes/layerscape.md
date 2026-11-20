@@ -1,27 +1,29 @@
 ## 概述
 
-LayerScape v1.1.0 发布，继续采用统一入口的安装与管理方式，面向 AutoCAD 2018–2027 使用场景。
+LayerScape v1.1.0 延续面向 CAD 的模块化交付方式，重点包含一次仓库配置请求入口新增，以及围绕发布附件与更新流程兼容性的修正。
 
 ## 更新内容
 
-本次变更包括：新增“通过置顶 Issue 请求仓库配置”；发布流程按产品配置发布 GitHub 附件并兼容既有更新器；并修复/更新了 Pages 控制器引用纳入 Renovate、窗口与插件日志项目地址等问题。
+本次变更包含：新增“通过置顶 Issue 请求仓库配置”；修复“按产品配置发布 GitHub 附件并兼容既有更新器”；并更新了窗口/插件日志中的项目地址。另有文档与维护类更新（如 actions、deps、sdk 升级）主要面向仓库维护流程。
 
 ## 兼容性
 
-兼容范围为 AutoCAD 2018–2027；对应运行环境覆盖 .NET Framework 4.6.2/4.7.2/4.8、.NET 8.0、.NET 10.0。
+兼容范围仍为 AutoCAD 2018–2027；对应运行环境覆盖 .NET Framework 4.6.2、4.7.2、4.8，以及 .NET 8.0、10.0。
 
 ## 升级与迁移
 
-若从 9.x 系列迁移，请按文档执行手动迁移与备份流程（含 DLL、Fonts、FixedProfile.aws 与相关注册表项备份）；旧 9.x 部署器不会提示降版到 1.0.0 的说明仅适用于该历史迁移路径，当前版本下该路径未额外验证。
+从 9.x 迁移到新系列时，需手动从 GitHub Releases 获取公开安装包，并在迁移前备份 DLL、Fonts、FixedProfile.aws 与相关注册表项；文档建议不要先卸载旧安装，以免清除插件配置节点。
 
 ## 安装说明
 
-推荐下载并运行 AFR-Deployer_v1.1.0.exe 完成安装；也可使用 AFR-DLL_v1.1.0.zip 按 AutoCAD 年份手动 NETLOAD。Fonts.zip 可单独下载。安装前请先关闭所有 AutoCAD 进程。
+推荐安装方式为运行 AFR-Deployer_vX.Y.Z.exe；手动方式可下载 AFR-DLL_vX.Y.Z.zip 后按 AutoCAD 年份选择 DLL 并使用 NETLOAD。单 DLL 手动安装不支持自动抑制“缺少 SHX 文件”弹窗。
+
+交付配置中定义的发布渠道为 GitHub Releases，资产包含 AFR-Deployer_v${version}.exe、AFR-DLL_v${version}.zip、Fonts.zip，并要求提供 SHA256SUMS 等元数据；本次实际发布页是否已完整提供上述附件未在现有资料中验证。
 
 ## 已知问题
 
-已知限制：单 DLL 手动 NETLOAD 不支持自动抑制“缺少 SHX 文件”弹窗；AFRUNLOAD 为维护入口，需完整输入命令名，不参与自动补全。
+已知限制包括：单 DLL/NETLOAD 场景无法自动抑制 SHX 缺失弹窗；当图纸正文字符已错误编码保存时，字体替换无法恢复原文；字体数量过多可能导致插件界面加载卡顿。
 
 ## 恢复
 
-若替换后文字显示异常，建议不要保存图纸，先通过 AFRLOG 重新选择替换字体并应用到当前图纸；如需撤销迁移，可在关闭 AutoCAD 后按备份恢复 DLL、字体、FixedProfile.aws 和对应注册表项。
+如需回退迁移，需先关闭 AutoCAD，再卸载本次安装并恢复已备份的 DLL、字体、FixedProfile.aws 和对应注册表项，同时核对 LOADER 指向原 DLL；该恢复流程的真实宿主验证范围以发行说明为准，当前资料未提供额外验证证据。
