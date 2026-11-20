@@ -32,6 +32,7 @@
 * **deps:** 为 docs-site 配置每周 npm 更新 ([#217](https://github.com/splrad/LayerScape/issues/217)) ([1e67c44](https://github.com/splrad/LayerScape/commit/1e67c44b3e398a0af8fb70c2368b2d40ecc6bf1b))
 * **deps:** 更新 Pages 的 mise CLI 至 2026.11.10 ([#206](https://github.com/splrad/LayerScape/issues/206)) ([4e648a8](https://github.com/splrad/LayerScape/commit/4e648a8dcc656ef4a0114a3ba6452aafe99a14bb))
 * **deps:** 更新已验证的 Steward 控制器引用 ([#209](https://github.com/splrad/LayerScape/issues/209)) ([e231210](https://github.com/splrad/LayerScape/commit/e2312108db4989086b5f0be260e6cece71f26af6))
+* **deps:** 更新文档站点的解析器与 Starlight ([#226](https://github.com/splrad/LayerScape/issues/226)) ([5e2e6f0](https://github.com/splrad/LayerScape/commit/5e2e6f079b47a0b2c93d174967c9dffde723639b))
 * **nuget:** Bump the dotnet-dependencies group with 1 update ([#181](https://github.com/splrad/LayerScape/issues/181)) ([326854d](https://github.com/splrad/LayerScape/commit/326854d82cd85ff6ac5cba00211c3b6a4c0846a5))
 * **renovate:** 跟踪产品工作流的托管 runner 版本 ([#218](https://github.com/splrad/LayerScape/issues/218)) ([2f415aa](https://github.com/splrad/LayerScape/commit/2f415aa177194655a009309f9271c91e33f519bb))
 * **sdk:** Bump dotnet-sdk from 10.0.402 to 11.0.100 ([#194](https://github.com/splrad/LayerScape/issues/194)) ([5663e65](https://github.com/splrad/LayerScape/commit/5663e65853b2a10b702a01f8db2fbf68f66a90e1))
