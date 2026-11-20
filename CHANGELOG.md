@@ -5,6 +5,7 @@
 
 ### 新增功能
 
+* 启用 LayerScape 中央配置 ([#230](https://github.com/splrad/LayerScape/issues/230)) ([7ed9622](https://github.com/splrad/LayerScape/commit/7ed962208bb7cc52cc08945bf6a8b06f5eefef87))
 * 通过置顶 Issue 请求仓库配置 ([#211](https://github.com/splrad/LayerScape/issues/211)) ([f45f972](https://github.com/splrad/LayerScape/commit/f45f972ff0bfe6b225cc6da68f49bf8934d33697))
 * 采用中央站点构建选择 ([#219](https://github.com/splrad/LayerScape/issues/219)) ([3b1758d](https://github.com/splrad/LayerScape/commit/3b1758da1d31cce91750c4492cc207c83be044a9))
 
@@ -19,6 +20,7 @@
 ### 文档
 
 * **release:** 采用面向下载者的发行说明和产品用途 ([#200](https://github.com/splrad/LayerScape/issues/200)) ([ac5152a](https://github.com/splrad/LayerScape/commit/ac5152a43a3b1891c779435188cd719d75e6f543))
+* 更新部署器下载入口和发行候选编辑说明 ([#229](https://github.com/splrad/LayerScape/issues/229)) ([9ac8395](https://github.com/splrad/LayerScape/commit/9ac83956961d593e280f47152edbdf990b194d9e))
 * 调整贡献指南中的仓库配置链接 ([#210](https://github.com/splrad/LayerScape/issues/210)) ([581a731](https://github.com/splrad/LayerScape/commit/581a731d221c8bfda06599f87c195aa2757f1225))
 * 采用组织公共安全审查规则 ([#215](https://github.com/splrad/LayerScape/issues/215)) ([85b3aaf](https://github.com/splrad/LayerScape/commit/85b3aaf4099fd15983a4f5da04e5ab746738ebd6))
 

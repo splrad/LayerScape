@@ -112,7 +112,7 @@ LayerScape 的所有功能共用 AutoCAD 2018–2027 兼容范围，并通过统
 
 #### 手动下载公开安装包
 
-新系列首个版本为 1.0.0。旧 9.x 部署器按版本大小检查更新，不会提示降版到 1.0.0；请从 [GitHub Releases](https://github.com/splrad/LayerScape/releases) 手动下载已公开的安装包。尚无正式附件时，请等待发布。
+新系列首个版本为 1.0.0。旧 9.x 部署器按版本大小检查更新，不会提示降版到 1.0.0；请打开 [1.0.0 发行页](https://github.com/splrad/LayerScape/releases/tag/v1.0.0)，手动下载 `AFR-Deployer_v1.0.0.exe`。
 
 #### 迁移前：备份现有配置
 

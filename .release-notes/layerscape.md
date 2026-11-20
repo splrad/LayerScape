@@ -1,27 +1,27 @@
 ## 概述
 
-LayerScape v1.1.0 的已整理变更显示，本次以发布与交付流程完善为主：新增“通过置顶 Issue 请求仓库配置”和“采用中央站点构建选择”，并修复了按产品配置发布 GitHub 附件且兼容既有更新器的问题。
+本次用户可见变更集中在发布获取链路：发行附件改为按产品配置发布到 GitHub Releases，并明确兼容既有更新器；对下载者来说，继续通过原有更新路径或直接到 Releases 下载均可。
 
 ## 更新内容
 
-与使用者直接相关的记录包括：发布附件策略已按产品配置调整并声明兼容既有更新器；窗口与插件日志中的项目地址已更新。其余条目主要是文档、自动化与依赖维护更新。
+受影响的实际操作是下载入口与附件识别：请在 GitHub Releases 获取 `AFR-Deployer_v1.1.0.exe`、`AFR-DLL_v1.1.0.zip` 或 `Fonts.zip`，并可同时核对 `SHA256SUMS`、`artifact-manifest.json`、`release-notes.md`、`sbom.spdx.json`。
 
 ## 兼容性
 
-当前资料中的兼容范围为 AutoCAD 2018–2027：2018 对应 .NET Framework 4.6.2，2019–2020 对应 .NET Framework 4.7.2，2021–2024 对应 .NET Framework 4.8，2025–2026 对应 .NET 8.0，2027 对应 .NET 10.0。
+适用范围未见变更，仍为 AutoCAD 2018–2027。对应运行环境边界为：2018 使用 .NET Framework 4.6.2；2019–2020 使用 4.7.2；2021–2024 使用 4.8；2025–2026 使用 .NET 8.0；2027 使用 .NET 10.0。超出该组合的宿主环境不在已提供信息覆盖范围内。
 
 ## 升级与迁移
 
-从 9.x 迁移时，资料说明旧 9.x 部署器按版本大小检查更新，不会提示到 1.0.0 系列，需手动从 Releases 下载公开安装包。迁移前应关闭 AutoCAD，并备份 DLL、Fonts、自定义配置与 FixedProfile.aws，以及对应注册表 Applications\AFR-ACAD20xx 项。
+升级场景下，若你此前依赖既有更新器，本版声明已兼容该路径；若更新器未触达，可直接改为从 Releases 手动下载并执行部署器安装。仅在你仍停留于旧 9.x 部署器时，需按文档所述走手动迁移路径。
 
 ## 安装说明
 
-安装建议优先使用 AFR-Deployer_v1.1.0.exe；手动场景可使用 AFR-DLL_v1.1.0.zip 并按 AutoCAD 年份选择 DLL 通过 NETLOAD 加载。Fonts.zip 用于单独获取字体。发布渠道为 GitHub Releases，交付元数据包含 sbom.spdx.json、release-notes.md、artifact-manifest.json、SHA256SUMS。
+安装建议仍是先关闭全部 AutoCAD 进程，再运行 `AFR-Deployer_v1.1.0.exe` 自动扫描并安装；`AFR-DLL_v1.1.0.zip` 仅适用于维护、测试或受限环境下手动 `NETLOAD`。若你需要自动抑制“缺少 SHX 文件”弹窗，应使用部署器而非单 DLL 手动加载。
 
 ## 已知问题
 
-已文档化限制包括：单 DLL 手动安装不支持自动抑制“缺少 SHX 文件”弹窗；AFRUNLOAD 不参与自动补全，必须完整输入；MText 内联字体采用运行时映射自动处理，不支持手动替换；若图纸文字数据已错误编码保存，字体替换无法恢复原文。
+当前发布资料未提供此项变化的确认信息。
 
 ## 恢复
 
-若替换后文字显示异常，资料建议“不要保存图纸”，改用 AFRLOG 重新选择替换字体并应用。若需撤销迁移，关闭 AutoCAD 后先卸载本次安装，再恢复备份的 DLL、字体、FixedProfile.aws 与注册表，并核对 LOADER 指向原 DLL。
+当前发布资料未提供此项变化的确认信息。
