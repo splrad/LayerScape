@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "repositoryId": 1187527897,
+  "adoption": "central",
+  "productCi": [
+    ".github/workflows/product-ci.yml"
+  ],
+  "site": null,
+  "sourceDigest": "ca7e020c61e22cf0bcc0361f6440ad9b0e51fc9a7e3ec970670dc188e377e4bf"
+}
