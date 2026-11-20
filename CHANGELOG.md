@@ -1,10 +1,11 @@
 # Changelog
 
-## [1.0.1](https://github.com/splrad/LayerScape/compare/v1.0.0...v1.0.1) (2026-11-19)
+## [1.0.1](https://github.com/splrad/LayerScape/compare/v1.0.0...v1.0.1) (2026-11-20)
 
 
 ### 问题修复
 
+* **release:** 按产品配置发布 GitHub 附件并兼容既有更新器 ([#205](https://github.com/splrad/LayerScape/issues/205)) ([b567def](https://github.com/splrad/LayerScape/commit/b567def73b2764345048052a409f8c9b8554b43e))
 * 将 Pages 的控制器引用纳入 Renovate 更新 ([#203](https://github.com/splrad/LayerScape/issues/203)) ([3560ef1](https://github.com/splrad/LayerScape/commit/3560ef1f8e45444ab5be4f18d6c00f5f128f93a4))
 * 更新关于窗口和插件日志的项目地址 ([#202](https://github.com/splrad/LayerScape/issues/202)) ([7c42fc4](https://github.com/splrad/LayerScape/commit/7c42fc4f0495e06328407b776b6e3b5c9c96e950))
 
@@ -12,6 +13,7 @@
 ### 文档
 
 * **release:** 采用面向下载者的发行说明和产品用途 ([#200](https://github.com/splrad/LayerScape/issues/200)) ([ac5152a](https://github.com/splrad/LayerScape/commit/ac5152a43a3b1891c779435188cd719d75e6f543))
+* 调整贡献指南中的仓库配置链接 ([#210](https://github.com/splrad/LayerScape/issues/210)) ([581a731](https://github.com/splrad/LayerScape/commit/581a731d221c8bfda06599f87c195aa2757f1225))
 
 
 ### 维护
@@ -20,8 +22,10 @@
 * **actions:** Bump jdx/mise-action from 5.2.3 to 5.2.9 ([#193](https://github.com/splrad/LayerScape/issues/193)) ([79cb0d1](https://github.com/splrad/LayerScape/commit/79cb0d132d4069399c0b875d698d5edf97a56f9c))
 * **deps:** Bump astro from 7.4.4 to 7.4.13 in /docs-site ([#199](https://github.com/splrad/LayerScape/issues/199)) ([ac5fe1c](https://github.com/splrad/LayerScape/commit/ac5fe1cf70a8d15ac08626f4c456c480862ef174))
 * **deps:** update dependency jdx/mise to v2026.11.10 ([#184](https://github.com/splrad/LayerScape/issues/184)) ([c08b95a](https://github.com/splrad/LayerScape/commit/c08b95a072c9154fa07d1bdf702a6eeabd4852d2))
+* **deps:** update splrad/steward digest to 0592491 ([#188](https://github.com/splrad/LayerScape/issues/188)) ([939f3ed](https://github.com/splrad/LayerScape/commit/939f3ed20d941ff51afdf163a68cf2c13f3d6e38))
 * **nuget:** Bump the dotnet-dependencies group with 1 update ([#181](https://github.com/splrad/LayerScape/issues/181)) ([326854d](https://github.com/splrad/LayerScape/commit/326854d82cd85ff6ac5cba00211c3b6a4c0846a5))
 * **sdk:** Bump dotnet-sdk from 10.0.402 to 11.0.100 ([#194](https://github.com/splrad/LayerScape/issues/194)) ([5663e65](https://github.com/splrad/LayerScape/commit/5663e65853b2a10b702a01f8db2fbf68f66a90e1))
+* 接入仓库配置与受控试跑入口 ([#207](https://github.com/splrad/LayerScape/issues/207)) ([4b87df2](https://github.com/splrad/LayerScape/commit/4b87df299a1fcb1d852fb27c8c8726e773a5a50f))
 
 ## 1.0.0 (2026-11-13)
 

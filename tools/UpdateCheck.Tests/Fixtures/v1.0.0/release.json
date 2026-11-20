@@ -1,0 +1,45 @@
+{
+  "id": 450956063,
+  "name": "v1.0.0",
+  "tag_name": "v1.0.0",
+  "draft": false,
+  "prerelease": false,
+  "html_url": "https://github.com/splrad/LayerScape/releases/tag/v1.0.0",
+  "assets": [
+    {
+      "id": 766597987,
+      "name": "AFR-Deployer_v1.0.0.exe",
+      "browser_download_url": "https://github.com/splrad/LayerScape/releases/download/v1.0.0/AFR-Deployer_v1.0.0.exe"
+    },
+    {
+      "id": 766597763,
+      "name": "AFR-DLL_v1.0.0.zip",
+      "browser_download_url": "https://github.com/splrad/LayerScape/releases/download/v1.0.0/AFR-DLL_v1.0.0.zip"
+    },
+    {
+      "id": 766598959,
+      "name": "artifact-manifest.json",
+      "browser_download_url": "https://github.com/splrad/LayerScape/releases/download/v1.0.0/artifact-manifest.json"
+    },
+    {
+      "id": 766598503,
+      "name": "Fonts.zip",
+      "browser_download_url": "https://github.com/splrad/LayerScape/releases/download/v1.0.0/Fonts.zip"
+    },
+    {
+      "id": 766599145,
+      "name": "release-notes.md",
+      "browser_download_url": "https://github.com/splrad/LayerScape/releases/download/v1.0.0/release-notes.md"
+    },
+    {
+      "id": 766599484,
+      "name": "sbom.spdx.json",
+      "browser_download_url": "https://github.com/splrad/LayerScape/releases/download/v1.0.0/sbom.spdx.json"
+    },
+    {
+      "id": 766598753,
+      "name": "SHA256SUMS",
+      "browser_download_url": "https://github.com/splrad/LayerScape/releases/download/v1.0.0/SHA256SUMS"
+    }
+  ]
+}
