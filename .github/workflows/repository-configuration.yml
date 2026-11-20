@@ -2,20 +2,26 @@ name: 仓库配置
 run-name: 仓库配置 · ${{ github.actor }} · ${{ github.run_attempt }}
 on:
   workflow_dispatch:
+  schedule:
+    - cron: '23 3 * * *'
+  issues:
+    types: [edited]
   push:
     branches: ['**']
   pull_request_review:
     types: [submitted, edited, dismissed]
   pull_request:
-    types: [edited]
+    types: [edited, closed]
 permissions:
   contents: read
 jobs:
   request:
     if: >-
-      (github.event_name != 'pull_request' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch)) ||
+      (github.event_name == 'issues' && github.event.issue.user.id == 301115370 && github.event.sender.type == 'User' &&
+       contains(github.event.changes.body.from, '- [ ] <!-- steward-configure -->') && contains(github.event.issue.body, '- [x] <!-- steward-configure -->')) ||
+      (github.event_name != 'issues' && github.event_name != 'pull_request' && github.ref == format('refs/heads/{0}', github.event.repository.default_branch)) ||
       github.event_name == 'pull_request_review' ||
-      (github.event_name == 'pull_request' && github.actor_id != '301115370' && github.event.pull_request.head.repo.id == github.event.repository.id &&
+      (github.event_name == 'pull_request' && (github.event.action == 'closed' || github.actor_id != '301115370') && github.event.pull_request.head.repo.id == github.event.repository.id &&
        startsWith(github.event.pull_request.head.ref, 'steward/repository-configuration-'))
     runs-on: ubuntu-24.04
     timeout-minutes: 5
@@ -28,9 +34,11 @@ jobs:
           const event = JSON.parse(readFileSync(process.env.GITHUB_EVENT_PATH));
           const pr = event.pull_request;
           const request = {event:process.env.GITHUB_EVENT_NAME,repository:event.repository.id,
-            actor:event.sender.id,source:process.env.GITHUB_SHA,run:process.env.GITHUB_RUN_ID,
+            actor:Number(process.env.GITHUB_ACTOR_ID),source:process.env.GITHUB_SHA,run:process.env.GITHUB_RUN_ID,
             attempt:process.env.GITHUB_RUN_ATTEMPT,inputs:event.inputs,before:event.before,
-            pull:pr && {number:pr.number,head:pr.head.sha,body:pr.body,previous:event.changes?.body?.from}};
+            pull:pr && {number:pr.number,head:pr.head.sha,body:pr.body,previous:event.changes?.body?.from},
+            closed:pr && event.action==='closed',
+            toggle:event.changes?.body && event.issue && {number:event.issue.number,previous:event.changes.body.from,body:event.issue.body}};
           writeFileSync('configuration-request.json',JSON.stringify(request));
           JS
       - name: Archive configuration request

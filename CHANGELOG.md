@@ -1,6 +1,11 @@
 # Changelog
 
-## [1.0.1](https://github.com/splrad/LayerScape/compare/v1.0.0...v1.0.1) (2026-11-20)
+## [1.1.0](https://github.com/splrad/LayerScape/compare/v1.0.0...v1.1.0) (2026-11-20)
+
+
+### 新增功能
+
+* 通过置顶 Issue 请求仓库配置 ([#211](https://github.com/splrad/LayerScape/issues/211)) ([f45f972](https://github.com/splrad/LayerScape/commit/f45f972ff0bfe6b225cc6da68f49bf8934d33697))
 
 
 ### 问题修复
