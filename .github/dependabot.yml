@@ -53,3 +53,11 @@ updates:
     open-pull-requests-limit: 5
     commit-message:
       prefix: "chore(sdk)"
+  - package-ecosystem: npm
+    directory: /docs-site
+    schedule:
+      interval: weekly
+      day: monday
+      time: "09:40"
+      timezone: Asia/Bangkok
+    open-pull-requests-limit: 5
