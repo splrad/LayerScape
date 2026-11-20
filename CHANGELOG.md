@@ -6,6 +6,7 @@
 ### 新增功能
 
 * 通过置顶 Issue 请求仓库配置 ([#211](https://github.com/splrad/LayerScape/issues/211)) ([f45f972](https://github.com/splrad/LayerScape/commit/f45f972ff0bfe6b225cc6da68f49bf8934d33697))
+* 采用中央站点构建选择 ([#219](https://github.com/splrad/LayerScape/issues/219)) ([3b1758d](https://github.com/splrad/LayerScape/commit/3b1758da1d31cce91750c4492cc207c83be044a9))
 
 
 ### 问题修复
