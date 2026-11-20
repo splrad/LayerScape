@@ -49,7 +49,7 @@ jobs:
         with:
           dotnet-version: ${{ fromJSON(inputs.tools).dotnet['dotnet-version'] }}
           global-json-file: ${{ fromJSON(inputs.tools).dotnet['global-json-file'] }}
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
         if: fromJSON(inputs.tools).node != null
         with:
           node-version: ${{ fromJSON(inputs.tools).node['node-version'] }}
