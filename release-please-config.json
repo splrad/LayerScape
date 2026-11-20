@@ -1,0 +1,58 @@
+{
+  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
+  "separate-pull-requests": false,
+  "include-v-in-tag": true,
+  "include-component-in-tag": false,
+  "pull-request-header": "以下是创建时快照；当前版本、文稿和生成状态见固定状态评论及当前文件。请审阅完整变更范围、兼容性和升级说明。最终中文正文来自本PR提交的单位说明文件，CHANGELOG和完整源码范围保留供核对。",
+  "pull-request-footer": "编辑前添加release:editing，查看原生工作流状态并等待在途写结束后再修改。版本、构建、审批和正式发布分别验收；合并适用仓库保护及主账号审批例外。",
+  "packages": {
+    ".": {
+      "release-type": "simple",
+      "initial-version": "1.0.0",
+      "version-file": "VERSION",
+      "changelog-path": "CHANGELOG.md",
+      "changelog-sections": [
+        {
+          "type": "feat",
+          "section": "新增功能",
+          "hidden": false
+        },
+        {
+          "type": "fix",
+          "section": "问题修复",
+          "hidden": false
+        },
+        {
+          "type": "perf",
+          "section": "性能改进",
+          "hidden": false
+        },
+        {
+          "type": "revert",
+          "section": "回退与兼容调整",
+          "hidden": false
+        },
+        {
+          "type": "docs",
+          "section": "文档",
+          "hidden": false
+        },
+        {
+          "type": "build",
+          "section": "构建与分发",
+          "hidden": false
+        },
+        {
+          "type": "deps",
+          "section": "依赖更新",
+          "hidden": false
+        },
+        {
+          "type": "chore",
+          "section": "维护",
+          "hidden": false
+        }
+      ]
+    }
+  }
+}

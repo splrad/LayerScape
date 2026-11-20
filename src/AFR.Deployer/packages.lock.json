@@ -1,0 +1,58 @@
+{
+  "version": 1,
+  "dependencies": {
+    "net10.0-windows7.0": {
+      "CommunityToolkit.Mvvm": {
+        "type": "Direct",
+        "requested": "[8.4.2, )",
+        "resolved": "8.4.2",
+        "contentHash": "WadCzGEc2U+3e20avRLng4qNtt4zoOGWrdUISqJWrHe3/FSnrYjuM5Sb4yQb09LhkBXrrI4Zt3dLKgRMbItsrg=="
+      },
+      "Microsoft.NET.ILLink.Tasks": {
+        "type": "Direct",
+        "requested": "[10.0.15, )",
+        "resolved": "10.0.15",
+        "contentHash": "u0WnRcZgBZYHlVFpbe/3Adpmb9rmNJ8/fmEwqc/xjB7fFppq+gfaLJd3Sdaw+J02zV0eP/T9dneQ3Dv5jWw6bw=="
+      },
+      "System.Management": {
+        "type": "Direct",
+        "requested": "[11.0.0, )",
+        "resolved": "11.0.0",
+        "contentHash": "8x+8Jt/ASauIThRh7yT+kwiR7xmWbPMtTJ3p36EalBuOQZsq6NCqVejO3tlXaYQGb337zOATzrBqAzLgLa86Cg==",
+        "dependencies": {
+          "System.CodeDom": "11.0.0"
+        }
+      },
+      "WPF-UI": {
+        "type": "Direct",
+        "requested": "[4.3.0, )",
+        "resolved": "4.3.0",
+        "contentHash": "SIHhc8lIrhEQ/1cLFZN6Dtf8cqsLm4myBULj9obnacd9TyDs2vizhKYzRzTlcPEcnzb3L4EstvPN3M6kcXbJCA==",
+        "dependencies": {
+          "WPF-UI.Abstractions": "4.3.0"
+        }
+      },
+      "System.CodeDom": {
+        "type": "Transitive",
+        "resolved": "11.0.0",
+        "contentHash": "jhvI5UbF+HuOQ5k8lyNQN+pM6fn7OSWmVK99qK+EvepjY6Ec+lg3039rvgpvXw+cT135xtzfoPpLbqppois5XA=="
+      },
+      "WPF-UI.Abstractions": {
+        "type": "Transitive",
+        "resolved": "4.3.0",
+        "contentHash": "7Kj9DmCCo4SOCd1jAiw4+EcMFP2nR8rLLvitAYzVtzbWToTsodkbie24+8x9C4LDLxkopWEUGX62szqqNy7oeg=="
+      }
+    },
+    "net10.0-windows7.0/win-x64": {
+      "System.Management": {
+        "type": "Direct",
+        "requested": "[11.0.0, )",
+        "resolved": "11.0.0",
+        "contentHash": "8x+8Jt/ASauIThRh7yT+kwiR7xmWbPMtTJ3p36EalBuOQZsq6NCqVejO3tlXaYQGb337zOATzrBqAzLgLa86Cg==",
+        "dependencies": {
+          "System.CodeDom": "11.0.0"
+        }
+      }
+    }
+  }
+}

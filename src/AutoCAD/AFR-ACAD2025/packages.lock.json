@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "dependencies": {
+    "net8.0-windows7.0": {
+      "AutoCAD.NET": {
+        "type": "Direct",
+        "requested": "[25.0.1, )",
+        "resolved": "25.0.1",
+        "contentHash": "57MbBZyhQh6nM16w/tF88uXPUascZygGfYBzE9QsuaXjM/baPArjaTnAJmvfnkzgKLsXtZrJAzr2rCtxVygPiQ==",
+        "dependencies": {
+          "AutoCAD.NET.Core": "[25.0.0]"
+        }
+      },
+      "HandyControl": {
+        "type": "Direct",
+        "requested": "[3.5.1, )",
+        "resolved": "3.5.1",
+        "contentHash": "i2i0xrLev7F1MFnhf0DP1CNCdGw8hVJ0HJrI0kxRv02ZJgaAzLzDTgAXDPY8GAoD3aYnBLSgM74lBHZ844KQnQ=="
+      },
+      "AutoCAD.NET.Core": {
+        "type": "Transitive",
+        "resolved": "25.0.0",
+        "contentHash": "jPwsZgVs+4xqXtMLWJjgb4WSSzbb7YGbgn/BqT7LGPRthQb/93CmRZyuSgfjjSK8EgL+YsfRuRYVvYNGHrw3TA==",
+        "dependencies": {
+          "AutoCAD.NET.Model": "[25.0.0]"
+        }
+      },
+      "AutoCAD.NET.Model": {
+        "type": "Transitive",
+        "resolved": "25.0.0",
+        "contentHash": "XGKd/R/MZ5oHFEMOtxHh9L307ss6XSnW4S0JSC3UkRjvdgv8rTygXkqz+vGoRoUl8IWU/ooskfVT/qOikFfteA=="
+      }
+    }
+  }
+}

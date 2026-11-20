@@ -1,4 +1,4 @@
-﻿#Requires -Version 5.1
+#Requires -Version 5.1
 <#
 .SYNOPSIS
     自动构建所有 AutoCAD 插件 DLL，并生成 GitHub Release 发布资产。
@@ -23,7 +23,7 @@
     精确字节恢复要求相同的冻结工具链。中央发布使用固定版本 PowerShell 7；
     Windows PowerShell 5.1 可用于手动打包，但不同运行时的 ZIP 字节不保证一致。
 .EXAMPLE
-    .\tools\Publish-ReleaseAssets.ps1 -OutputDirectory C:\build-assets -Version 9.2.2
+    .\tools\Publish-ReleaseAssets.ps1 -OutputDirectory C:\build-assets -Version 1.0.0
 #>
 param(
     [switch]$SkipPluginBuild,
@@ -196,7 +196,7 @@ if (-not $SkipPluginBuild) {
         Write-Host "  → 构建 $($p.Name) ($($p.TFM))..." -NoNewline
 
         # 构建单个版本壳项目；构建成功后会在标准输出目录生成 DLL 与 sidecar JSON。
-        $output = dotnet build $csproj -c Release --nologo -v quiet "-p:PathMap=$RepoRoot=/_/src" -p:ContinuousIntegrationBuild=true 2>&1
+        $output = dotnet build $csproj -c Release --nologo -v quiet "-p:PathMap=$RepoRoot=/_/src" -p:ContinuousIntegrationBuild=true -p:RestoreLockedMode=true 2>&1
         if ($LASTEXITCODE -ne 0) {
             Write-Fail "失败"
             $buildErrors += $p.Name
@@ -249,7 +249,7 @@ Write-Step "发布 AFR.Deployer (自包含单文件)"
 Assert-PathWithoutLinks $PublishOutput
 New-Item -ItemType Directory -Force -Path $PublishOutput | Out-Null
 
-dotnet publish $DeployerCsproj -c Release -o $PublishOutput --nologo "-p:PathMap=$RepoRoot=/_/src" -p:ContinuousIntegrationBuild=true
+dotnet publish $DeployerCsproj -c Release -o $PublishOutput --nologo "-p:PathMap=$RepoRoot=/_/src" -p:ContinuousIntegrationBuild=true -p:RestoreLockedMode=true
 if ($LASTEXITCODE -ne 0) {
     Write-Fail "发布失败"
     exit 1

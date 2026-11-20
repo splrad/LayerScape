@@ -32,7 +32,7 @@
 - Windows 10/11。
 - Git。
 - Visual Studio 2022 或更新版本，并安装“.NET 桌面开发”工作负载。
-- 根目录 [global.json](global.json) 指定的 .NET SDK。当前固定版本为 `10.0.402`，`rollForward` 为 `disable`，需安装该确切 SDK 版本。
+- 根目录 [global.json](global.json) 指定的 .NET SDK。当前固定版本为 `11.0.100`，`rollForward` 为 `disable`，需安装该确切 SDK 版本。运行面向 .NET 10 的 UpdateCheck.Tests 还需要 .NET 10 运行时；发行工作流通过同时安装 SDK 10.0.404 提供该运行时。
 
 ### 可选工具
 
