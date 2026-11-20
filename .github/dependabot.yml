@@ -61,3 +61,5 @@ updates:
       time: "09:40"
       timezone: Asia/Bangkok
     open-pull-requests-limit: 5
+    commit-message:
+      prefix: "chore(npm)"
