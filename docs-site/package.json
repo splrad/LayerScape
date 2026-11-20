@@ -10,7 +10,7 @@
     "test": "node --test scripts/test/*.test.mjs"
   },
   "dependencies": {
-    "@astrojs/starlight": "0.42.8",
+    "@astrojs/starlight": "0.43.1",
     "@astrojs/markdown-remark": "7.3.5",
     "astro": "7.4.13",
     "github-slugger": "2.0.0",
