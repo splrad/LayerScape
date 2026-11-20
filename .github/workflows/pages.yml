@@ -27,7 +27,7 @@ concurrency:
   queue: max
   cancel-in-progress: false
 env:
-  STEWARD_CONTROLLER_SHA: 05924917c7413e230e8f6c71cdaae06e99e70198
+  STEWARD_CONTROLLER_SHA: 7c2d228185091e838cb579be17ec43a92df71268
   STEWARD_DOCS_SOURCE: ${{ vars.STEWARD_DOCS_SOURCE }}
   STEWARD_DOCS_UNIT: ${{ vars.STEWARD_DOCS_UNIT }}
 jobs:
@@ -48,7 +48,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: splrad/steward
-          ref: 05924917c7413e230e8f6c71cdaae06e99e70198
+          ref: 7c2d228185091e838cb579be17ec43a92df71268
           path: controller
           persist-credentials: false
       - uses: jdx/mise-action@236a21c3b91f5db6d4e174b348674a0f0caac06d # v5.2.9
@@ -56,7 +56,7 @@ jobs:
           MISE_SAFE: '1'
           MISE_NODE_COMPILE: 'false'
         with:
-          version: 2026.10.24
+          version: 2026.11.10
           working_directory: controller
           install_args: --locked
           cache: false
@@ -95,7 +95,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           repository: splrad/steward
-          ref: 05924917c7413e230e8f6c71cdaae06e99e70198
+          ref: 7c2d228185091e838cb579be17ec43a92df71268
           path: controller
           persist-credentials: false
       - uses: jdx/mise-action@236a21c3b91f5db6d4e174b348674a0f0caac06d # v5.2.9
@@ -103,7 +103,7 @@ jobs:
           MISE_SAFE: '1'
           MISE_NODE_COMPILE: 'false'
         with:
-          version: 2026.10.24
+          version: 2026.11.10
           working_directory: controller
           install_args: --locked node
           cache: false
@@ -150,7 +150,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: splrad/steward
-          ref: 05924917c7413e230e8f6c71cdaae06e99e70198
+          ref: 7c2d228185091e838cb579be17ec43a92df71268
           path: controller
           persist-credentials: false
       - uses: jdx/mise-action@236a21c3b91f5db6d4e174b348674a0f0caac06d # v5.2.9
@@ -158,7 +158,7 @@ jobs:
           MISE_SAFE: '1'
           MISE_NODE_COMPILE: 'false'
         with:
-          version: 2026.10.24
+          version: 2026.11.10
           working_directory: controller
           install_args: --locked
           cache: false
