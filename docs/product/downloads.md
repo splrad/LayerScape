@@ -8,9 +8,9 @@
 
 安装前请先[核对兼容性与运行环境](../../README.md#兼容范围)，并关闭所有 AutoCAD 进程。
 
-## 下载页面没有安装包怎么办
+## 在哪里下载
 
-以 [GitHub Releases](https://github.com/splrad/LayerScape/releases) 中已经公开的安装包为准。没有正式附件时，请等待发布；源代码压缩包不能代替部署工具直接安装。
+在 [GitHub Releases](https://github.com/splrad/LayerScape/releases) 打开所需版本的 **Assets**。安装 1.0.0 可直接下载[部署工具](https://github.com/splrad/LayerScape/releases/download/v1.0.0/AFR-Deployer_v1.0.0.exe)或[手动加载用的 DLL 压缩包](https://github.com/splrad/LayerScape/releases/download/v1.0.0/AFR-DLL_v1.0.0.zip)。
 
 ## 已经安装旧版本
 
