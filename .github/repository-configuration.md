@@ -11,8 +11,4 @@
 - [文档站](workflows/pages.yml)
 <!-- /steward-configuration-sources -->
 
-
-[修改配置](https://github.com/splrad/LayerScape/actions/workflows/repository-configuration.yml)
-
-
-管理员或委托者在默认分支点击 **Run workflow** 打开本仓配置 PR。后续直接在该 PR 中勾选入口、试跑和交付文件，核对 **Files changed** 后审阅合并。
+置顶的「仓库配置」Issue 展示默认分支的生效设置。按 Issue 中的提示发起请求，再打开机器人列出的配置 PR。管理员或受托维护者在 PR 中调整选择并核对 **Files changed**，合并后生效。
