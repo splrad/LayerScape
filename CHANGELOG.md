@@ -19,6 +19,7 @@
 
 * **release:** 采用面向下载者的发行说明和产品用途 ([#200](https://github.com/splrad/LayerScape/issues/200)) ([ac5152a](https://github.com/splrad/LayerScape/commit/ac5152a43a3b1891c779435188cd719d75e6f543))
 * 调整贡献指南中的仓库配置链接 ([#210](https://github.com/splrad/LayerScape/issues/210)) ([581a731](https://github.com/splrad/LayerScape/commit/581a731d221c8bfda06599f87c195aa2757f1225))
+* 采用组织公共安全审查规则 ([#215](https://github.com/splrad/LayerScape/issues/215)) ([85b3aaf](https://github.com/splrad/LayerScape/commit/85b3aaf4099fd15983a4f5da04e5ab746738ebd6))
 
 
 ### 维护
