@@ -392,6 +392,29 @@ jobs:
           path: ${{ steps.attest.outputs.bundle-path }}
           if-no-files-found: error
           retention-days: 90
+      - name: Select GitHub release files
+        if: steps.recover.outputs.found != 'true'
+        shell: pwsh
+        env:
+          UNIT: ${{ matrix.unit }}
+        run: |
+          $record = Get-Content -LiteralPath 'record.json' -Raw | ConvertFrom-Json
+          $unit = @($record.units | Where-Object id -CEQ $env:UNIT)
+          if ($unit.Count -ne 1) { throw 'Expected exactly one release unit' }
+          $destination = New-Item -ItemType Directory -Path "$env:RUNNER_TEMP/github-release"
+          foreach ($name in @("AFR-Deployer_v$($unit[0].version).exe", 'Fonts.zip')) {
+            Copy-Item -LiteralPath "$env:RUNNER_TEMP/final/$name" -Destination $destination.FullName -ErrorAction Stop
+          }
+      - name: Upload GitHub release delivery
+        id: upload-github-release
+        if: steps.recover.outputs.found != 'true'
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: delivery-github-release-${{ github.repository_id }}-${{ matrix.unit }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/github-release/*
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 90
       - name: business-freeze
         id: upload
         if: steps.recover.outputs.found != 'true'
