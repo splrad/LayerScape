@@ -31,6 +31,14 @@ foreach (var flag in new[] { "draft", "prerelease" })
 }
 var largeRelease = JsonSerializer.Serialize(new { assets = new[] { new { label = new string('a', 5 * 1024 * 1024) } }, tag_name = "V2.0.0" });
 await Check("5 MiB of metadata before tag, omitted flags", largeRelease, "1.0.0", "2.0.0", tag: "V2.0.0");
+const string minimalRelease = """{"tag_name":"v2.0.0"}""";
+var exactLimit = minimalRelease.PadRight(UpdateCheckService.MaxResponseBytes);
+await Check("stream exactly at limit", exactLimit, "1.0.0", "2.0.0", lengthKnown: false);
+await Check("oversized declared length", exactLimit + " ", "1.0.0", reachable: false);
+await Check("oversized stream after valid tag", exactLimit + " ", "1.0.0", reachable: false, lengthKnown: false);
+var oversizedMetadata = new string('a', UpdateCheckService.MaxResponseBytes + 1024);
+await Check("oversized stream before valid tag", "{\"body\":\"" + oversizedMetadata + "\",\"tag_name\":\"v2.0.0\"}",
+    "1.0.0", reachable: false, lengthKnown: false);
 await Check("unprefixed tag", """{"tag_name":"1.1.0"}""", "1.0.0", "1.1.0", tag: "1.1.0");
 await Check("original numeric spelling", """{"tag_name":"v01.1.0"}""", "1.0.0", "01.1.0");
 foreach (var tag in new[] { "", "v1.1", "v1.1.0.0", "v1.1.0-beta.1", "v1.1.0+build" })
@@ -44,13 +52,17 @@ await Check("invalid response", "{", "1.0.0", reachable: false);
 await Check("redirect to old mirror", "", "1.0.0", reachable: false, status: HttpStatusCode.Redirect);
 
 static async Task Check(string scenario, string body, string localVersion, string? expected = null,
-    bool reachable = true, HttpStatusCode status = HttpStatusCode.OK, string? tag = null)
+    bool reachable = true, HttpStatusCode status = HttpStatusCode.OK, string? tag = null, bool lengthKnown = true)
 {
     var requests = new List<string>();
+    using var bodyStream = lengthKnown ? null : new UnknownLengthStream(Encoding.UTF8.GetBytes(body));
     using var client = new HttpClient(new FixtureHandler(request =>
     {
         requests.Add(request.RequestUri!.AbsoluteUri);
-        var response = new HttpResponseMessage(status) { Content = new StringContent(body, Encoding.UTF8, "application/json") };
+        var response = new HttpResponseMessage(status)
+        {
+            Content = bodyStream == null ? new StringContent(body, Encoding.UTF8, "application/json") : new StreamContent(bodyStream),
+        };
         if (status == HttpStatusCode.Redirect)
             response.Headers.Location = new Uri("https://gitee.com/splrad/CADFontAutoReplace/releases/tag/v9.2.0");
         return response;
@@ -59,7 +71,23 @@ static async Task Check(string scenario, string body, string localVersion, strin
     if (!requests.SequenceEqual([latest]) || result.IsReachable != reachable || result.HasUpdate != (expected != null)
         || result.LatestVersion != (expected ?? "") || result.ReleaseUrl != (expected == null ? pages : pages + "/tag/" + (tag ?? "v" + expected)))
         throw new InvalidOperationException($"{scenario}: {result}; requests: {string.Join(", ", requests)}");
+    if (bodyStream?.BytesRead > UpdateCheckService.MaxResponseBytes + 1)
+        throw new InvalidOperationException($"{scenario}: read {bodyStream.BytesRead} bytes past the limit");
     Console.WriteLine("PASS " + scenario);
+}
+
+sealed class UnknownLengthStream(byte[] bytes) : MemoryStream(bytes)
+{
+    public override bool CanSeek => false;
+    public int BytesRead { get; private set; }
+
+    public override ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        var count = base.Read(buffer.Span);
+        BytesRead += count;
+        return ValueTask.FromResult(count);
+    }
 }
 
 sealed class FixtureHandler(Func<HttpRequestMessage, HttpResponseMessage> response) : HttpMessageHandler

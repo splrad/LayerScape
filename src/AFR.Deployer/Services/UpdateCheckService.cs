@@ -1,3 +1,4 @@
+using System.IO;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text.Json;
@@ -16,6 +17,7 @@ internal static class UpdateCheckService
 {
     private const string GitHubLatestReleaseApiUrl = "https://api.github.com/repos/splrad/LayerScape/releases/latest";
     internal const string ReleasesPageUrl = "https://github.com/splrad/LayerScape/releases";
+    internal const int MaxResponseBytes = 8 * 1024 * 1024;
 
     internal static readonly TimeSpan PerAttemptTimeout = TimeSpan.FromSeconds(4);
 
@@ -40,9 +42,11 @@ internal static class UpdateCheckService
             using var response = await http.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, linked.Token);
             if (response.StatusCode == System.Net.HttpStatusCode.NotFound) return UpdateCheckResult.NoUpdate;
             if (!response.IsSuccessStatusCode) return UpdateCheckResult.Unavailable;
+            if (response.Content.Headers.ContentLength > MaxResponseBytes) return UpdateCheckResult.Unavailable;
 
             await using var stream = await response.Content.ReadAsStreamAsync(linked.Token);
-            var release = await JsonSerializer.DeserializeAsync<ReleaseDto>(stream, cancellationToken: linked.Token);
+            using var bounded = new BoundedResponseStream(stream);
+            var release = await JsonSerializer.DeserializeAsync<ReleaseDto>(bounded, cancellationToken: linked.Token);
             if (release is null) return UpdateCheckResult.Unavailable;
             if (release.Draft || release.Prerelease) return UpdateCheckResult.NoUpdate;
 
@@ -63,6 +67,38 @@ internal static class UpdateCheckService
 
     private static bool TryParseVersion(string text, out Version version)
         => Version.TryParse(text, out version!) && version.Build >= 0 && version.Revision < 0;
+
+    private sealed class BoundedResponseStream(Stream source) : Stream
+    {
+        private int remaining = MaxResponseBytes;
+
+        public override bool CanRead => true;
+        public override bool CanSeek => false;
+        public override bool CanWrite => false;
+        public override long Length => throw new NotSupportedException();
+        public override long Position { get => throw new NotSupportedException(); set => throw new NotSupportedException(); }
+
+        public override int Read(byte[] buffer, int offset, int count) => Read(buffer.AsSpan(offset, count));
+
+        public override int Read(Span<byte> buffer)
+            => CountBytes(source.Read(buffer[..Math.Min(buffer.Length, remaining + 1)]));
+
+        public override async ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
+            => CountBytes(await source.ReadAsync(buffer[..Math.Min(buffer.Length, remaining + 1)], cancellationToken));
+
+        private int CountBytes(int count)
+        {
+            // Allow one extra byte to distinguish an exact fit from a longer stream.
+            if (count > remaining) throw new InvalidDataException("GitHub release response exceeds the size limit.");
+            remaining -= count;
+            return count;
+        }
+
+        public override void Flush() => throw new NotSupportedException();
+        public override long Seek(long offset, SeekOrigin origin) => throw new NotSupportedException();
+        public override void SetLength(long value) => throw new NotSupportedException();
+        public override void Write(byte[] buffer, int offset, int count) => throw new NotSupportedException();
+    }
 
     private sealed class ReleaseDto
     {
