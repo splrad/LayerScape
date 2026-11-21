@@ -34,7 +34,7 @@ env:
 jobs:
   select:
     if: github.repository_id == '1187527897'
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 20
     permissions:
       contents: read
@@ -81,7 +81,7 @@ jobs:
     name: build/${{ needs.select.outputs.input_digest }}
     needs: select
     if: needs.select.outputs.ready == 'true' && needs.select.outputs.source_sha == github.sha
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 20
     permissions:
       contents: read
@@ -138,7 +138,7 @@ jobs:
     if: needs.select.outputs.ready == 'true' && needs.select.outputs.public_source == 'true'
     name: deploy/${{ needs.select.outputs.input_digest }}
     needs: [select, build]
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 25
     permissions:
       contents: read
