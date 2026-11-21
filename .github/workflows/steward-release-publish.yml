@@ -248,7 +248,7 @@ jobs:
           node controller/packages/runner/dist/index.js release-pipeline result --record record.json --unit "$env:UNIT" --controller-dir controller --state-dir state --job-name "$env:JOB_NAME" --objects "$json" --output result.json
   sign:
     needs: [ admit, build ]
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 5
     outputs:
       result: ${{ steps.signing.outputs.result }}
