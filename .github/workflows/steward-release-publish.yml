@@ -402,7 +402,11 @@ jobs:
           $unit = @($record.units | Where-Object id -CEQ $env:UNIT)
           if ($unit.Count -ne 1) { throw 'Expected exactly one release unit' }
           $destination = New-Item -ItemType Directory -Path "$env:RUNNER_TEMP/github-release"
-          foreach ($name in @("AFR-Deployer_v$($unit[0].version).exe", 'Fonts.zip')) {
+          foreach ($id in @('deployer', 'fonts')) {
+            $asset = @($unit[0].assets | Where-Object id -CEQ $id)
+            if ($asset.Count -ne 1) { throw "Expected exactly one sealed asset for $id" }
+            $name = $asset[0].name
+            if ([string]::IsNullOrWhiteSpace($name) -or [IO.Path]::GetFileName($name) -cne $name) { throw "Invalid sealed filename for $id" }
             Copy-Item -LiteralPath "$env:RUNNER_TEMP/final/$name" -Destination $destination.FullName -ErrorAction Stop
           }
       - name: Upload GitHub release delivery
