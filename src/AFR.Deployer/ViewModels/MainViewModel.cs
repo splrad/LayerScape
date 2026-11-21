@@ -39,7 +39,6 @@ internal sealed partial class MainViewModel : ObservableObject
     private bool                                   _hasUpdate;
     private string                                 _latestVersion  = string.Empty;
     private string                                 _releasePageUrl = UpdateCheckService.ReleasesPageUrl;
-    private UpdateCheckSource                      _updateSource   = UpdateCheckSource.GitHub;
     private const int                              MaxUpdateCheckAttempts = 3;
 
     [ObservableProperty]
@@ -186,17 +185,6 @@ internal sealed partial class MainViewModel : ObservableObject
         set => SetProperty(ref _releasePageUrl, value);
     }
 
-    /// <summary>检测到新版本的发布源。</summary>
-    public UpdateCheckSource UpdateSource
-    {
-        get => _updateSource;
-        set
-        {
-            if (!SetProperty(ref _updateSource, value)) return;
-            OnPropertyChanged(nameof(UpdateToolTip));
-        }
-    }
-
     /// <summary>标题区版本徽章文本；发现新版本时作为更新入口。</summary>
     public string VersionBadgeText => HasUpdate && !string.IsNullOrWhiteSpace(LatestVersion)
         ? $"发现新版 v{LatestVersion}"
@@ -204,7 +192,7 @@ internal sealed partial class MainViewModel : ObservableObject
 
     /// <summary>标题区版本徽章提示文本。</summary>
     public string UpdateToolTip => HasUpdate && !string.IsNullOrWhiteSpace(LatestVersion)
-        ? $"当前版本 {DeployerVersion}，{GetUpdateSourceName(UpdateSource)} 最新版本 v{LatestVersion}。点击打开{GetUpdateSourceName(UpdateSource)}发行页下载。"
+        ? $"当前版本 {DeployerVersion}，GitHub 最新版本 v{LatestVersion}。点击打开 GitHub 发行页下载。"
         : $"当前版本 {DeployerVersion}";
 
     /// <summary>操作按钮是否可用。</summary>
@@ -423,40 +411,30 @@ internal sealed partial class MainViewModel : ObservableObject
     /// <summary>启动后静默检查 GitHub 最新发行版，不影响部署器主流程。</summary>
     private async Task CheckForUpdatesAsync()
     {
-        var result = await CheckForUpdatesAsync(UpdateCheckSource.GitHub);
-        if (!result.HasUpdate && !result.IsReachable)
-            result = await CheckForUpdatesAsync(UpdateCheckSource.Gitee);
-
+        var result = await CheckWithRetriesAsync();
         if (!result.HasUpdate) return;
 
         LatestVersion  = result.LatestVersion;
         ReleasePageUrl = string.IsNullOrWhiteSpace(result.ReleaseUrl)
             ? UpdateCheckService.ReleasesPageUrl
             : result.ReleaseUrl;
-        UpdateSource = result.Source;
         HasUpdate = true;
     }
 
-    /// <summary>对指定发布源最多尝试三次；每次请求自身有硬超时，避免单次网络阻塞拖住后续检查。</summary>
-    private static async Task<UpdateCheckResult> CheckForUpdatesAsync(UpdateCheckSource source)
+    /// <summary>对 GitHub 最多尝试三次；每次请求自身有硬超时，避免单次网络阻塞拖住后续检查。</summary>
+    private static async Task<UpdateCheckResult> CheckWithRetriesAsync()
     {
         for (var attempt = 1; attempt <= MaxUpdateCheckAttempts; attempt++)
         {
-            var result = await UpdateCheckService.CheckAsync(source);
+            var result = await UpdateCheckService.CheckAsync();
             if (result.HasUpdate) return result;
             if (result.IsReachable) return result;
             if (attempt < MaxUpdateCheckAttempts)
                 await Task.Delay(TimeSpan.FromSeconds(2));
         }
 
-        return UpdateCheckResult.Unreachable(source);
+        return UpdateCheckResult.Unavailable;
     }
-
-    private static string GetUpdateSourceName(UpdateCheckSource source) => source switch
-    {
-        UpdateCheckSource.Gitee => "Gitee 镜像仓库",
-        _ => "GitHub",
-    };
 
     [RelayCommand]
     private async Task OpenReleasePageAsync()

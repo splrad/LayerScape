@@ -279,9 +279,13 @@ internal sealed class LogService : ILogService
             {
                 // AFRUNLOAD 是隐藏维护入口：日志头可展示，但不通过 CommandMethod 注册进 CAD 补全体系。
                 const string commandsLine = "\n命令: AFR(配置) AFRLOG(日志) AFRUNLOAD(卸载命令)";
+                var version = PluginVersionService.GetPluginVersion();
+#if DEBUG
+                version += " [Debug]";
+#endif
                 editor.WriteMessage(
                     "\n==========================================================================" +
-                    $"\nAFR 缺失字体自动替换 v{PluginVersionService.GetDisplayVersionWithBuildMarker()}" +
+                    $"\nAFR 缺失字体自动替换 v{version}" +
                     "\n作者: splrad 秋夕寻星" +
                     "\n项目地址GitHub(国外)：github.com/splrad/LayerScape" +
                     "\n项目地址Gitee(国内)：gitee.com/splrad/CADFontAutoReplace" +
