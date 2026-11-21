@@ -58,7 +58,7 @@ jobs:
           MISE_SAFE: '1'
           MISE_NODE_COMPILE: 'false'
         with:
-          version: 2026.11.10
+          version: 2026.11.12
           working_directory: controller
           install_args: --locked
           cache: false
@@ -105,7 +105,7 @@ jobs:
           MISE_SAFE: '1'
           MISE_NODE_COMPILE: 'false'
         with:
-          version: 2026.11.10
+          version: 2026.11.12
           working_directory: controller
           install_args: --locked node
           cache: false
@@ -162,7 +162,7 @@ jobs:
           MISE_SAFE: '1'
           MISE_NODE_COMPILE: 'false'
         with:
-          version: 2026.11.10
+          version: 2026.11.12
           working_directory: controller
           install_args: --locked
           cache: false
