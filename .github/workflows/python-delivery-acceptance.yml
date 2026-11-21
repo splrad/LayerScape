@@ -1,0 +1,52 @@
+name: Python delivery acceptance
+run-name: Python delivery acceptance ${{ inputs.operation_key }} ${{ github.sha }}
+on:
+  push:
+    branches: [validation/python-delivery-20261121]
+  workflow_dispatch:
+    inputs:
+      cycle_id:
+        type: string
+        required: true
+      operation_key:
+        type: string
+        required: true
+      source_sha:
+        type: string
+        required: true
+      controller_sha:
+        type: string
+        required: true
+permissions:
+  contents: read
+  actions: read
+jobs:
+  python:
+    name: delivery/python-acceptance
+    # This retained review branch is the only executable path for the probe.
+    if: github.repository_id == '1187527897' && github.event_name == 'push' && github.ref == 'refs/heads/validation/python-delivery-20261121'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Build Python wheel and sdist
+        working-directory: validation/python-delivery
+        env:
+          SOURCE_DATE_EPOCH: '1700000000'
+        run: |
+          python3 -m venv "$RUNNER_TEMP/python-delivery-env"
+          python="$RUNNER_TEMP/python-delivery-env/bin/python"
+          "$python" --version
+          "$python" -m pip install --require-hashes --only-binary=:all: -r requirements-build.txt
+          "$python" -m hatchling build --directory "$RUNNER_TEMP/python-delivery-dist"
+          sha256sum "$RUNNER_TEMP"/python-delivery-dist/*
+      - name: Upload GitHub release delivery
+        id: upload-github-release
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: delivery-github-release-${{ github.repository_id }}-python-acceptance-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/python-delivery-dist/*.tar.gz
+          if-no-files-found: error
+          retention-days: 14
