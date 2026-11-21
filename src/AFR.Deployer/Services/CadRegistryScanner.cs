@@ -41,9 +41,7 @@ internal static partial class CadRegistryScanner
                     ProfileSubKeys:   [],
                     IsCadInstalled:   false,
                     Status:           PluginDeployStatus.NotInstalled,
-                    InstalledVersion: null,
-                    InstalledBuildId: null,
-                    InstalledDllPath: null));
+                    InstalledVersion: null));
                 continue;
             }
 
@@ -60,8 +58,6 @@ internal static partial class CadRegistryScanner
     {
         var statuses          = new List<PluginDeployStatus>(profileSubKeys.Count);
         string? firstVersion  = null;
-        string? firstBuildId  = null;
-        string? firstDllPath  = null;
 
         foreach (var profileSubKey in profileSubKeys)
         {
@@ -69,15 +65,12 @@ internal static partial class CadRegistryScanner
             using var appKey = Registry.CurrentUser.OpenSubKey(appPath, false);
 
             var installedVersion = appKey?.GetValue("PluginVersion") as string;
-            var installedBuildId = appKey?.GetValue("PluginBuildId") as string;
             var dllPath          = appKey?.GetValue("LOADER") as string;
-            var status           = StatusResolver.Resolve(appKey is not null, dllPath, installedVersion, installedBuildId);
+            var status           = StatusResolver.Resolve(appKey is not null, dllPath, installedVersion);
 
             statuses.Add(status);
 
             firstVersion ??= installedVersion;
-            firstBuildId ??= installedBuildId;
-            firstDllPath ??= dllPath;
         }
 
         return new CadInstallation(
@@ -85,9 +78,7 @@ internal static partial class CadRegistryScanner
             profileSubKeys,
             IsCadInstalled:   true,
             Status:           ResolveAggregateStatus(statuses),
-            InstalledVersion: firstVersion,
-            InstalledBuildId: firstBuildId,
-            InstalledDllPath: firstDllPath);
+            InstalledVersion: firstVersion);
     }
 
     /// <summary>

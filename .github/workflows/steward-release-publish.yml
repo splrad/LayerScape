@@ -39,7 +39,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           repository: splrad/steward
-          ref: 7c2d228185091e838cb579be17ec43a92df71268
+          ref: 3a902f9d16238a4e231cdaa6b840b56b7d9e4077
           path: controller
           persist-credentials: false
       - name: Enable Git long paths
@@ -56,7 +56,7 @@ jobs:
           MISE_SAFE: '1'
           MISE_NODE_COMPILE: 'false'
         with:
-          version: 2026.11.10
+          version: 2026.11.12
           working_directory: controller
           install_args: --locked
           cache: false
@@ -124,7 +124,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           repository: splrad/steward
-          ref: 7c2d228185091e838cb579be17ec43a92df71268
+          ref: 3a902f9d16238a4e231cdaa6b840b56b7d9e4077
           path: controller
           persist-credentials: false
       - name: Enable Git long paths
@@ -141,7 +141,7 @@ jobs:
           MISE_SAFE: '1'
           MISE_NODE_COMPILE: 'false'
         with:
-          version: 2026.11.10
+          version: 2026.11.12
           working_directory: controller
           install_args: --locked
           cache: false
@@ -248,7 +248,7 @@ jobs:
           node controller/packages/runner/dist/index.js release-pipeline result --record record.json --unit "$env:UNIT" --controller-dir controller --state-dir state --job-name "$env:JOB_NAME" --objects "$json" --output result.json
   sign:
     needs: [ admit, build ]
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 5
     outputs:
       result: ${{ steps.signing.outputs.result }}
@@ -264,7 +264,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON(needs.admit.outputs.units) }}
-    uses: splrad/steward/.github/workflows/product-release.yml@7c2d228185091e838cb579be17ec43a92df71268 # steward/validated-controller
+    uses: splrad/steward/.github/workflows/product-release.yml@3a902f9d16238a4e231cdaa6b840b56b7d9e4077 # steward/validated-controller
     with:
       record: ${{ needs.admit.outputs.record }}
       unit: ${{ matrix.unit }}
@@ -291,7 +291,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           repository: splrad/steward
-          ref: 7c2d228185091e838cb579be17ec43a92df71268
+          ref: 3a902f9d16238a4e231cdaa6b840b56b7d9e4077
           path: controller
           persist-credentials: false
       - name: Enable Git long paths
@@ -308,7 +308,7 @@ jobs:
           MISE_SAFE: '1'
           MISE_NODE_COMPILE: 'false'
         with:
-          version: 2026.11.10
+          version: 2026.11.12
           working_directory: controller
           install_args: --locked
           cache: false
