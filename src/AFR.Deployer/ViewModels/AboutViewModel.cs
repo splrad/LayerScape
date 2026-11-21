@@ -25,15 +25,6 @@ internal sealed partial class AboutViewModel : ObservableObject
 
     public static string VersionText => $"v{DeployerVersionService.GetDisplayVersion()}";
 
-    public static string BuildIdText
-    {
-        get
-        {
-            var buildId = DeployerVersionService.GetBuildId();
-            return string.IsNullOrWhiteSpace(buildId) ? "未设置" : buildId;
-        }
-    }
-
     public static string Author => "splrad 秋夕寻星";
 
     public static string LicenseName => "Apache License 2.0";

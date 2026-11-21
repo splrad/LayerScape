@@ -1,9 +1,0 @@
-<Project>
-
-  <!-- 用户可见版本从根目录 VERSION 读取；PluginBuildId 仅记录开发者构建号。 -->
-  <PropertyGroup>
-    <PluginDisplayVersion>$([System.IO.File]::ReadAllText('$(MSBuildThisFileDirectory)VERSION').Trim())</PluginDisplayVersion>
-    <PluginBuildId>20260708.1</PluginBuildId>
-  </PropertyGroup>
-
-</Project>

@@ -13,17 +13,13 @@ namespace AFR.Deployer.Models;
 /// <param name="ProfileSubKeys">注册表中的配置文件子键名集合，如 "ACAD-12345:409"；占位条目为空集合。</param>
 /// <param name="IsCadInstalled">本机是否实际安装了该 CAD 版本。</param>
 /// <param name="Status">插件当前的部署状态。</param>
-/// <param name="InstalledVersion">注册表中记录的已安装插件显示版本号，未安装时为 null。</param>
-/// <param name="InstalledBuildId">注册表中记录的已安装插件构建标识，未安装时为 null。</param>
-/// <param name="InstalledDllPath">注册表 LOADER 值记录的 DLL 物理路径，未安装时为 null。</param>
+/// <param name="InstalledVersion">注册表中记录的已安装插件正式版本，未安装时为 null。</param>
 internal sealed record CadInstallation(
     CadDescriptor Descriptor,
     IReadOnlyList<string> ProfileSubKeys,
     bool IsCadInstalled,
     PluginDeployStatus Status,
-    string? InstalledVersion,
-    string? InstalledBuildId,
-    string? InstalledDllPath)
+    string? InstalledVersion)
 {
     /// <summary>用于 UI 辅助显示的配置文件摘要；占位条目显示为空字符串。</summary>
     internal string ProfileSubKey => ProfileSubKeys.Count switch
