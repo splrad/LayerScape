@@ -8,37 +8,28 @@ namespace AFR.Deployer.Services;
 /// </summary>
 internal static class EmbeddedResourceExtractor
 {
+    internal static Stream? OpenRead(string resourceKey) =>
+        Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceKey);
+
     /// <summary>
-    /// 从嵌入资源提取指定 DLL 到目标目录。
+    /// 将已校验的嵌入 DLL 复制到目标目录。
     /// <para>
     /// 若目标文件已存在则覆盖（更新场景）。
-    /// 若嵌入资源不存在（开发环境 Resources\ 目录中缺少该 DLL），返回 false 并输出原因。
     /// </para>
     /// </summary>
-    /// <param name="resourceKey">嵌入资源的清单名称（如 "AFR.Deployer.Resources.AFR-ACAD2025.dll"）。</param>
-    /// <param name="targetDirectory">目标目录路径，不存在时会自动创建。</param>
-    /// <param name="fileName">释放后的文件名（如 "AFR-ACAD2025.dll"）。</param>
+    /// <param name="stream">嵌入资源流。</param>
+    /// <param name="targetPath">已校验的输出路径，其父目录不存在时会自动创建。</param>
     /// <param name="errorMessage">失败时的原因描述，成功时为 null。</param>
     /// <returns>true 表示提取成功；false 表示失败。</returns>
     internal static bool TryExtract(
-        string resourceKey,
-        string targetDirectory,
-        string fileName,
+        Stream stream,
+        string targetPath,
         out string? errorMessage)
     {
-        var assembly = Assembly.GetExecutingAssembly();
-        using var stream = assembly.GetManifestResourceStream(resourceKey);
-
-        if (stream is null)
-        {
-            errorMessage = $"嵌入资源未找到：{resourceKey}。请确认该版本的插件 DLL 已放入 Resources\\ 目录并重新编译。";
-            return false;
-        }
-
         try
         {
-            Directory.CreateDirectory(targetDirectory);
-            var targetPath = Path.Combine(targetDirectory, fileName);
+            stream.Position = 0;
+            Directory.CreateDirectory(Path.GetDirectoryName(targetPath)!);
 
             using var fs = new FileStream(targetPath, FileMode.Create, FileAccess.Write, FileShare.None);
             stream.CopyTo(fs);

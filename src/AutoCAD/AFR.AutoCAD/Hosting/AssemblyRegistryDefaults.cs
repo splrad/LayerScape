@@ -19,8 +19,8 @@ using AFR.Services;
 //       下记录所有权标记；卸载时仅当外部键现值仍等于标记记录的值才删除，
 //       从而避免误删用户预设以及安装后中途的手动修改。
 //
-// AutoCAD 协议键（LOADER / LOADCTRLS / MANAGED / DESCRIPTION）以及插件版本类标识
-// （PluginVersion / PluginBuildId）由部署工具自身管理，不在此处声明。
+// AutoCAD 协议键（LOADER / LOADCTRLS / MANAGED / DESCRIPTION）和 PluginVersion
+// 由部署工具或插件初始化写入。
 
 [assembly: RegistryDefaultString("MainFont",     EmbeddedFontDeployer.DefaultMainFont)]
 [assembly: RegistryDefaultString("BigFont",      EmbeddedFontDeployer.DefaultBigFont)]
