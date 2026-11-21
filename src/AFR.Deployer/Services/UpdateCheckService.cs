@@ -66,7 +66,13 @@ internal static class UpdateCheckService
     }
 
     private static bool TryParseVersion(string text, out Version version)
-        => Version.TryParse(text, out version!) && version.Build >= 0 && version.Revision < 0;
+    {
+        version = null!;
+        return text.All(static character => char.IsAsciiDigit(character) || character == '.')
+            && Version.TryParse(text, out version!)
+            && version.Build >= 0
+            && version.Revision < 0;
+    }
 
     private sealed class BoundedResponseStream(Stream source) : Stream
     {

@@ -20,6 +20,7 @@ await Check("unusable manifest", release.ToJsonString(), "0.9.0", "1.0.0");
 await Check("same version", release.ToJsonString(), "1.0.0");
 await Check("older release", release.ToJsonString(), "1.0.1");
 await Check("invalid local version", release.ToJsonString(), "unknown", reachable: false);
+await Check("signed local version", release.ToJsonString(), "+0.9.0", reachable: false);
 
 release["tag_name"] = "v10.0.0";
 await Check("new major version", release.ToJsonString(), "9.2.2", "10.0.0");
@@ -41,7 +42,11 @@ await Check("oversized stream before valid tag", "{\"body\":\"" + oversizedMetad
     "1.0.0", reachable: false, lengthKnown: false);
 await Check("unprefixed tag", """{"tag_name":"1.1.0"}""", "1.0.0", "1.1.0", tag: "1.1.0");
 await Check("original numeric spelling", """{"tag_name":"v01.1.0"}""", "1.0.0", "01.1.0");
-foreach (var tag in new[] { "", "v1.1", "v1.1.0.0", "v1.1.0-beta.1", "v1.1.0+build" })
+foreach (var tag in new[]
+{
+    "", "v1.1", "v1.1.0.0", "v1.1.0-beta.1", "v1.1.0+build",
+    "v+2.0.0", "2.+0.0", "v2.0.-0", "v2.0.0 ", "v2. 0.0"
+})
 {
     release["tag_name"] = tag;
     await Check("invalid tag " + tag, release.ToJsonString(), "1.0.0", reachable: false);
