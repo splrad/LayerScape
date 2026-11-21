@@ -93,7 +93,7 @@ test('user homepage takes its copy and task paths from product Markdown',async()
   const markdown=await readFile(new URL('../../../docs/product/overview.md',import.meta.url),'utf8');
   const data=productData(markdown);
   assert.ok(markdown.includes(data.title)&&markdown.includes(data.intro)&&markdown.includes(data.downloadNote));
-  assert.match(data.downloadNote,/没有正式安装包/);
+  assert.match(data.downloadNote,/AFR 部署工具/);
   assert.deepEqual(data.scenes.map(p=>p.href),['/modules/',legacyRoutes['首次配置与验证'],legacyRoutes['手动替换']]);
   assert.ok(data.scenes.every(p=>markdown.includes(p.title)&&markdown.includes(p.description)&&markdown.includes(p.action)));
   assert.deepEqual(data.steps.map(p=>p.href),[legacyRoutes['快速开始'],legacyRoutes['首次配置与验证'],legacyRoutes['手动替换']]);

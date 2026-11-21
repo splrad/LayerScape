@@ -50,7 +50,6 @@ internal static class AppInitializer
     private const int LoadCtrls = 2;   // 2 = 随 AutoCAD 启动自动加载
     private const int Managed = 1;     // 1 = 标识为托管 .NET 插件
     private const string PluginVersionValueName = "PluginVersion";
-    private const string PluginBuildIdValueName = "PluginBuildId";
     private const string ConfigSchemaVersionValueName = "ConfigSchemaVersion";
     private const string AwsSuppressionWarningShownValueName = "AwsSuppressionWarningShown";
 
@@ -110,17 +109,14 @@ internal static class AppInitializer
     private static ProfileInitializationResult InitializeProfile(string appPath, string dllPath)
     {
         bool isNewKey = !RegistryService.KeyExists(Registry.CurrentUser, appPath);
-        string currentPluginVersion = PluginVersionService.GetDisplayVersion();
-        string currentBuildId = PluginVersionService.GetBuildId();
+        string currentPluginVersion = PluginVersionService.GetPluginVersion();
         int currentConfigSchemaVersion = PluginVersionService.ConfigSchemaVersion;
         string? installedPluginVersion = RegistryService.ReadString(Registry.CurrentUser, appPath, PluginVersionValueName);
-        string? installedBuildId = RegistryService.ReadString(Registry.CurrentUser, appPath, PluginBuildIdValueName);
         int? installedConfigSchemaVersion = RegistryService.ReadDword(Registry.CurrentUser, appPath, ConfigSchemaVersionValueName);
         int? installedInitialized = RegistryService.ReadDword(Registry.CurrentUser, appPath, "IsInitialized");
         bool awsSuppressionWarningShown = RegistryService.ReadDword(Registry.CurrentUser, appPath, AwsSuppressionWarningShownValueName) == 1;
         bool versionChanged = !isNewKey
-                           && (!string.Equals(installedPluginVersion, currentPluginVersion, StringComparison.Ordinal)
-                            || !string.Equals(installedBuildId, currentBuildId, StringComparison.Ordinal));
+                           && !string.Equals(installedPluginVersion, currentPluginVersion, StringComparison.Ordinal);
         bool schemaChanged = !isNewKey && installedConfigSchemaVersion != currentConfigSchemaVersion;
         bool isStagedInstall = !isNewKey && installedInitialized != 1;
         var state = isNewKey
@@ -137,7 +133,6 @@ internal static class AppInitializer
         WriteIfChanged(appPath, "MANAGED", Managed);
         WriteIfChanged(appPath, "DESCRIPTION", Description);
         WriteIfChanged(appPath, PluginVersionValueName, currentPluginVersion);
-        WriteIfChanged(appPath, PluginBuildIdValueName, currentBuildId);
 
         // 首次初始化时部署内嵌字体并写入默认配置
         if (isNewKey)
@@ -178,9 +173,7 @@ internal static class AppInitializer
                 {
                     ["appPath"] = appPath,
                     ["fromPluginVersion"] = installedPluginVersion,
-                    ["fromBuildId"] = installedBuildId,
-                    ["toPluginVersion"] = currentPluginVersion,
-                    ["toBuildId"] = currentBuildId
+                    ["toPluginVersion"] = currentPluginVersion
                 });
         }
 

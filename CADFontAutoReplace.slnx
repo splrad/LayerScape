@@ -13,7 +13,6 @@
     <File Path="Directory.Packages.props" />
     <File Path="global.json" />
     <File Path="LICENSE.txt" />
-    <File Path="Version.props" />
     <File Path="VERSION" />
   </Folder>
 

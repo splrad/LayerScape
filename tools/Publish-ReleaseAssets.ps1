@@ -179,8 +179,12 @@ Push-Location -LiteralPath $RepoRoot
 try {
 $env:DOTNET_NOLOGO = 'true'
 foreach ($project in @($Plugins | ForEach-Object { Join-Path $PluginsRoot "$($_.Name)\$($_.Name).csproj" }) + @($DeployerCsproj)) {
-    $evaluated = dotnet msbuild $project -nologo -getProperty:PluginDisplayVersion
-    if ($LASTEXITCODE -ne 0 -or ($evaluated | Out-String).Trim() -cne $ReleaseVersion) { throw 'MSBuild PluginDisplayVersion must match VERSION and requested version.' }
+    $evaluated = dotnet msbuild $project -nologo -property:Configuration=Release -getProperty:Version,FileVersion,InformationalVersion
+    if ($LASTEXITCODE -ne 0) { throw "Unable to evaluate MSBuild release versions: $project" }
+    $properties = ($evaluated | Out-String | ConvertFrom-Json).Properties
+    foreach ($property in @('Version', 'FileVersion', 'InformationalVersion')) {
+        if ($properties.$property -cne $ReleaseVersion) { throw "MSBuild $property must match VERSION and requested version: $project" }
+    }
 }
 $ReleaseTag = "v$ReleaseVersion"
 
@@ -266,7 +270,7 @@ $versionedExe = Join-Path $ReleaseAssetsDir "AFR-Deployer_$ReleaseTag.exe"
 foreach ($assetPath in @($exePath) + @($Plugins | ForEach-Object { Get-PluginReleaseFile $_ ".dll" })) {
     Assert-PathWithoutLinks $assetPath
     $native = [Diagnostics.FileVersionInfo]::GetVersionInfo($assetPath)
-    if ($native.FileVersion -cne $ReleaseVersion -or $native.ProductVersion.Split('+')[0] -cne $ReleaseVersion) { throw "Native asset version mismatch: $assetPath" }
+    if ($native.FileVersion -cne $ReleaseVersion -or $native.ProductVersion -cne $ReleaseVersion) { throw "Native asset version mismatch: $assetPath" }
 }
 Assert-PathWithoutLinks $ReleaseAssetsDir
 Copy-Item -LiteralPath $exePath -Destination $versionedExe -Force
