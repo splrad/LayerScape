@@ -1,21 +1,13 @@
 <Project>
 
-  <!-- Version.props 将根目录 VERSION 映射为统一构建版本。 -->
-  <Import Project="$(MSBuildThisFileDirectory)Version.props" />
-
   <PropertyGroup>
-	<!-- 用户可见 -->
-	<Version>$(PluginDisplayVersion)</Version>                <!-- NuGet / 包版本号 -->
-	<AssemblyVersion>1.0.0.0</AssemblyVersion>   <!-- CLR 程序集版本（必须 4 段） -->
-	<FileVersion>$(PluginDisplayVersion)</FileVersion>             <!-- Windows 文件属性「文件版本」 -->
-
-	<!-- 仅开发者可见：包含 build 后缀，运行时从程序集属性中拆分使用 -->
-	<InformationalVersion>$(PluginDisplayVersion)+$(PluginBuildId)</InformationalVersion>
-	<!--
-	  禁止 SDK 在 InformationalVersion 后自动追加 "+{Git 提交 SHA}"，
-	  否则会变成 "9.0.0+20260503.1+c6a2544..."，使日志/注册表里的 build 后缀变成 commit SHA 而非我们维护的 PluginBuildId。
-	-->
-	<IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+    <!-- Release Please 更新根目录 VERSION，构建将正式版本投影至包和二进制。 -->
+    <Version>$([System.IO.File]::ReadAllText('$(MSBuildThisFileDirectory)VERSION').Trim())</Version>
+    <FileVersion>$(Version)</FileVersion>
+    <InformationalVersion>$(Version)</InformationalVersion>
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+    <!-- CLR 程序集标识独立于产品版本。 -->
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
 
     <!-- 统一构建产物输出到 artifacts/ 目录（仅 bin，不含 obj） -->
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
