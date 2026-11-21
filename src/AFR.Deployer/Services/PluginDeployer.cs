@@ -17,9 +17,9 @@ internal static class PluginDeployer
     /// 安装指定 CAD 版本的插件。
     /// <para>
     /// 流程：
-    /// 1) 提取 DLL；
-    /// 2) 通过 <see cref="PluginMetadataReader"/> 从 DLL 中读取正式版本，
+    /// 1) 通过 <see cref="PluginMetadataReader"/> 从嵌入 DLL 中读取并核对正式版本，
     ///    以及 DLL 自我描述的注册表默认值清单（<c>RegistryDefaultString/Dword</c> 程序集级特性）；
+    /// 2) 提取已校验的 DLL；
     /// 3) 向该 CAD 版本下的所有配置文件写入 AutoCAD 协议键（LOADER / LOADCTRLS / MANAGED / DESCRIPTION）以及插件版本标识
     ///    （PluginVersion）；
     /// 4) 按 DLL 声明的清单写入默认值，仅当注册表中尚不存在该值时才写入，避免覆盖用户自定义。
@@ -44,23 +44,29 @@ internal static class PluginDeployer
         var descriptor = installation.Descriptor;
         var fileName   = $"{descriptor.AppName}.dll";
 
-        // 1. 提取 DLL
-        if (!EmbeddedResourceExtractor.TryExtract(
-                descriptor.EmbeddedResourceKey,
-                targetDirectory,
-                fileName,
-                out errorMessage))
+        // 1. 在写目标文件前校验嵌入 DLL 的版本。
+        using var plugin = EmbeddedResourceExtractor.OpenRead(descriptor.EmbeddedResourceKey);
+        if (plugin is null)
         {
+            errorMessage = $"嵌入资源未找到：{descriptor.EmbeddedResourceKey}。请先重新构建对应的插件 Release 输出。";
             return false;
         }
+
+        if (!PluginMetadataReader.TryRead(plugin, out var meta, out errorMessage))
+            return false;
+
+        var currentVersion = DeployerVersionService.GetDisplayVersion();
+        if (!string.Equals(meta!.Version, currentVersion, StringComparison.Ordinal))
+        {
+            errorMessage = $"插件 DLL 版本 {meta.Version} 与部署工具版本 {currentVersion} 不一致。";
+            return false;
+        }
+
+        // 2. 提取 DLL
+        if (!EmbeddedResourceExtractor.TryExtract(plugin, targetDirectory, fileName, out errorMessage))
+            return false;
 
         var dllPath = Path.Combine(targetDirectory, fileName);
-
-        // 2. 从 DLL 中读取元数据（正式版本、注册表默认值清单）。
-        if (!PluginMetadataReader.TryRead(dllPath, out var meta, out errorMessage))
-        {
-            return false;
-        }
 
         // 3. 写入注册表（幂等）
         try
@@ -74,7 +80,7 @@ internal static class PluginDeployer
                 key.SetValue("LOADCTRLS",     LoadCtrls,           RegistryValueKind.DWord);
                 key.SetValue("MANAGED",       Managed,             RegistryValueKind.DWord);
                 key.SetValue("DESCRIPTION",   Description,         RegistryValueKind.String);
-                key.SetValue("PluginVersion", meta!.Version,      RegistryValueKind.String);
+                key.SetValue("PluginVersion", meta.Version,       RegistryValueKind.String);
 
                 // DLL 自我描述的默认值。
                 // - String/Dword：写到 Applications\<AppName>，仅在缺失时写入；

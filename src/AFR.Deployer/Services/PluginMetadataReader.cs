@@ -85,22 +85,21 @@ internal static class PluginMetadataReader
         IReadOnlyList<RegistryDefault> RegistryDefaults);
 
     /// <summary>
-    /// 从指定 DLL 文件读取所有部署所需的元数据。
+    /// 从 DLL 的嵌入资源流读取所有部署所需的元数据。
     /// </summary>
-    /// <param name="dllPath">已释放到磁盘的插件 DLL 完整路径。</param>
+    /// <param name="stream">插件 DLL 的资源流。</param>
     /// <param name="metadata">读取成功时输出的元数据。</param>
     /// <param name="errorMessage">读取失败时的原因，成功时为 null。</param>
     /// <returns>true 表示读取成功。</returns>
     internal static bool TryRead(
-        string dllPath,
+        Stream stream,
         out Metadata? metadata,
         out string? errorMessage)
     {
         metadata = null;
         try
         {
-            using var stream = File.OpenRead(dllPath);
-            using var pe = new PEReader(stream);
+            using var pe = new PEReader(stream, PEStreamOptions.LeaveOpen);
             var reader = pe.GetMetadataReader();
 
             var informational = ReadAssemblyInformationalVersion(reader);

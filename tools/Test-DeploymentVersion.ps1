@@ -52,9 +52,9 @@ $profiles = [Collections.Generic.List[string]]::new()
 $profiles.Add($profile)
 $profileKey = "$baseKey\$profile\Applications\AFR-ACAD2027"
 $registry = [Microsoft.Win32.Registry]::CurrentUser
-$descriptor = [Activator]::CreateInstance(
-    $deployer.GetType('AFR.Deployer.Models.CadDescriptor', $true),
-    @('AutoCAD', '2027', 'AutoCAD 2027', $baseKey, 'AFR-ACAD2027', 'AFR.Deployer.Resources.AFR-ACAD2027.dll'))
+$descriptorType = $deployer.GetType('AFR.Deployer.Models.CadDescriptor', $true)
+$descriptorArgs = @('AutoCAD', '2027', 'AutoCAD 2027', $baseKey, 'AFR-ACAD2027', 'AFR.Deployer.Resources.AFR-ACAD2027.dll')
+$descriptor = [Activator]::CreateInstance($descriptorType, $descriptorArgs)
 
 try {
     $scanArgs = @($descriptor, $profiles)
@@ -70,6 +70,15 @@ try {
         Assert-Equal ($key.GetValue('PluginBuildId')) $null 'Fresh installation legacy value'
         Assert-Equal ($key.GetValue('ConfigSchemaVersion')) $schema 'Installer persisted schema'
         Assert-Equal ($key.GetValue('IsInitialized')) 0 'Installer staged marker'
+
+        $originalDll = (Get-FileHash -LiteralPath $installedDll).Hash
+        $descriptorArgs[-1] = 'AFR.Deployer.Resources.AFR-ACAD2027.cad.json'
+        $invalidDescriptor = [Activator]::CreateInstance($descriptorType, $descriptorArgs)
+        $invalidInstallation = $scan.Invoke($null, @($invalidDescriptor, $profiles))
+        Assert-Equal ($install.Invoke($null, @($invalidInstallation, $targetDir, $null, $null))) $false 'Invalid DLL resource'
+        Assert-Equal ((Get-FileHash -LiteralPath $installedDll).Hash) $originalDll 'DLL after failed installation'
+        Assert-Equal ($key.GetValue('PluginVersion')) $version 'Version after failed installation'
+
         $key.SetValue('IsInitialized', 1)
         $key.SetValue('MainFont', 'custom-main.shx')
         $key.SetValue('BigFont', 'custom-big.shx')
