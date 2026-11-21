@@ -18,10 +18,10 @@ internal static class PluginDeployer
     /// <para>
     /// 流程：
     /// 1) 提取 DLL；
-    /// 2) 通过 <see cref="PluginMetadataReader"/> 从 DLL 中读取版本号、构建标识，
+    /// 2) 通过 <see cref="PluginMetadataReader"/> 从 DLL 中读取正式版本，
     ///    以及 DLL 自我描述的注册表默认值清单（<c>RegistryDefaultString/Dword</c> 程序集级特性）；
     /// 3) 向该 CAD 版本下的所有配置文件写入 AutoCAD 协议键（LOADER / LOADCTRLS / MANAGED / DESCRIPTION）以及插件版本标识
-    ///    （PluginVersion / PluginBuildId）；
+    ///    （PluginVersion）；
     /// 4) 按 DLL 声明的清单写入默认值，仅当注册表中尚不存在该值时才写入，避免覆盖用户自定义。
     /// </para>
     /// <para>
@@ -56,7 +56,7 @@ internal static class PluginDeployer
 
         var dllPath = Path.Combine(targetDirectory, fileName);
 
-        // 2. 从 DLL 中读取元数据（版本、构建标识、注册表默认值清单）。
+        // 2. 从 DLL 中读取元数据（正式版本、注册表默认值清单）。
         if (!PluginMetadataReader.TryRead(dllPath, out var meta, out errorMessage))
         {
             return false;
@@ -74,8 +74,7 @@ internal static class PluginDeployer
                 key.SetValue("LOADCTRLS",     LoadCtrls,           RegistryValueKind.DWord);
                 key.SetValue("MANAGED",       Managed,             RegistryValueKind.DWord);
                 key.SetValue("DESCRIPTION",   Description,         RegistryValueKind.String);
-                key.SetValue("PluginVersion", meta!.DisplayVersion, RegistryValueKind.String);
-                key.SetValue("PluginBuildId", meta.BuildId,        RegistryValueKind.String);
+                key.SetValue("PluginVersion", meta!.Version,      RegistryValueKind.String);
 
                 // DLL 自我描述的默认值。
                 // - String/Dword：写到 Applications\<AppName>，仅在缺失时写入；

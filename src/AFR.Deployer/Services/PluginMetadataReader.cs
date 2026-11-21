@@ -8,7 +8,7 @@ namespace AFR.Deployer.Services;
 /// <summary>
 /// 通过 <see cref="MetadataReader"/> 直接读取插件 DLL 的 PE 元数据，提取部署所需信息：
 /// <list type="bullet">
-/// <item>插件版本与构建标识（来自 <c>AssemblyInformationalVersion</c>）。</item>
+/// <item>插件正式版本（来自 <c>AssemblyInformationalVersion</c>）。</item>
 /// <item>注册表默认值清单（来自 DLL 中声明的 <c>RegistryDefaultStringAttribute</c> /
 ///       <c>RegistryDefaultDwordAttribute</c> 程序集级特性）。</item>
 /// </list>
@@ -78,12 +78,10 @@ internal static class PluginMetadataReader
         bool RemoveOnUninstall = false);
 
     /// <summary>从插件 DLL 中读取的元数据快照。</summary>
-    /// <param name="DisplayVersion">展示用版本号，例如 <c>9.0.0</c>。</param>
-    /// <param name="BuildId">构建标识，例如 <c>20260503.1</c>。</param>
+    /// <param name="Version">正式版本，例如 <c>1.0.0</c>。</param>
     /// <param name="RegistryDefaults">DLL 自我描述的注册表默认值清单。</param>
     internal sealed record Metadata(
-        string DisplayVersion,
-        string BuildId,
+        string Version,
         IReadOnlyList<RegistryDefault> RegistryDefaults);
 
     /// <summary>
@@ -105,15 +103,19 @@ internal static class PluginMetadataReader
             using var pe = new PEReader(stream);
             var reader = pe.GetMetadataReader();
 
-            // AssemblyInformationalVersion 形如 "9.0.0+20260503.1"
-            var informational = ReadAssemblyInformationalVersion(reader)
-                                ?? ReadAssemblyVersion(reader)
-                                ?? "0.0";
-            var (display, build) = SplitInformationalVersion(informational);
+            var informational = ReadAssemblyInformationalVersion(reader);
+            if (!Version.TryParse(informational, out var version)
+                || version.Build < 0
+                || version.Revision >= 0
+                || version.ToString() != informational)
+            {
+                errorMessage = "插件 DLL 缺少有效的三段正式版本。";
+                return false;
+            }
 
             var defaults = ReadRegistryDefaults(reader);
 
-            metadata = new Metadata(display, build, defaults);
+            metadata = new Metadata(informational!, defaults);
             errorMessage = null;
             return true;
         }
@@ -229,12 +231,6 @@ internal static class PluginMetadataReader
         return null;
     }
 
-    private static string? ReadAssemblyVersion(MetadataReader reader)
-    {
-        if (!reader.IsAssembly) return null;
-        return reader.GetAssemblyDefinition().Version.ToString();
-    }
-
     private static string GetAttributeTypeFullName(MetadataReader reader, CustomAttribute attr)
     {
         // 自定义特性的 ctor 句柄要么是 MemberRef（外部程序集中的特性类型），
@@ -273,13 +269,5 @@ internal static class PluginMetadataReader
             default:
                 return string.Empty;
         }
-    }
-
-    private static (string display, string build) SplitInformationalVersion(string full)
-    {
-        var idx = full.IndexOf('+');
-        return idx >= 0
-            ? (full[..idx], idx + 1 < full.Length ? full[(idx + 1)..] : string.Empty)
-            : (full, string.Empty);
     }
 }

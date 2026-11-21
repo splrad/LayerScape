@@ -152,8 +152,6 @@
 
                         <TextBlock Grid.Row="0" Grid.Column="0" Text="软件版本" Style="{StaticResource InfoLabelTextStyle}" />
                         <TextBlock Grid.Row="0" Grid.Column="1" Text="{x:Static viewModels:AboutViewModel.VersionText}" Style="{StaticResource InfoAccentValueTextStyle}" />
-                        <TextBlock Grid.Row="0" Grid.Column="2" Text="构建号" Style="{StaticResource InfoLabelTextStyle}" />
-                        <TextBlock Grid.Row="0" Grid.Column="3" Text="{x:Static viewModels:AboutViewModel.BuildIdText}" Style="{StaticResource InfoAccentValueTextStyle}" />
 
                         <TextBlock Grid.Row="1" Grid.Column="0" Text="作者" Margin="0,12,0,0" Style="{StaticResource InfoLabelTextStyle}" />
                         <TextBlock Grid.Row="1" Grid.Column="1" Text="{x:Static viewModels:AboutViewModel.Author}" Margin="0,12,0,0" Style="{StaticResource InfoValueTextStyle}" />
