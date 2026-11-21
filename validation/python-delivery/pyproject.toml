@@ -1,0 +1,17 @@
+[build-system]
+requires = ["hatchling==1.33.0"]
+build-backend = "hatchling.build"
+
+[project]
+name = "splrad-delivery-probe"
+version = "0.1.0"
+description = "SPLRAD artifact delivery acceptance sample"
+readme = "README.md"
+requires-python = ">=3.12"
+classifiers = ["Private :: Do Not Upload"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/splrad_delivery_probe"]
+
+[tool.hatch.build.targets.sdist]
+include = ["src/splrad_delivery_probe", "pyproject.toml", "README.md", "requirements-build.txt"]
