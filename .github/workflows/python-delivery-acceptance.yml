@@ -47,6 +47,8 @@ jobs:
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
           name: delivery-github-release-${{ github.repository_id }}-python-acceptance-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
-          path: ${{ runner.temp }}/python-delivery-dist/*.tar.gz
+          path: |
+            ${{ runner.temp }}/python-delivery-dist/*.tar.gz
+            ${{ runner.temp }}/python-delivery-dist/*.whl
           if-no-files-found: error
           retention-days: 14
