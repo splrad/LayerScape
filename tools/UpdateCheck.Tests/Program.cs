@@ -29,7 +29,11 @@ foreach (var flag in new[] { "draft", "prerelease" })
     await Check(flag, release.ToJsonString(), "1.0.0");
     release[flag] = false;
 }
-foreach (var tag in new[] { "1.1.0", "v1.1", "v01.1.0", "v1.1.0.0", "v1.1.0-beta.1", "v1.1.0+build", "v1.1.0 " })
+var largeRelease = JsonSerializer.Serialize(new { assets = new[] { new { label = new string('a', 5 * 1024 * 1024) } }, tag_name = "V2.0.0" });
+await Check("5 MiB of metadata before tag, omitted flags", largeRelease, "1.0.0", "2.0.0", tag: "V2.0.0");
+await Check("unprefixed tag", """{"tag_name":"1.1.0"}""", "1.0.0", "1.1.0", tag: "1.1.0");
+await Check("original numeric spelling", """{"tag_name":"v01.1.0"}""", "1.0.0", "01.1.0");
+foreach (var tag in new[] { "", "v1.1", "v1.1.0.0", "v1.1.0-beta.1", "v1.1.0+build" })
 {
     release["tag_name"] = tag;
     await Check("invalid tag " + tag, release.ToJsonString(), "1.0.0", reachable: false);
@@ -40,7 +44,7 @@ await Check("invalid response", "{", "1.0.0", reachable: false);
 await Check("redirect to old mirror", "", "1.0.0", reachable: false, status: HttpStatusCode.Redirect);
 
 static async Task Check(string scenario, string body, string localVersion, string? expected = null,
-    bool reachable = true, HttpStatusCode status = HttpStatusCode.OK)
+    bool reachable = true, HttpStatusCode status = HttpStatusCode.OK, string? tag = null)
 {
     var requests = new List<string>();
     using var client = new HttpClient(new FixtureHandler(request =>
@@ -53,7 +57,7 @@ static async Task Check(string scenario, string body, string localVersion, strin
     }));
     var result = await UpdateCheckService.CheckAsync(client, localVersion);
     if (!requests.SequenceEqual([latest]) || result.IsReachable != reachable || result.HasUpdate != (expected != null)
-        || result.LatestVersion != (expected ?? "") || result.ReleaseUrl != (expected == null ? pages : pages + "/tag/v" + expected))
+        || result.LatestVersion != (expected ?? "") || result.ReleaseUrl != (expected == null ? pages : pages + "/tag/" + (tag ?? "v" + expected)))
         throw new InvalidOperationException($"{scenario}: {result}; requests: {string.Join(", ", requests)}");
     Console.WriteLine("PASS " + scenario);
 }

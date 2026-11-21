@@ -1,6 +1,5 @@
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -42,17 +41,19 @@ internal static class UpdateCheckService
             if (response.StatusCode == System.Net.HttpStatusCode.NotFound) return UpdateCheckResult.NoUpdate;
             if (!response.IsSuccessStatusCode) return UpdateCheckResult.Unavailable;
 
-            var release = JsonSerializer.Deserialize<ReleaseDto>(await ReadBoundedAsync(response, 4 * 1024 * 1024, linked.Token));
+            await using var stream = await response.Content.ReadAsStreamAsync(linked.Token);
+            var release = await JsonSerializer.DeserializeAsync<ReleaseDto>(stream, cancellationToken: linked.Token);
             if (release is null) return UpdateCheckResult.Unavailable;
             if (release.Draft || release.Prerelease) return UpdateCheckResult.NoUpdate;
 
-            if (release.TagName is not { } tag || !tag.StartsWith('v') ||
-                !TryParseVersion(tag[1..], out var latestVersion) || !TryParseVersion(localVersionText, out var localVersion))
+            if (release.TagName is not { } tag) return UpdateCheckResult.Unavailable;
+            var versionText = tag.StartsWith('v') || tag.StartsWith('V') ? tag[1..] : tag;
+            if (!TryParseVersion(versionText, out var latestVersion) || !TryParseVersion(localVersionText, out var localVersion))
                 return UpdateCheckResult.Unavailable;
 
             if (latestVersion <= localVersion) return UpdateCheckResult.NoUpdate;
 
-            return new UpdateCheckResult(true, true, latestVersion.ToString(), ReleasesPageUrl + "/tag/" + tag);
+            return new UpdateCheckResult(true, true, versionText, ReleasesPageUrl + "/tag/" + Uri.EscapeDataString(tag));
         }
         catch
         {
@@ -60,24 +61,8 @@ internal static class UpdateCheckService
         }
     }
 
-    private static async Task<byte[]> ReadBoundedAsync(HttpResponseMessage response, int maximum, CancellationToken token)
-    {
-        if (response.Content.Headers.ContentLength > maximum) throw new InvalidDataException("Update response too large");
-        await using var stream = await response.Content.ReadAsStreamAsync(token);
-        using var output = new MemoryStream();
-        var buffer = new byte[8192];
-        int count;
-        while ((count = await stream.ReadAsync(buffer, token)) > 0)
-        {
-            if (output.Length + count > maximum) throw new InvalidDataException("Update response too large");
-            output.Write(buffer, 0, count);
-        }
-        return output.ToArray();
-    }
-
     private static bool TryParseVersion(string text, out Version version)
-        => Version.TryParse(text, out version!) && version.Build >= 0 && version.Revision < 0
-            && version.ToString() == text;
+        => Version.TryParse(text, out version!) && version.Build >= 0 && version.Revision < 0;
 
     private sealed class ReleaseDto
     {
@@ -85,10 +70,10 @@ internal static class UpdateCheckService
         public string? TagName { get; set; }
 
         [JsonPropertyName("draft")]
-        public required bool Draft { get; set; }
+        public bool Draft { get; set; }
 
         [JsonPropertyName("prerelease")]
-        public required bool Prerelease { get; set; }
+        public bool Prerelease { get; set; }
     }
 }
 
