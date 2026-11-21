@@ -392,6 +392,33 @@ jobs:
           path: ${{ steps.attest.outputs.bundle-path }}
           if-no-files-found: error
           retention-days: 90
+      - name: Select GitHub release files
+        shell: pwsh
+        env:
+          UNIT: ${{ matrix.unit }}
+          RECOVERED: ${{ steps.recover.outputs.found }}
+        run: |
+          $record = Get-Content -LiteralPath 'record.json' -Raw | ConvertFrom-Json
+          $unit = @($record.units | Where-Object id -CEQ $env:UNIT)
+          if ($unit.Count -ne 1) { throw 'Expected exactly one release unit' }
+          $destination = New-Item -ItemType Directory -Path "$env:RUNNER_TEMP/github-release"
+          $source = if ($env:RECOVERED -ceq 'true') { "$env:RUNNER_TEMP/recovered" } else { "$env:RUNNER_TEMP/final" }
+          foreach ($id in @('deployer', 'fonts')) {
+            $asset = @($unit[0].assets | Where-Object id -CEQ $id)
+            if ($asset.Count -ne 1) { throw "Expected exactly one sealed asset for $id" }
+            $name = $asset[0].name
+            if ([string]::IsNullOrWhiteSpace($name) -or [IO.Path]::GetFileName($name) -cne $name) { throw "Invalid sealed filename for $id" }
+            Copy-Item -LiteralPath "$source/$name" -Destination $destination.FullName -ErrorAction Stop
+          }
+      - name: Upload GitHub release delivery
+        id: upload-github-release
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: delivery-github-release-${{ github.repository_id }}-${{ matrix.unit }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/github-release/*
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 90
       - name: business-freeze
         id: upload
         if: steps.recover.outputs.found != 'true'
