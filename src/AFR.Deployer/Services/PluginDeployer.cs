@@ -43,6 +43,12 @@ internal static class PluginDeployer
         warningMessage = null;
         var descriptor = installation.Descriptor;
         var fileName   = $"{descriptor.AppName}.dll";
+        if (fileName.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0)
+        {
+            errorMessage = $"插件 DLL 文件名无效：{fileName}";
+            return false;
+        }
+        var dllPath = Path.Join(targetDirectory, fileName);
 
         // 1. 在写目标文件前校验嵌入 DLL 的版本。
         using var plugin = EmbeddedResourceExtractor.OpenRead(descriptor.EmbeddedResourceKey);
@@ -63,10 +69,8 @@ internal static class PluginDeployer
         }
 
         // 2. 提取 DLL
-        if (!EmbeddedResourceExtractor.TryExtract(plugin, targetDirectory, fileName, out errorMessage))
+        if (!EmbeddedResourceExtractor.TryExtract(plugin, dllPath, out errorMessage))
             return false;
-
-        var dllPath = Path.Combine(targetDirectory, fileName);
 
         // 3. 写入注册表（幂等）
         try

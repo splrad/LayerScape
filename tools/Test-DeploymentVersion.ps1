@@ -79,6 +79,14 @@ try {
         Assert-Equal ((Get-FileHash -LiteralPath $installedDll).Hash) $originalDll 'DLL after failed installation'
         Assert-Equal ($key.GetValue('PluginVersion')) $version 'Version after failed installation'
 
+        $descriptorArgs[4] = 'subdir\AFR-ACAD2027'
+        $descriptorArgs[5] = 'AFR.Deployer.Resources.AFR-ACAD2027.dll'
+        $invalidDescriptor = [Activator]::CreateInstance($descriptorType, $descriptorArgs)
+        $invalidInstallation = $scan.Invoke($null, @($invalidDescriptor, $profiles))
+        $invalidArgs = @($invalidInstallation, $targetDir, $null, $null)
+        Assert-Equal ($install.Invoke($null, $invalidArgs)) $false 'DLL name containing a path segment'
+        if (Test-Path -LiteralPath (Join-Path $targetDir 'subdir')) { throw 'Unexpected installation subdirectory.' }
+
         $key.SetValue('IsInitialized', 1)
         $key.SetValue('MainFont', 'custom-main.shx')
         $key.SetValue('BigFont', 'custom-big.shx')

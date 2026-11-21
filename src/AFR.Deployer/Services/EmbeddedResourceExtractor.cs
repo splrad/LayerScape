@@ -18,21 +18,18 @@ internal static class EmbeddedResourceExtractor
     /// </para>
     /// </summary>
     /// <param name="stream">嵌入资源流。</param>
-    /// <param name="targetDirectory">目标目录路径，不存在时会自动创建。</param>
-    /// <param name="fileName">释放后的文件名（如 "AFR-ACAD2025.dll"）。</param>
+    /// <param name="targetPath">已校验的输出路径，其父目录不存在时会自动创建。</param>
     /// <param name="errorMessage">失败时的原因描述，成功时为 null。</param>
     /// <returns>true 表示提取成功；false 表示失败。</returns>
     internal static bool TryExtract(
         Stream stream,
-        string targetDirectory,
-        string fileName,
+        string targetPath,
         out string? errorMessage)
     {
         try
         {
             stream.Position = 0;
-            Directory.CreateDirectory(targetDirectory);
-            var targetPath = Path.Combine(targetDirectory, fileName);
+            Directory.CreateDirectory(Path.GetDirectoryName(targetPath)!);
 
             using var fs = new FileStream(targetPath, FileMode.Create, FileAccess.Write, FileShare.None);
             stream.CopyTo(fs);
