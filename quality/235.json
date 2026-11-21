@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "repositoryId": 1187527897,
   "pullRequestNumber": 235,
-  "currentHead": "539cedb22ca5cbbd52f2ef62230fadb60d666894",
+  "currentHead": "428aff5a16925ac21eb26714f18c18edb16e61f0",
   "configVersion": "quality-native-comments-v1",
   "heads": {
     "539cedb22ca5cbbd52f2ef62230fadb60d666894": {
@@ -23,6 +23,25 @@
       "checkId": null,
       "externalId": "splrad-quality:1187527897:235:539cedb22ca5cbbd52f2ef62230fadb60d666894",
       "observedAt": "2026-11-21T15:45:44.832Z"
+    },
+    "428aff5a16925ac21eb26714f18c18edb16e61f0": {
+      "sourceSetDigest": "5487098e9d67a6c544a2f89cfc0b8c38e62d7f9052704fced1c228ed737d5d71",
+      "sources": [
+        {
+          "sourceCommentId": "review-comment:4653445263",
+          "sourceCommit": "539cedb22ca5cbbd52f2ef62230fadb60d666894",
+          "sourceUrl": "https://github.com/splrad/LayerScape/pull/235#discussion_r4653445263",
+          "severity": "原文未说明",
+          "bodyMarkdown": "## Call to 'System.IO.Path.Combine' may silently drop its earlier arguments\n\nCall to 'System.IO.Path.Combine' may silently drop its earlier arguments.\n\n---\n\n通用修复思路：在调用 <code>Path.Combine</code> 前，确保“文件名参数”不会是绝对路径或包含路径片段。最稳妥且不改变既有功能的方式是将其规范为纯文件名（<code>Path.GetFileName</code>），再参与组合。</p>\n<p>针对本文件最佳修复：在 <code>TryInstall</code> 中把<br>\n<code>var dllPath = Path.Combine(targetDirectory, fileName);</code><br>\n改为先提取安全文件名，再组合：</p>\n<ul>\n<li><code>var safeFileName = Path.GetFileName(fileName);</code></li>\n<li><code>var dllPath = Path.Combine(targetDirectory, safeFileName);</code></li>\n</ul>\n<p>这样即使 <code>descriptor.AppName</code> 异常包含路径信息，也会被截断为文件名，避免 <code>Path.Combine</code> 丢弃前置目录。无需新增依赖；<code>System.IO</code> 已存在，无需改 imports。",
+          "updatedAt": "2026-11-21T15:44:02Z"
+        }
+      ],
+      "keys": [
+        "540cee387a803ba0d2d066a6592523a38b1246e0295a258e6ce5d434a9a5d4cf"
+      ],
+      "checkId": null,
+      "externalId": "splrad-quality:1187527897:235:428aff5a16925ac21eb26714f18c18edb16e61f0",
+      "observedAt": "2026-11-21T15:49:12.400Z"
     }
   },
   "entries": {
