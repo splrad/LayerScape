@@ -19,7 +19,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           repository: splrad/steward
-          ref: 8fc024fd48d49612770a9234bd0c8acb452529dc
+          ref: 74e614c5aeb36298a70e6f1f77f0181e2ffa4a8e
           path: controller
           persist-credentials: false
       - name: Verify dedicated metadata credential visibility
