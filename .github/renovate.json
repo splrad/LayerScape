@@ -14,24 +14,6 @@
       "enabled": false
     },
     {
-      "matchManagers": [
-        "github-actions"
-      ],
-      "matchDepTypes": [
-        "workflow"
-      ],
-      "matchDepNames": [
-        "splrad/steward"
-      ],
-      "matchFileNames": [
-        ".github/workflows/steward-release-publish.yml"
-      ],
-      "enabled": true,
-      "overrideDatasource": "git-refs",
-      "overridePackageName": "https://github.com/splrad/steward.git",
-      "versioning": "exact"
-    },
-    {
       "matchDepNames": [
         "splrad/steward"
       ],
@@ -82,11 +64,12 @@
       ],
       "matchStrings": [
         "repository: splrad/steward\\s+ref: (?<currentDigest>[a-f0-9]{40})",
-        "(?:^|\\n)  STEWARD_CONTROLLER_SHA: (?<currentDigest>[a-f0-9]{40})(?:\\r?\\n|$)"
+        "(?:^|\\n)  STEWARD_CONTROLLER_SHA: (?<currentDigest>[a-f0-9]{40})(?:\\r?\\n|$)",
+        "uses: splrad/steward/\\.github/workflows/product-release\\.yml@(?<currentDigest>[a-f0-9]{40})"
       ],
       "depNameTemplate": "splrad/steward",
-      "packageNameTemplate": "https://github.com/splrad/steward.git",
-      "datasourceTemplate": "git-refs",
+      "packageNameTemplate": "{{currentDigest}}",
+      "datasourceTemplate": "custom.steward-controller",
       "currentValueTemplate": "steward/validated-controller",
       "versioningTemplate": "exact"
     }
@@ -104,5 +87,14 @@
     "Update": "更新类型",
     "Change": "版本变化"
   },
-  "prFooter": "本 PR 由 [Renovate](https://github.com/renovatebot/renovate) 自动生成。"
+  "prFooter": "本 PR 由 [Renovate](https://github.com/renovatebot/renovate) 自动生成。",
+  "customDatasources": {
+    "steward-controller": {
+      "defaultRegistryUrlTemplate": "https://api.github.com/repos/splrad/steward/compare/{{packageName}}...steward%2Fvalidated-controller",
+      "format": "json",
+      "transformTemplates": [
+        "($base := base_commit.sha; $tip := commits[-1].sha; $valid := function($value){$type($value) = \"string\" and $length($value) = 40 and $exists($match($value, /^[0-9a-f]+$/))}; $forward := status = \"ahead\" and behind_by = 0 and ahead_by > 0 and merge_base_commit.sha = $base and $valid($tip) and $tip != $base; {\"releases\": $valid($base) ? [{\"version\": \"steward/validated-controller\", \"digest\": $forward ? $tip : $base}] : []})"
+      ]
+    }
+  }
 }
