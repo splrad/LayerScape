@@ -121,6 +121,15 @@
 <a href="{{profileUrl}}"><img src="{{avatarUrl}}" alt="{{alt}}" width="48" height="48"></a>
 {{/contributors}}
 
+<details>
+<summary>贡献者 GitHub ID</summary>
+
+{{#contributors}}
+- {{login}} · `{{id}}`
+{{/contributors}}
+
+</details>
+
 {{/hasContributors}}
 {{! 必填。使用该版本的变更记录、版本比较或固定快照。 }}
 ## 版本记录
