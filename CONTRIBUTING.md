@@ -616,6 +616,10 @@ dotnet build src/AFR.Deployer/AFR.Deployer.csproj
 
 草稿准备好后，在 PR 页面点击 **Ready for review**。PR 作者或拥有目标仓库 Write 及以上权限的用户均可操作，适用于同仓和 fork PR。机器人创建的 PR 可由具备上述仓库权限的用户操作；fork PR 作者无需上游 Write 权限。Ready 仅表示提交审查，检查、批准和人工合并仍须分别完成。
 
+### 更新 Steward 控制器
+
+维护者通过普通 PR 更新控制器。先读取 [Steward 已晋级分支](https://github.com/splrad/steward/tree/steward/validated-controller) 的完整提交 SHA，并用 GitHub Compare 确认新提交是当前固定版本的后代。一次更新应核对 `.github/workflows` 下 `channel-preflight.yml`、`pages.yml`、`steward-release-channels.yml` 和 `steward-release-publish.yml` 的全部控制器引用，包括 checkout 的 `ref`、Pages 的 `STEWARD_CONTROLLER_SHA` 和可复用发布工作流的 `uses`。这四份工作流统一使用同一个 SHA，PR 附上晋级运行链接和检查结果。
+
 ## 相关文档
 
 - [AutoCAD 原版 SHX 字体清单](docs/autodesk-fonts.md)
