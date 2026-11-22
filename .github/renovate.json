@@ -1,7 +1,8 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "enabledManagers": [
-    "github-actions"
+    "github-actions",
+    "custom.regex"
   ],
   "automerge": false,
   "pinDigests": true,
@@ -11,6 +12,31 @@
         "github-actions"
       ],
       "enabled": false
+    },
+    {
+      "matchManagers": [
+        "github-actions"
+      ],
+      "matchDepTypes": [
+        "workflow"
+      ],
+      "matchDepNames": [
+        "splrad/steward"
+      ],
+      "matchFileNames": [
+        ".github/workflows/steward-release-publish.yml"
+      ],
+      "enabled": true,
+      "overrideDatasource": "git-refs",
+      "overridePackageName": "https://github.com/splrad/steward.git",
+      "versioning": "exact"
+    },
+    {
+      "matchDepNames": [
+        "splrad/steward"
+      ],
+      "groupName": "validated controller",
+      "groupSlug": "validated-controller"
     },
     {
       "matchManagers": [
@@ -46,6 +72,23 @@
         "github-runner"
       ],
       "enabled": true
+    }
+  ],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "managerFilePatterns": [
+        "/^\\.github/workflows/(?:steward-release-publish|steward-release-channels|channel-preflight|pages)\\.yml$/"
+      ],
+      "matchStrings": [
+        "repository: splrad/steward\\s+ref: (?<currentDigest>[a-f0-9]{40})",
+        "(?:^|\\n)  STEWARD_CONTROLLER_SHA: (?<currentDigest>[a-f0-9]{40})(?:\\r?\\n|$)"
+      ],
+      "depNameTemplate": "splrad/steward",
+      "packageNameTemplate": "https://github.com/splrad/steward.git",
+      "datasourceTemplate": "git-refs",
+      "currentValueTemplate": "steward/validated-controller",
+      "versioningTemplate": "exact"
     }
   ],
   "prBodyTemplate": "{{{replace \"^([^A-Za-z]*)This PR contains the following updates:\" \"$1### 依赖更新\" table}}}{{{warnings}}}{{{notes}}}{{{replace \"^([^#]*)### Release Notes\" \"$1### 上游发布说明\" changelogs}}}{{{controls}}}{{{footer}}}",
