@@ -1,17 +1,119 @@
-# {{productName}} {{version}}
+{{! 发行标题和版本由发布平台提供。正文须有本版实质内容和版本记录。 }}
+{{! 有必须执行的操作时置顶，写明谁受影响、什么时候做什么。 }}
+{{#requiredActions}}
+> [!IMPORTANT]
+>
+{{#items}}
+> - **{{affectedUsers}}**。{{{instruction}}}{{#links}} [{{label}}](<{{{url}}}>){{/links}}
+{{/items}}
 
+{{/requiredActions}}
+{{! 简短版本可写一句摘要。变化多时可选择本版重点。两者择一。 }}
+{{#summary}}
 {{{summary}}}
 
-{{{downloads}}}
+{{/summary}}
+{{#highlights}}
+## 本版重点
 
-{{{installation}}}
+{{#items}}
+- **{{title}}**。{{{description}}}{{#links}} [{{label}}](<{{{url}}}>){{/links}}
+{{/items}}
 
-{{{upgradeNotices}}}
+{{/highlights}}
+{{! 各分类有适用条目才显示。每项用短标题说明使用者受到的影响。 }}
+{{#changes}}
+## 本次更新
 
-## 更新内容
+{{! 写清新版本提供了什么，以及读者可以用它做什么。 }}
+{{#added}}
+### ✨ 新增功能与内容
 
-{{{userChanges}}}
+{{#items}}
+- **{{title}}**。{{{description}}}{{#links}} [{{label}}](<{{{url}}}>){{/links}}
+{{/items}}
 
+{{/added}}
+{{! 写清既有操作、接口或内容现在有什么变化。 }}
+{{#improved}}
+### ⚡ 改进
+
+{{#items}}
+- **{{title}}**。{{{description}}}{{#links}} [{{label}}](<{{{url}}}>){{/links}}
+{{/items}}
+
+{{/improved}}
+{{! 写清出错场景、影响范围和修复后的行为。 }}
+{{#fixed}}
+### 🐛 错误修复
+
+{{#items}}
+- **{{title}}**。{{{description}}}{{#links}} [{{label}}](<{{{url}}}>){{/links}}
+{{/items}}
+
+{{/fixed}}
+{{! 写可公开的影响及适用版本，有正式公告时附链接。 }}
+{{#security}}
+### 🔒 安全修复
+
+{{#items}}
+- **{{title}}**。{{{description}}}{{#links}} [{{label}}](<{{{url}}}>){{/links}}
+{{/items}}
+
+{{/security}}
+{{! 仅在本版交付或面向读者提供的规范、手册、参考资料、示例发生实质变化时填写，写明改了什么、谁需要关注。 }}
+{{#documentation}}
+### 📚 文档更新
+
+{{#items}}
+- **{{title}}**。{{{description}}}{{#links}} [{{label}}](<{{{url}}}>){{/links}}
+{{/items}}
+
+{{/documentation}}
+{{! 写产物、渠道、包名或引用方式的变化及其影响。 }}
+{{#delivery}}
+### 📦 交付方式变化
+
+{{#items}}
+- **{{title}}**。{{{description}}}{{#links}} [{{label}}](<{{{url}}}>){{/links}}
+{{/items}}
+
+{{/delivery}}
+{{/changes}}
+{{! 支持范围、接口变化、弃用、移除、迁移或回退会影响读者时填写。 }}
+{{#compatibility}}
+## 兼容性与迁移
+
+{{#items}}
+- **{{title}}**。{{{description}}}{{#links}} [{{label}}](<{{{url}}}>){{/links}}
+{{/items}}
+
+{{/compatibility}}
+{{! 需要选包、安装、部署、引用或阅读指引时填写，使用本版本的真实入口。 }}
+{{#acquisition}}
+## 获取与使用
+
+{{#items}}
+**{{title}}**。{{{description}}}{{#links}} [{{label}}](<{{{url}}}>){{/links}}
+
+{{#example}}
+~~~{{language}}
+{{{content}}}
+~~~
+
+{{/example}}
+{{/items}}
+{{/acquisition}}
+{{! 写本版仍存在且会实际影响读者的已确认问题或限制，有规避办法时一并说明。 }}
+{{#knownLimitations}}
+## 已知问题与限制
+
+{{#items}}
+- **{{title}}**。{{{description}}}{{#links}} [{{label}}](<{{{url}}}>){{/links}}
+{{/items}}
+
+{{/knownLimitations}}
+{{! 符合身份和归属规则的真人贡献者以可点击的 GitHub 头像展示。 }}
 {{#hasContributors}}
 ## 贡献者
 
@@ -20,6 +122,7 @@
 {{/contributors}}
 
 {{/hasContributors}}
-## 完整变更
+{{! 必填。使用该版本的变更记录、版本比较或固定快照。 }}
+## 版本记录
 
-[{{sourceLinkLabel}}]({{{sourceUrl}}})
+[{{sourceLink.label}}](<{{{sourceLink.url}}}>)

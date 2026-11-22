@@ -39,7 +39,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           repository: splrad/steward
-          ref: 7c2d228185091e838cb579be17ec43a92df71268
+          ref: 3a902f9d16238a4e231cdaa6b840b56b7d9e4077
           path: controller
           persist-credentials: false
       - name: Enable Git long paths
@@ -56,7 +56,7 @@ jobs:
           MISE_SAFE: '1'
           MISE_NODE_COMPILE: 'false'
         with:
-          version: 2026.11.10
+          version: 2026.11.12
           working_directory: controller
           install_args: --locked
           cache: false
@@ -124,7 +124,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           repository: splrad/steward
-          ref: 7c2d228185091e838cb579be17ec43a92df71268
+          ref: 3a902f9d16238a4e231cdaa6b840b56b7d9e4077
           path: controller
           persist-credentials: false
       - name: Enable Git long paths
@@ -141,7 +141,7 @@ jobs:
           MISE_SAFE: '1'
           MISE_NODE_COMPILE: 'false'
         with:
-          version: 2026.11.10
+          version: 2026.11.12
           working_directory: controller
           install_args: --locked
           cache: false
@@ -248,7 +248,7 @@ jobs:
           node controller/packages/runner/dist/index.js release-pipeline result --record record.json --unit "$env:UNIT" --controller-dir controller --state-dir state --job-name "$env:JOB_NAME" --objects "$json" --output result.json
   sign:
     needs: [ admit, build ]
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 5
     outputs:
       result: ${{ steps.signing.outputs.result }}
@@ -264,7 +264,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON(needs.admit.outputs.units) }}
-    uses: splrad/steward/.github/workflows/product-release.yml@7c2d228185091e838cb579be17ec43a92df71268 # steward/validated-controller
+    uses: splrad/steward/.github/workflows/product-release.yml@3a902f9d16238a4e231cdaa6b840b56b7d9e4077 # steward/validated-controller
     with:
       record: ${{ needs.admit.outputs.record }}
       unit: ${{ matrix.unit }}
@@ -291,7 +291,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           repository: splrad/steward
-          ref: 7c2d228185091e838cb579be17ec43a92df71268
+          ref: 3a902f9d16238a4e231cdaa6b840b56b7d9e4077
           path: controller
           persist-credentials: false
       - name: Enable Git long paths
@@ -308,7 +308,7 @@ jobs:
           MISE_SAFE: '1'
           MISE_NODE_COMPILE: 'false'
         with:
-          version: 2026.11.10
+          version: 2026.11.12
           working_directory: controller
           install_args: --locked
           cache: false
@@ -391,6 +391,33 @@ jobs:
             github.run_id }}-${{ github.run_attempt }}
           path: ${{ steps.attest.outputs.bundle-path }}
           if-no-files-found: error
+          retention-days: 90
+      - name: Select GitHub release files
+        shell: pwsh
+        env:
+          UNIT: ${{ matrix.unit }}
+          RECOVERED: ${{ steps.recover.outputs.found }}
+        run: |
+          $record = Get-Content -LiteralPath 'record.json' -Raw | ConvertFrom-Json
+          $unit = @($record.units | Where-Object id -CEQ $env:UNIT)
+          if ($unit.Count -ne 1) { throw 'Expected exactly one release unit' }
+          $destination = New-Item -ItemType Directory -Path "$env:RUNNER_TEMP/github-release"
+          $source = if ($env:RECOVERED -ceq 'true') { "$env:RUNNER_TEMP/recovered" } else { "$env:RUNNER_TEMP/final" }
+          foreach ($id in @('deployer', 'fonts')) {
+            $asset = @($unit[0].assets | Where-Object id -CEQ $id)
+            if ($asset.Count -ne 1) { throw "Expected exactly one sealed asset for $id" }
+            $name = $asset[0].name
+            if ([string]::IsNullOrWhiteSpace($name) -or [IO.Path]::GetFileName($name) -cne $name) { throw "Invalid sealed filename for $id" }
+            Copy-Item -LiteralPath "$source/$name" -Destination $destination.FullName -ErrorAction Stop
+          }
+      - name: Upload GitHub release delivery
+        id: upload-github-release
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: delivery-github-release-${{ github.repository_id }}-${{ matrix.unit }}-${{ github.sha }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/github-release/*
+          if-no-files-found: error
+          compression-level: 0
           retention-days: 90
       - name: business-freeze
         id: upload

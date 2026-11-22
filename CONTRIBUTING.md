@@ -628,21 +628,20 @@ PR 说明应包含实际问题、变更、影响、验证结果及适用的恢�
 
 ## 项目约束
 
-### layerscape.compatibility
+### 验证 AutoCAD 和 Windows 兼容性
 - 改动不得破坏 AutoCAD 2018 至 2027、目标 .NET 版本、Windows/WPF 或版本特定 API 的兼容边界。
-  Safe path: 保留明确的版本分支和受支持目标，并由对应 Windows 验证证明，不能用 Linux Cloud 结果代替。
+  保留明确的版本分支和受支持目标，并由对应 Windows 验证证明，不能用 Linux Cloud 结果代替。
 
 
-### layerscape.user-data
+### 保护字体、映射和用户配置
 - 字体、SHX、映射、路径或升级逻辑不得静默覆盖、丢失或错误迁移用户数据。
-  Safe path: 保留现有配置和回退语义，对迁移进行可逆处理或显式确认，并验证发布资产与版本文件一致。
+  保留现有配置和回退语义，对迁移进行可逆处理或显式确认，并验证发布资产与版本文件一致。
 
 ## 运行时代码与发布资产审查
-
-本文件补充LayerScape运行时代码和发布资产的审查重点，输出格式遵循组织级 Copilot 审查指令。
 
 - 核对AutoCAD版本、目标框架、WPF行为和部署器嵌入资源。
 - 核对十个`AFR-ACAD20XX`插件、`.cad.json`描述符、字体包和三项发布资产仍能被`tools/Publish-ReleaseAssets.ps1`发现。
 - 核对字体替换、SHX处理、运行时映射、安装和卸载路径的用户可见行为。
-- 核对`Version.props`、构建属性和发布脚本不会产生错误版本、标签、目标提交或资产名称。
+- 正式版本由 Release Please 更新根目录 `VERSION`。核对 .NET `Version`、`FileVersion`、`InformationalVersion` 和发布脚本使用相同的版本，并校验标签、目标提交和资产名称。
+- 改动部署器或插件启动的版本判定时，打包后在 Windows 运行 `pwsh -File tools/Test-DeploymentVersion.ps1`。
 - 运行代码和安装包改动才进入用户可见发布说明；纯文档、中央自动化或版本号维护不生成更新条目。
