@@ -130,7 +130,7 @@ jobs:
           persist-credentials: false
       - uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73
         with:
-          dotnet-version: '10.0.404'
+          dotnet-version: '11.0.100'
           global-json-file: global.json
       - name: Build release files
         shell: pwsh
