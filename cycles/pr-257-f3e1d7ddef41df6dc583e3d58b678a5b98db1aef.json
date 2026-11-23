@@ -23,7 +23,32 @@
     }
   ],
   "requiredChannels": [],
-  "dispatches": [],
+  "dispatches": [
+    {
+      "requestKey": "a685d4d5cc07b83d60c7a75ec92f28b957e3369d1d5923bec3da27b2284f6b22",
+      "operationKey": "0b2670dc4065b8270c7ceb3026c37ca5529614075b019f4906ecf076d1080da7",
+      "purpose": "build",
+      "workflowId": 410998652,
+      "ref": "steward/build/pr-257-f3e1d7ddef41df6dc583e3d58b678a5b98db1aef",
+      "sourceSha": "f3e1d7ddef41df6dc583e3d58b678a5b98db1aef",
+      "targetKey": "[3,410998652,\".github/workflows/steward-release-publish.yml\",\"steward/build/pr-257-f3e1d7ddef41df6dc583e3d58b678a5b98db1aef\",\"f3e1d7ddef41df6dc583e3d58b678a5b98db1aef\",\"f3e1d7ddef41df6dc583e3d58b678a5b98db1aef\",\"build\",\"build\",[[\"root\",\"1.1.0\"]]]",
+      "inputs": {
+        "cycle_id": "pr-257-f3e1d7ddef41df6dc583e3d58b678a5b98db1aef",
+        "operation_key": "0b2670dc4065b8270c7ceb3026c37ca5529614075b019f4906ecf076d1080da7",
+        "source_sha": "f3e1d7ddef41df6dc583e3d58b678a5b98db1aef",
+        "controller_sha": "73e4d998df5f05a0e36eca3a9be118b61d7a5ea0"
+      },
+      "inputDigest": "61eaffad5b5a5cee5de99f99b1de68b7dbe7fa4ce4f0febb9ea3b78cc94b94d0",
+      "executionSha": "f3e1d7ddef41df6dc583e3d58b678a5b98db1aef",
+      "sentAt": "2026-11-23T19:06:36.000Z",
+      "searchWindows": [],
+      "canonicalRunId": null,
+      "nativeResponseEvidencePath": null,
+      "continuationOfRunId": null,
+      "retryLimitEvidencePath": null,
+      "buildWorkflow": ".github/workflows/steward-release-publish.yml"
+    }
+  ],
   "publications": [],
   "channelFacts": [],
   "executionEvidence": [],

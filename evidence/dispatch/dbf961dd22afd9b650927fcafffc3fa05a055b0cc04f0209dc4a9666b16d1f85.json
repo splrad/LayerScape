@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "repositoryId": 1187527897,
+  "cycleId": "pr-257-f3e1d7ddef41df6dc583e3d58b678a5b98db1aef",
+  "requestKey": "a685d4d5cc07b83d60c7a75ec92f28b957e3369d1d5923bec3da27b2284f6b22",
+  "observedAt": "2026-11-23T19:06:38.986Z",
+  "kind": "PREPARED",
+  "senderNonce": "982b7f686cde7a974b9f57fba72e8122",
+  "status": null,
+  "response": null,
+  "run": null,
+  "window": null,
+  "pages": [],
+  "matches": [],
+  "errorCode": null,
+  "nextCheckAt": null
+}
