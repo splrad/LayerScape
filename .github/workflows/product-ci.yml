@@ -18,8 +18,70 @@ jobs:
           persist-credentials: false
       - uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6.1.0
         with:
+          dotnet-version: '10.0.404'
           global-json-file: global.json
       - name: Restore locked dependencies
         run: dotnet restore CADFontAutoReplace.slnx --locked-mode
       - name: Build release configuration
         run: dotnet build CADFontAutoReplace.slnx --configuration Release --no-restore
+      - name: Restore coverage tools
+        run: dotnet tool restore
+      - name: Restore locked update-check test dependencies
+        run: dotnet restore tools/UpdateCheck.Tests/UpdateCheck.Tests.csproj --locked-mode
+      - name: Build update-check tests
+        run: dotnet build tools/UpdateCheck.Tests/UpdateCheck.Tests.csproj --configuration Release --no-restore
+      - name: Run update-check tests with coverage
+        id: update-check
+        shell: pwsh
+        run: |
+          $PSNativeCommandUseErrorActionPreference = $false
+          $directory = Join-Path $env:RUNNER_TEMP 'update-check'
+          New-Item -ItemType Directory -Path $directory | Out-Null
+          $log = Join-Path $directory 'update-check.log'
+          $coverage = Join-Path $directory 'coverage.cobertura.xml'
+          dotnet tool run dotnet-coverage collect --output $coverage --output-format cobertura dotnet run --project tools/UpdateCheck.Tests/UpdateCheck.Tests.csproj --configuration Release --no-build 2>&1 |
+            Tee-Object -FilePath $log
+          $exitCode = $LASTEXITCODE
+          $passed = @(Select-String -LiteralPath $log -Pattern '^PASS ').Count
+          @(
+            '## UpdateCheck.Tests'
+            ''
+            "- Passing scenarios recorded: $passed"
+            "- Coverage command exit code: $exitCode"
+            '- See **Run update-check tests with coverage** for the console output.'
+            ''
+          ) >> $env:GITHUB_STEP_SUMMARY
+          exit $exitCode
+      - name: Generate update-check coverage report
+        if: ${{ !cancelled() && (steps.update-check.outcome == 'success' || steps.update-check.outcome == 'failure') }}
+        shell: pwsh
+        run: |
+          $directory = Join-Path $env:RUNNER_TEMP 'update-check'
+          $coverage = Join-Path $directory 'coverage.cobertura.xml'
+          if (!(Test-Path -LiteralPath $coverage -PathType Leaf)) {
+            throw 'dotnet-coverage did not produce Cobertura XML. See the coverage collection step.'
+          }
+          [xml]$data = Get-Content -LiteralPath $coverage -Raw
+          $service = $data.SelectNodes('/coverage/packages/package/classes/class') | Where-Object {
+            $_.GetAttribute('filename') -match '(?:^|[/\\])src[/\\]AFR\.Deployer[/\\]Services[/\\]UpdateCheckService\.cs$' -and
+              $_.SelectSingleNode('lines/line')
+          }
+          if (!$service) {
+            throw 'Cobertura XML has no line data for src/AFR.Deployer/Services/UpdateCheckService.cs. See the coverage collection step.'
+          }
+          $report = Join-Path $directory 'report'
+          dotnet tool run reportgenerator "-reports:$coverage" "-targetdir:$report" '-reporttypes:MarkdownSummaryGithub;Html' '-filefilters:+*UpdateCheckService.cs'
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          'Coverage for `src/AFR.Deployer/Services/UpdateCheckService.cs`.' >> $env:GITHUB_STEP_SUMMARY
+          '' >> $env:GITHUB_STEP_SUMMARY
+          Get-Content -LiteralPath (Join-Path $report 'SummaryGithub.md') -Raw >> $env:GITHUB_STEP_SUMMARY
+      - name: Upload update-check diagnostics
+        if: ${{ !cancelled() && (steps.update-check.outcome == 'success' || steps.update-check.outcome == 'failure') }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: update-check-coverage-${{ github.run_attempt }}
+          path: |
+            ${{ runner.temp }}/update-check/coverage.cobertura.xml
+            ${{ runner.temp }}/update-check/report
+            ${{ runner.temp }}/update-check/update-check.log
+          if-no-files-found: error
