@@ -14,29 +14,12 @@
       "enabled": false
     },
     {
-      "matchManagers": [
-        "github-actions"
-      ],
-      "matchDepTypes": [
-        "workflow"
-      ],
-      "matchDepNames": [
-        "splrad/steward"
-      ],
-      "matchFileNames": [
-        ".github/workflows/steward-release-publish.yml"
-      ],
-      "enabled": true,
-      "overrideDatasource": "git-refs",
-      "overridePackageName": "https://github.com/splrad/steward.git",
-      "versioning": "exact"
-    },
-    {
       "matchDepNames": [
         "splrad/steward"
       ],
       "groupName": "validated controller",
-      "groupSlug": "validated-controller"
+      "groupSlug": "validated-controller",
+      "rollbackPrs": false
     },
     {
       "matchManagers": [
@@ -81,14 +64,14 @@
         "/^\\.github/workflows/(?:steward-release-publish|steward-release-channels|channel-preflight|pages)\\.yml$/"
       ],
       "matchStrings": [
-        "repository: splrad/steward\\s+ref: (?<currentDigest>[a-f0-9]{40})",
-        "(?:^|\\n)  STEWARD_CONTROLLER_SHA: (?<currentDigest>[a-f0-9]{40})(?:\\r?\\n|$)"
+        "repository: splrad/steward\\r?\\n[ \\t]+ref: (?<currentDigest>[a-f0-9]{40})[ \\t]+# (?<currentValue>controller-v[1-9][0-9]*)(?:\\r?\\n|$)",
+        "(?:^|\\n)  STEWARD_CONTROLLER_SHA: (?<currentDigest>[a-f0-9]{40})[ \\t]+# (?<currentValue>controller-v[1-9][0-9]*)(?:\\r?\\n|$)",
+        "uses: splrad/steward(?:/[A-Za-z0-9_.-]+)*@(?<currentDigest>[a-f0-9]{40})[ \\t]+# (?<currentValue>controller-v[1-9][0-9]*)(?:\\r?\\n|$)"
       ],
       "depNameTemplate": "splrad/steward",
       "packageNameTemplate": "https://github.com/splrad/steward.git",
-      "datasourceTemplate": "git-refs",
-      "currentValueTemplate": "steward/validated-controller",
-      "versioningTemplate": "exact"
+      "datasourceTemplate": "git-tags",
+      "versioningTemplate": "regex:^controller-v(?<patch>[1-9][0-9]*)$"
     }
   ],
   "prBodyTemplate": "{{{replace \"^([^A-Za-z]*)This PR contains the following updates:\" \"$1### 依赖更新\" table}}}{{{warnings}}}{{{notes}}}{{{replace \"^([^#]*)### Release Notes\" \"$1### 上游发布说明\" changelogs}}}{{{controls}}}{{{footer}}}",

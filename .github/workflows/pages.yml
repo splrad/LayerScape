@@ -27,7 +27,7 @@ concurrency:
   queue: max
   cancel-in-progress: false
 env:
-  STEWARD_CONTROLLER_SHA: 2aee74d45946443ae69595cf34054f1a21696887
+  STEWARD_CONTROLLER_SHA: a489b114034e897e1cfc210c50573cfbf336dac6 # controller-v2
   STEWARD_REPOSITORY_POLICY: 'true'
   STEWARD_DOCS_SOURCE: ${{ vars.STEWARD_DOCS_SOURCE }}
   STEWARD_DOCS_UNIT: ${{ vars.STEWARD_DOCS_UNIT }}
@@ -50,7 +50,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: splrad/steward
-          ref: 2aee74d45946443ae69595cf34054f1a21696887
+          ref: a489b114034e897e1cfc210c50573cfbf336dac6 # controller-v2
           path: controller
           persist-credentials: false
       - uses: jdx/mise-action@236a21c3b91f5db6d4e174b348674a0f0caac06d # v5.2.9
@@ -97,7 +97,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           repository: splrad/steward
-          ref: 2aee74d45946443ae69595cf34054f1a21696887
+          ref: a489b114034e897e1cfc210c50573cfbf336dac6 # controller-v2
           path: controller
           persist-credentials: false
       - uses: jdx/mise-action@236a21c3b91f5db6d4e174b348674a0f0caac06d # v5.2.9
@@ -154,7 +154,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: splrad/steward
-          ref: 2aee74d45946443ae69595cf34054f1a21696887
+          ref: a489b114034e897e1cfc210c50573cfbf336dac6 # controller-v2
           path: controller
           persist-credentials: false
       - uses: jdx/mise-action@236a21c3b91f5db6d4e174b348674a0f0caac06d # v5.2.9
