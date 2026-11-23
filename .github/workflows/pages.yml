@@ -28,7 +28,6 @@ concurrency:
   cancel-in-progress: false
 env:
   STEWARD_CONTROLLER_SHA: a489b114034e897e1cfc210c50573cfbf336dac6 # controller-v2
-  STEWARD_REPOSITORY_POLICY: 'true'
   STEWARD_DOCS_SOURCE: ${{ vars.STEWARD_DOCS_SOURCE }}
   STEWARD_DOCS_UNIT: ${{ vars.STEWARD_DOCS_UNIT }}
 jobs:
