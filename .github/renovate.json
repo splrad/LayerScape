@@ -18,7 +18,8 @@
         "splrad/steward"
       ],
       "groupName": "validated controller",
-      "groupSlug": "validated-controller"
+      "groupSlug": "validated-controller",
+      "rollbackPrs": false
     },
     {
       "matchManagers": [
@@ -63,16 +64,14 @@
         "/^\\.github/workflows/(?:steward-release-publish|steward-release-channels|channel-preflight|pages)\\.yml$/"
       ],
       "matchStrings": [
-        "repository: splrad/steward\\s+ref: (?<currentDigest>[a-f0-9]{40})",
-        "(?:^|\\n)  STEWARD_CONTROLLER_SHA: (?<currentDigest>[a-f0-9]{40})(?:\\r?\\n|$)",
-        "uses: splrad/steward/\\.github/workflows/product-release\\.yml@(?<currentDigest>[a-f0-9]{40})"
+        "repository: splrad/steward\\r?\\n[ \\t]+ref: (?<currentDigest>[a-f0-9]{40})[ \\t]+# (?<currentValue>controller-v[1-9][0-9]*)(?:\\r?\\n|$)",
+        "(?:^|\\n)  STEWARD_CONTROLLER_SHA: (?<currentDigest>[a-f0-9]{40})[ \\t]+# (?<currentValue>controller-v[1-9][0-9]*)(?:\\r?\\n|$)",
+        "uses: splrad/steward(?:/[A-Za-z0-9_.-]+)*@(?<currentDigest>[a-f0-9]{40})[ \\t]+# (?<currentValue>controller-v[1-9][0-9]*)(?:\\r?\\n|$)"
       ],
       "depNameTemplate": "splrad/steward",
       "packageNameTemplate": "https://github.com/splrad/steward.git",
-      "datasourceTemplate": "custom.steward-controller",
-      "currentValueTemplate": "steward/validated-controller",
-      "versioningTemplate": "exact",
-      "registryUrlTemplate": "https://api.github.com/repos/splrad/steward/compare/{{currentDigest}}...steward%2Fvalidated-controller"
+      "datasourceTemplate": "git-tags",
+      "versioningTemplate": "regex:^controller-v(?<patch>[1-9][0-9]*)$"
     }
   ],
   "prBodyTemplate": "{{{replace \"^([^A-Za-z]*)This PR contains the following updates:\" \"$1### 依赖更新\" table}}}{{{warnings}}}{{{notes}}}{{{replace \"^([^#]*)### Release Notes\" \"$1### 上游发布说明\" changelogs}}}{{{controls}}}{{{footer}}}",
@@ -88,13 +87,5 @@
     "Update": "更新类型",
     "Change": "版本变化"
   },
-  "prFooter": "本 PR 由 [Renovate](https://github.com/renovatebot/renovate) 自动生成。",
-  "customDatasources": {
-    "steward-controller": {
-      "format": "json",
-      "transformTemplates": [
-        "($base := base_commit.sha; $tip := commits[-1].sha; $valid := function($value){$type($value) = \"string\" and $length($value) = 40 and $exists($match($value, /^[0-9a-f]+$/))}; $forward := status = \"ahead\" and behind_by = 0 and ahead_by > 0 and merge_base_commit.sha = $base and $valid($tip) and $tip != $base; {\"releases\": $valid($base) ? [{\"version\": \"steward/validated-controller\", \"digest\": $forward ? $tip : $base}] : []})"
-      ]
-    }
-  }
+  "prFooter": "本 PR 由 [Renovate](https://github.com/renovatebot/renovate) 自动生成。"
 }
