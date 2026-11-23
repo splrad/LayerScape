@@ -101,6 +101,24 @@ test('user homepage takes its copy and task paths from product Markdown',async()
   assert.ok(!JSON.stringify(data).match(/模块接入|公共基础|实施验收|架构方案/));
 });
 
+test('install and download pages keep the independent DLL download tied to v1.0.0',async()=>{
+  const readme=await readFile(new URL('../../../README.md',import.meta.url),'utf8');
+  const downloads=await readFile(new URL('../../../docs/product/downloads.md',import.meta.url),'utf8');
+  const currentInstall=subsection(readme,'推荐：部署工具一键安装');
+  const currentDownloads=section(downloads,'选择安装包');
+  for(const body of [currentInstall,currentDownloads]){
+    assert.ok(body.includes('AFR-Deployer_vX.Y.Z.exe')&&body.includes('Fonts.zip'));
+    assert.doesNotMatch(body,/AFR-DLL|NETLOAD/);
+  }
+  const manualInstall=subsection(readme,'单 DLL 手动安装');
+  const historicalDownloads=section(downloads,'v1.0.0 历史安装包');
+  for(const body of [manualInstall,historicalDownloads]){
+    assert.ok(body.includes('https://github.com/splrad/LayerScape/releases/download/v1.0.0/AFR-DLL_v1.0.0.zip'));
+  }
+  const rendered=await projectMarkdown(downloads,'docs/product/downloads.md');
+  assert.ok(rendered.includes('(/install/#'+encodeURIComponent('单-dll-手动安装')+')'));
+});
+
 test('user source navigation fails closed for missing required sections or an external replacement',async()=>{
   const markdown=await readFile(new URL('../../../docs/product/overview.md',import.meta.url),'utf8');
   assert.throws(()=>productData(markdown.replace('## 产品介绍','## Removed')),/DOCS_SECTION/);
