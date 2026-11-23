@@ -17,9 +17,28 @@
       "version": "1.1.0",
       "tag": "v1.1.0",
       "releaseId": null,
-      "assets": [],
-      "notesDigest": null,
-      "manifestDigest": null
+      "assets": [
+        {
+          "id": "file-7df4e740aa36f1b2f0a8815090ffa3f59427cbec",
+          "path": "AFR-Deployer_v1.1.0.exe",
+          "size": 85803522,
+          "sha256": "ea711360a83ef714bd8ec9d889410c470a95d0d4663619bad331cf97107276a4"
+        },
+        {
+          "id": "file-094eda62151cdc566b57bc804ac70ef06e4cf389",
+          "path": "Fonts.zip",
+          "size": 6774370,
+          "sha256": "f5f50ca58aa9dd3deccfe95f64e1cf54665d7aa3217a4a184c35021301c5030f"
+        }
+      ],
+      "notesDigest": "6c70af8447ef1b6353824ee118afc6b1b39ee32719249da5aaa04d1dde49325f",
+      "manifestDigest": "51ec35debb34e6b53c8763a3d2f7cdf9939740f71d21790ee6a558da20c3dfb4",
+      "githubDelivery": {
+        "runId": 45245462868,
+        "attempt": 1,
+        "artifactId": 14854546268,
+        "digest": "sha256:e8452b42d076db89bf8414731b7b4acfdb0bf13dbaf425d9f22469cc186730e4"
+      }
     }
   ],
   "requiredChannels": [],
@@ -55,5 +74,6 @@
   "completionObservations": [],
   "completedEvidencePath": null,
   "repairOf": null,
-  "approvedRepairDecision": null
+  "approvedRepairDecision": null,
+  "officialDraftScopeDigest": "e5f8a74041da229789872b003a63e34829795a776039d0a0d4d341091f69eb99"
 }
