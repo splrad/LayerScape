@@ -138,7 +138,7 @@ jobs:
           RELEASE_VERSION: ${{ needs.admit.outputs.version }}
         run: |
           $ErrorActionPreference = 'Stop'
-          $assets = New-Item -ItemType Directory -Path "$env:RUNNER_TEMP/layerscape-release-assets"
+          $assets = New-Item -ItemType Directory -Path "$env:RUNNER_TEMP/github-release"
           dotnet restore tools/UpdateCheck.Tests/UpdateCheck.Tests.csproj --locked-mode
           if ($LASTEXITCODE) { exit $LASTEXITCODE }
           dotnet run --project tools/UpdateCheck.Tests/UpdateCheck.Tests.csproj --configuration Release --no-restore
@@ -147,17 +147,22 @@ jobs:
           if ($LASTEXITCODE) { exit $LASTEXITCODE }
           pwsh -NoProfile -File ./tools/Publish-ReleaseAssets.ps1 -OutputDirectory $assets.FullName -RequestedVersion $env:RELEASE_VERSION
           if ($LASTEXITCODE) { exit $LASTEXITCODE }
-      - name: Select GitHub release files
+      - name: Verify packaged release files
         shell: pwsh
         env:
           RELEASE_VERSION: ${{ needs.admit.outputs.version }}
         run: |
-          $destination = New-Item -ItemType Directory -Path "$env:RUNNER_TEMP/github-release" -ErrorAction Stop
-          foreach ($name in @("AFR-Deployer_v$env:RELEASE_VERSION.exe", 'Fonts.zip')) {
-            $source = Join-Path "$env:RUNNER_TEMP/layerscape-release-assets" $name
-            Copy-Item -LiteralPath $source -Destination $destination.FullName -ErrorAction Stop
+          $ErrorActionPreference = 'Stop'
+          $directory = "$env:RUNNER_TEMP/github-release"
+          $expected = @("AFR-Deployer_v${env:RELEASE_VERSION}.exe", 'Fonts.zip')
+          $files = @(Get-ChildItem -LiteralPath $directory -Force)
+          if ($files.Count -ne $expected.Count -or ($files | Where-Object { $_.PSIsContainer -or $_.Name -cnotin $expected })) {
+            throw 'Expected the versioned deployer EXE and Fonts.zip.'
           }
-          Get-ChildItem -LiteralPath $destination.FullName -File | Get-FileHash -Algorithm SHA256
+          $sourceFonts = Get-FileHash -LiteralPath 'chore/Fonts.zip' -Algorithm SHA256
+          $packagedFonts = Get-FileHash -LiteralPath "$directory/Fonts.zip" -Algorithm SHA256
+          if ($sourceFonts.Hash -cne $packagedFonts.Hash) { throw 'Packaged Fonts.zip differs from chore/Fonts.zip.' }
+          $files | Get-FileHash -Algorithm SHA256
       - name: Attest GitHub release files
         uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6
         with:

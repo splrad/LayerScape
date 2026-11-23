@@ -12,16 +12,13 @@
          （已内置 .NET Desktop Runtime 所需组件；无需 Windows App Runtime 等外置依赖）
       4. 生成版本化发布资产到调用方提供的空 OutputDirectory
          - AFR-Deployer_vX.Y.Z.exe：部署器 EXE 本体
-         - AFR-DLL_vX.Y.Z.zip：仅 AFR-ACAD*.dll 插件主 DLL
-         - Fonts.zip：字体资源包
+         - Fonts.zip：直接复制源码中的 chore\Fonts.zip
 .OUTPUTS
     <RepoRoot>\publish\AFR.Deployer\AFR.Deployer.exe
     <OutputDirectory>\AFR-Deployer_vX.Y.Z.exe
-    <OutputDirectory>\AFR-DLL_vX.Y.Z.zip
     <OutputDirectory>\Fonts.zip
 .NOTES
-    精确字节恢复要求相同的冻结工具链。中央发布使用固定版本 PowerShell 7；
-    Windows PowerShell 5.1 可用于手动打包，但不同运行时的 ZIP 字节不保证一致。
+    正式发行使用 PowerShell 7 打包，从原构建运行取件。
 .EXAMPLE
     .\tools\Publish-ReleaseAssets.ps1 -OutputDirectory C:\build-assets -Version 1.0.0
 #>
@@ -102,7 +99,6 @@ function Assert-TreeWithoutLinks([string]$Path) {
 Assert-PathWithoutLinks $RepoRoot
 Assert-PathWithoutLinks $ReleaseAssetsDir
 if (@(Get-ChildItem -LiteralPath $ReleaseAssetsDir -Force).Count -ne 0) { throw 'OutputDirectory must be empty.' }
-$ArchiveTempDir = Join-Path $RepoRoot ("artifacts\release-archive-temp-" + [guid]::NewGuid().ToString('N'))
 $DeployerCsproj = Join-Path $RepoRoot "src\AFR.Deployer\AFR.Deployer.csproj"
 $PublishOutput  = Join-Path $RepoRoot "publish\AFR.Deployer"
 
@@ -167,7 +163,6 @@ function Get-ReleaseVersion {
 
 Assert-PathWithoutLinks $PluginOutputRoot
 Assert-PathWithoutLinks $PublishOutput
-Assert-PathWithoutLinks $ArchiveTempDir
 Assert-TreeWithoutLinks (Join-Path $RepoRoot 'artifacts')
 Assert-TreeWithoutLinks (Join-Path $RepoRoot 'src')
 Assert-TreeWithoutLinks $PublishOutput
@@ -273,72 +268,17 @@ foreach ($assetPath in @($exePath) + @($Plugins | ForEach-Object { Get-PluginRel
     if ($native.FileVersion -cne $ReleaseVersion -or $native.ProductVersion -cne $ReleaseVersion) { throw "Native asset version mismatch: $assetPath" }
 }
 Assert-PathWithoutLinks $ReleaseAssetsDir
-Copy-Item -LiteralPath $exePath -Destination $versionedExe -Force
-Write-Ok "部署器 EXE → $versionedExe"
-
-$versionedDllZip = Join-Path $ReleaseAssetsDir "AFR-DLL_$ReleaseTag.zip"
-$releaseFontsZip = Join-Path $ReleaseAssetsDir "Fonts.zip"
-Assert-PathWithoutLinks $ArchiveTempDir
-New-Item -ItemType Directory -Path $ArchiveTempDir | Out-Null
-
-try {
-    foreach ($p in $Plugins) {
-        $srcDll = Get-PluginReleaseFile $p ".dll"
-        if (-not (Test-Path -LiteralPath $srcDll)) {
-            Write-Fail "$srcDll 不存在，无法生成 DLL 压缩包"
-            exit 1
-        }
-
-        Copy-Item -LiteralPath $srcDll -Destination (Join-Path $ArchiveTempDir "$($p.Name).dll") -Force
-    }
-
-    if (Test-Path -LiteralPath $versionedDllZip) {
-        Remove-Item -LiteralPath $versionedDllZip -Force
-    }
-
-    # Stable ordering/timestamps support recovery with the same source AND frozen toolchain.
-    Add-Type -AssemblyName System.IO.Compression
-    if ($PSVersionTable.PSEdition -eq 'Desktop') {
-        Add-Type -AssemblyName System.IO.Compression.FileSystem
-    } else {
-        Add-Type -AssemblyName System.IO.Compression.ZipFile
-    }
-    $zip = [IO.Compression.ZipFile]::Open($versionedDllZip, [IO.Compression.ZipArchiveMode]::Create)
-    try {
-        foreach ($dll in (Get-ChildItem -LiteralPath $ArchiveTempDir -Filter '*.dll' | Sort-Object Name)) {
-            $entry = $zip.CreateEntry($dll.Name, [IO.Compression.CompressionLevel]::Optimal)
-            $entry.LastWriteTime = [DateTimeOffset]::new(2000, 1, 1, 0, 0, 0, [TimeSpan]::Zero)
-            $inputStream = [IO.File]::OpenRead($dll.FullName)
-            try {
-                $outputStream = $entry.Open()
-                try { $inputStream.CopyTo($outputStream) } finally { $outputStream.Dispose() }
-            } finally { $inputStream.Dispose() }
-        }
-    } finally { $zip.Dispose() }
-    Write-Ok "插件 DLL ZIP → $versionedDllZip"
-} finally {
-    if (Test-Path -LiteralPath $ArchiveTempDir) {
-        Assert-PathWithoutLinks $ArchiveTempDir
-        $archivePrefix = [IO.Path]::GetFullPath((Join-Path $RepoRoot 'artifacts')).TrimEnd('\') + '\release-archive-temp-'
-        if (-not [IO.Path]::GetFullPath($ArchiveTempDir).StartsWith($archivePrefix, [StringComparison]::OrdinalIgnoreCase)) { throw 'Unexpected archive temporary path.' }
-        Remove-Item -LiteralPath $ArchiveTempDir -Recurse -Force
-    }
-}
-
-if (-not (Test-Path -LiteralPath $FontsSourcePath)) {
-    Write-Fail "$FontsSourcePath 不存在，无法生成字体包发布资产"
-    exit 1
-}
-
 Assert-PathWithoutLinks $FontsSourcePath
 if (-not (Test-Path -LiteralPath $FontsSourcePath -PathType Leaf)) { throw 'Fonts source must be a regular file.' }
+$releaseFontsZip = Join-Path $ReleaseAssetsDir "Fonts.zip"
+Copy-Item -LiteralPath $exePath -Destination $versionedExe -Force
+Write-Ok "部署器 EXE → $versionedExe"
 Copy-Item -LiteralPath $FontsSourcePath -Destination $releaseFontsZip -Force
 Write-Ok "字体包 → $releaseFontsZip"
 
 Write-Host "`n✓ 发布完成！" -ForegroundColor Green
 Write-Host "  输出：$exePath ($sizeMB MB)" -ForegroundColor Green
 Write-Host "  发布资产：$versionedExe" -ForegroundColor Green
-Write-Host "  发布资产：$versionedDllZip" -ForegroundColor Green
 Write-Host "  发布资产：$releaseFontsZip" -ForegroundColor Green
 
 } finally {
