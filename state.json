@@ -2,7 +2,7 @@
   "schemaVersion": 3,
   "repositoryId": 1187527897,
   "defaultBranch": "main",
-  "revision": 111,
+  "revision": 112,
   "releaseAdoption": {
     "prNumber": 176,
     "sourceSha": "de10de20b5405d764bfda731ed91d11ac56b5b2c"
@@ -23,7 +23,7 @@
     "observedLabelEventIds": [],
     "pendingWrite": null
   },
-  "nextCheckAt": "2026-11-23T20:05:37.000Z",
-  "lastProgressAt": "2026-11-22T20:15:22.803Z",
+  "nextCheckAt": null,
+  "lastProgressAt": "2026-11-23T19:06:50.341Z",
   "lastErrorCode": null
 }

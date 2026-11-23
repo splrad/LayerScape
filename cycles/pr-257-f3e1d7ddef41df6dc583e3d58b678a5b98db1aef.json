@@ -42,8 +42,8 @@
       "executionSha": "f3e1d7ddef41df6dc583e3d58b678a5b98db1aef",
       "sentAt": "2026-11-23T19:06:36.000Z",
       "searchWindows": [],
-      "canonicalRunId": null,
-      "nativeResponseEvidencePath": null,
+      "canonicalRunId": 45245462868,
+      "nativeResponseEvidencePath": "evidence/dispatch/e3e9c8a208254d7beb444064ca4146ee2b2946af28c177fd1da3edf3d19e694d.json",
       "continuationOfRunId": null,
       "retryLimitEvidencePath": null,
       "buildWorkflow": ".github/workflows/steward-release-publish.yml"
