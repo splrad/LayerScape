@@ -1,7 +1,18 @@
 version: 2
 updates:
   - package-ecosystem: nuget
-    directory: /
+    directories:
+      - /src/AFR.Deployer
+      - /src/AutoCAD/AFR-ACAD2018
+      - /src/AutoCAD/AFR-ACAD2019
+      - /src/AutoCAD/AFR-ACAD2020
+      - /src/AutoCAD/AFR-ACAD2021
+      - /src/AutoCAD/AFR-ACAD2022
+      - /src/AutoCAD/AFR-ACAD2023
+      - /src/AutoCAD/AFR-ACAD2024
+      - /src/AutoCAD/AFR-ACAD2025
+      - /src/AutoCAD/AFR-ACAD2026
+      - /src/AutoCAD/AFR-ACAD2027
     schedule:
       interval: weekly
       day: monday
@@ -12,6 +23,9 @@ updates:
       prefix: "chore(nuget)"
     ignore:
       - dependency-name: AutoCAD.NET
+      # Renovate owns the local .NET tool manifest.
+      - dependency-name: dotnet-coverage
+      - dependency-name: dotnet-reportgenerator-globaltool
     groups:
       dotnet-dependencies:
         patterns:
