@@ -1,4 +1,4 @@
-#Requires -Version 5.1
+﻿#Requires -Version 5.1
 <#
 .SYNOPSIS
     自动构建所有 AutoCAD 插件 DLL，并生成 GitHub Release 发布资产。
