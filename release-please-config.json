@@ -1,10 +1,10 @@
 {
   "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
-  "separate-pull-requests": false,
+  "separate-pull-requests": true,
   "include-v-in-tag": true,
   "include-component-in-tag": false,
-  "pull-request-header": "以下版本和变更记录来自创建候选时的提交。审阅当前版本、兼容性和升级步骤，请查看本 PR 中各发行单元的说明文件及完整源码差异。",
-  "pull-request-footer": "编辑生成稿前，添加 `release:editing` 标签，在 Actions 中确认正在写入候选的作业已结束，再刷新 PR 并编辑。",
+  "pull-request-header": "请审阅下方版本说明。确认后合并，本次合并将启动该版本的正式构建。",
+  "pull-request-footer": "本 PR 的文件差异包含 VERSION、CHANGELOG.md 和版本清单。",
   "packages": {
     ".": {
       "release-type": "simple",
@@ -52,7 +52,9 @@
           "section": "维护",
           "hidden": false
         }
-      ]
+      ],
+      "draft": true,
+      "force-tag-creation": true
     }
   }
 }

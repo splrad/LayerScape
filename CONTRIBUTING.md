@@ -640,7 +640,7 @@ PR 说明应包含实际问题、变更、影响、验证结果及适用的恢�
 ## 运行时代码与发布资产审查
 
 - 核对AutoCAD版本、目标框架、WPF行为和部署器嵌入资源。
-- 核对十个`AFR-ACAD20XX`插件、`.cad.json`描述符、字体包和三项发布资产仍能被`tools/Publish-ReleaseAssets.ps1`发现。
+- 核对十个 `AFR-ACAD20XX` 插件及各自的 `.cad.json` 描述符。用 `tools/Publish-ReleaseAssets.ps1` 打包到空目录，核对输出恰为版本化部署器 EXE 和 `Fonts.zip`，并比较交付字体包与源码中 `chore/Fonts.zip` 的 SHA-256。
 - 核对字体替换、SHX处理、运行时映射、安装和卸载路径的用户可见行为。
 - 正式版本由 Release Please 更新根目录 `VERSION`。核对 .NET `Version`、`FileVersion`、`InformationalVersion` 和发布脚本使用相同的版本，并校验标签、目标提交和资产名称。
 - 改动部署器或插件启动的版本判定时，打包后在 Windows 运行 `pwsh -File tools/Test-DeploymentVersion.ps1`。
