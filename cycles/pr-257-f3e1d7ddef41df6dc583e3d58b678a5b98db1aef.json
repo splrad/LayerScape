@@ -1,0 +1,34 @@
+{
+  "id": "pr-257-f3e1d7ddef41df6dc583e3d58b678a5b98db1aef",
+  "prNumber": 257,
+  "sourceSha": "f3e1d7ddef41df6dc583e3d58b678a5b98db1aef",
+  "controllerSha": "73e4d998df5f05a0e36eca3a9be118b61d7a5ea0",
+  "deliveryConfigSha": "e376b483a2aa2ae9f604e61202567a516159236a",
+  "buildWorkflow": ".github/workflows/steward-release-publish.yml",
+  "workflowDelivery": true,
+  "officialRelease": {
+    "headSha": "b593aac4523cea860f5b054cd5e94e78635c0d0e",
+    "pullBodyDigest": "46b2ec3346a0de11bc015891aff1b93f966e17ee73ce87bfed85dda1af70f6f0",
+    "bodyDigest": "6c70af8447ef1b6353824ee118afc6b1b39ee32719249da5aaa04d1dde49325f"
+  },
+  "units": [
+    {
+      "id": "root",
+      "version": "1.1.0",
+      "tag": "v1.1.0",
+      "releaseId": null,
+      "assets": [],
+      "notesDigest": null,
+      "manifestDigest": null
+    }
+  ],
+  "requiredChannels": [],
+  "dispatches": [],
+  "publications": [],
+  "channelFacts": [],
+  "executionEvidence": [],
+  "completionObservations": [],
+  "completedEvidencePath": null,
+  "repairOf": null,
+  "approvedRepairDecision": null
+}
