@@ -101,13 +101,18 @@ test('user homepage takes its copy and task paths from product Markdown',async()
   assert.ok(!JSON.stringify(data).match(/模块接入|公共基础|实施验收|架构方案/));
 });
 
-test('install and download pages keep the independent DLL download tied to v1.0.0',async()=>{
+test('install and download pages document current and historical release filenames',async()=>{
   const readme=await readFile(new URL('../../../README.md',import.meta.url),'utf8');
   const downloads=await readFile(new URL('../../../docs/product/downloads.md',import.meta.url),'utf8');
   const currentInstall=subsection(readme,'推荐：部署工具一键安装');
   const currentDownloads=section(downloads,'选择安装包');
   for(const body of [currentInstall,currentDownloads]){
     assert.ok(body.includes('LayerScape-vX.Y.Z.exe')&&body.includes('Fonts.zip'));
+    const legacyGuidance = body.split('\n').find(line => line.includes('`AFR-Deployer_vX.Y.Z.exe`'));
+    assert.ok(legacyGuidance, 'Missing historical deployer filename');
+    for (const version of ['v1.0.0', 'v1.1.0']) {
+      assert.ok(legacyGuidance.includes(version), `Missing ${version} in historical deployer guidance`);
+    }
     assert.doesNotMatch(body,/AFR-DLL|NETLOAD/);
   }
   const manualInstall=subsection(readme,'单 DLL 手动安装');
