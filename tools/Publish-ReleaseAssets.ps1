@@ -11,11 +11,11 @@
       3. dotnet publish AFR.Deployer -> 自包含 .NET 10 单文件 EXE
          （已内置 .NET Desktop Runtime 所需组件；无需 Windows App Runtime 等外置依赖）
       4. 生成版本化发布资产到调用方提供的空 OutputDirectory
-         - AFR-Deployer_vX.Y.Z.exe：部署器 EXE 本体
+         - LayerScape-vX.Y.Z.exe：部署器 EXE 本体
          - Fonts.zip：直接复制源码中的 chore\Fonts.zip
 .OUTPUTS
-    <RepoRoot>\publish\AFR.Deployer\AFR.Deployer.exe
-    <OutputDirectory>\AFR-Deployer_vX.Y.Z.exe
+    <RepoRoot>\publish\AFR.Deployer\AFR-Deployer.exe
+    <OutputDirectory>\LayerScape-vX.Y.Z.exe
     <OutputDirectory>\Fonts.zip
 .NOTES
     正式发行使用 PowerShell 7 打包，从原构建运行取件。
@@ -261,7 +261,7 @@ $sizeMB  = [math]::Round((Get-Item $exePath).Length / 1MB, 1)
 Write-Step "生成发布资产到中央输出目录"
 New-Item -ItemType Directory -Force -Path $ReleaseAssetsDir | Out-Null
 
-$versionedExe = Join-Path $ReleaseAssetsDir "AFR-Deployer_$ReleaseTag.exe"
+$versionedExe = Join-Path $ReleaseAssetsDir "LayerScape-$ReleaseTag.exe"
 foreach ($assetPath in @($exePath) + @($Plugins | ForEach-Object { Get-PluginReleaseFile $_ ".dll" })) {
     Assert-PathWithoutLinks $assetPath
     $native = [Diagnostics.FileVersionInfo]::GetVersionInfo($assetPath)

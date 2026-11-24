@@ -2,7 +2,7 @@
 
 ## 选择安装包
 
-- 安装或更新插件时，下载部署工具 `AFR-Deployer_vX.Y.Z.exe`，按[安装指南](../../README.md#快速开始)选择需安装的 AutoCAD 版本。
+- 安装或更新插件时，下载部署工具 `LayerScape-vX.Y.Z.exe`（v1.0.0 和 v1.1.0 使用 `AFR-Deployer_vX.Y.Z.exe`），按[安装指南](../../README.md#快速开始)选择需安装的 AutoCAD 版本。
 - 只需要字体时，下载 `Fonts.zip`。部署工具已内置默认字体。
 
 安装前请先[核对兼容性与运行环境](../../README.md#兼容范围)，并关闭所有 AutoCAD 进程。
