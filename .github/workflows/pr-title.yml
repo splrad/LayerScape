@@ -7,7 +7,7 @@ permissions:
 jobs:
   semantic:
     name: Check title
-    uses: splrad/steward/.github/workflows/pr-title-reusable.yml@cbc6ae1a3e1872529b64e74967d6b53381d68cad
+    uses: splrad/steward/.github/workflows/pr-title-reusable.yml@1d43b0b6c8004f635f28f961e675773c4f170219
   title:
     name: SPLRAD PR Title
     needs: semantic
