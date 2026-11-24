@@ -32,7 +32,7 @@
 - Windows 10/11。
 - Git。
 - Visual Studio 2022 或更新版本，并安装“.NET 桌面开发”工作负载。
-- 根目录 [global.json](global.json) 指定的 .NET SDK。当前固定版本为 `11.0.100`，`rollForward` 为 `disable`，需安装该确切 SDK 版本。运行面向 .NET 10 的 UpdateCheck.Tests 还需要 .NET 10 运行时；发行工作流通过同时安装 SDK 10.0.404 提供该运行时。
+- 安装根目录 [global.json](global.json) 指定的 .NET SDK。Dependabot 跟踪 SDK 更新，构建使用该文件声明的确切版本。运行更新检查测试还需要测试项目目标框架对应的 .NET 运行时。产品 CI 和发行构建会从 [测试项目](tools/UpdateCheck.Tests/UpdateCheck.Tests.csproj) 读取目标框架，并安装对应 SDK 通道的最新补丁以提供运行时。
 
 ### 可选工具
 

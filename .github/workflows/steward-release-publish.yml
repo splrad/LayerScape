@@ -128,9 +128,15 @@ jobs:
         with:
           ref: ${{ github.sha }}
           persist-credentials: false
+      - name: Select the SDK channel that supplies the test runtime
+        id: test-runtime
+        shell: pwsh
+        run: |
+          $channel = & ./tools/Get-UpdateCheckSdkChannel.ps1
+          "channel=$channel" >> $env:GITHUB_OUTPUT
       - uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73
         with:
-          dotnet-version: '10.0.404'
+          dotnet-version: ${{ steps.test-runtime.outputs.channel }}
           global-json-file: global.json
       - name: Build release files
         shell: pwsh

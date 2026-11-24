@@ -56,25 +56,6 @@
         "github-actions"
       ],
       "matchFileNames": [
-        ".github/workflows/product-ci.yml",
-        ".github/workflows/steward-release-publish.yml"
-      ],
-      "matchDepTypes": [
-        "uses-with"
-      ],
-      "matchDatasources": [
-        "dotnet-version"
-      ],
-      "matchPackageNames": [
-        "dotnet-sdk"
-      ],
-      "enabled": true
-    },
-    {
-      "matchManagers": [
-        "github-actions"
-      ],
-      "matchFileNames": [
         ".github/workflows/channel-preflight.yml",
         ".github/workflows/pages.yml",
         ".github/workflows/product-ci.yml",
