@@ -38,7 +38,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           repository: splrad/steward
-          ref: 8a56b4ce3d59dcf6344092cd4b4f0b06a706a84d # controller-v16
+          ref: 4a01e09b977d1f71ae42bad2054899f8473df554 # controller-v18
           path: controller
           persist-credentials: false
       - name: Enable Git long paths
@@ -55,7 +55,7 @@ jobs:
           MISE_SAFE: '1'
           MISE_NODE_COMPILE: 'false'
         with:
-          version: 2026.11.12
+          version: 2026.11.14
           working_directory: controller
           install_args: --locked
           cache: false
