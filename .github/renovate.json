@@ -2,16 +2,27 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "enabledManagers": [
     "github-actions",
-    "custom.regex"
+    "custom.regex",
+    "nuget"
   ],
   "automerge": false,
   "pinDigests": true,
   "packageRules": [
     {
       "matchManagers": [
-        "github-actions"
+        "github-actions",
+        "nuget"
       ],
       "enabled": false
+    },
+    {
+      "matchManagers": [
+        "nuget"
+      ],
+      "matchFileNames": [
+        ".config/dotnet-tools.json"
+      ],
+      "enabled": true
     },
     {
       "matchDepNames": [
@@ -39,6 +50,25 @@
       ],
       "enabled": true,
       "pinDigests": false
+    },
+    {
+      "matchManagers": [
+        "github-actions"
+      ],
+      "matchFileNames": [
+        ".github/workflows/product-ci.yml",
+        ".github/workflows/steward-release-publish.yml"
+      ],
+      "matchDepTypes": [
+        "uses-with"
+      ],
+      "matchDatasources": [
+        "dotnet-version"
+      ],
+      "matchPackageNames": [
+        "dotnet-sdk"
+      ],
+      "enabled": true
     },
     {
       "matchManagers": [

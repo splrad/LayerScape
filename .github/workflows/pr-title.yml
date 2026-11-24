@@ -1,33 +1,24 @@
 name: SPLRAD PR Title
 on:
-  pull_request_target:
+  pull_request:
     types: [opened, edited, synchronize, reopened]
 permissions:
   pull-requests: read
 jobs:
+  semantic:
+    name: Check title
+    uses: splrad/steward/.github/workflows/pr-title-reusable.yml@cbc6ae1a3e1872529b64e74967d6b53381d68cad
   title:
     name: SPLRAD PR Title
-    runs-on: ubuntu-24.04
-    timeout-minutes: 5
+    needs: semantic
+    if: always()
+    runs-on: ubuntu-26.04
+    timeout-minutes: 2
+    permissions: {}
     steps:
-      - id: semantic-title
-        uses: amannn/action-semantic-pull-request@2252a14e810aa9b85c2d560bd7070c802206ecf6 # v6.1.2
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-        with:
-          types: |
-            feat
-            fix
-            perf
-            revert
-            docs
-            build
-            deps
-            chore
-            ci
-            refactor
-            test
-            style
-          requireScope: 'false'
-          validateSingleCommit: 'false'
-          wip: 'false'
+      - name: Pass the shared title result
+        if: always() && needs.semantic.result == 'success'
+        run: exit 0
+      - name: Fail the shared title result
+        if: always() && needs.semantic.result != 'success'
+        run: exit 1
