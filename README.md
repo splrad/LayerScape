@@ -78,9 +78,9 @@ LayerScape 的所有功能共用 AutoCAD 2018–2027 兼容范围，并通过统
 
 ### 推荐：部署工具一键安装
 
-一般用户只需要下载并运行 **`AFR-Deployer_vX.Y.Z.exe`**；`AFR-DLL_vX.Y.Z.zip` 主要用于维护、测试或受限环境下的手动 `NETLOAD`。
+一般用户只需要运行 **`AFR-Deployer_vX.Y.Z.exe`**。只需要字体时，可从同一发行页的 **Assets** 下载 `Fonts.zip`。
 
-1. 在 [Releases](https://github.com/splrad/LayerScape/releases) 下载最新发行包。
+1. 在 [GitHub Releases](https://github.com/splrad/LayerScape/releases) 打开最新正式版，从 **Assets** 下载部署工具 EXE。
 2. **先关闭所有 AutoCAD 进程**（部署工具会在检测到 CAD 运行时禁用安装/卸载按钮）。
 3. 双击运行 `AFR-Deployer_vX.Y.Z.exe`，工具会自动扫描本机已安装的 AutoCAD 版本。
 4. 勾选需要安装的项目，确认“部署路径”（默认会选中首个非系统盘下的 `\CADPlugins\`），点击“安装”。
@@ -94,14 +94,16 @@ LayerScape 的所有功能共用 AutoCAD 2018–2027 兼容范围，并通过统
 > 部署工具会实时监听注册表变化：后续安装/卸载新的 CAD 版本或修改配置文件后，无需手动“刷新”，列表会自动更新。
 >
 > 卸载同样在部署工具中完成：勾选已安装的项目点击“卸载”，工具会同步还原注册表与 `FixedProfile.aws` 中由本插件写入的节点。
+>
+> 已安装的旧部署器如果没有提示更新，可在 [GitHub Releases](https://github.com/splrad/LayerScape/releases) 手动下载所需正式版的部署工具。
 
 ### 单 DLL 手动安装
 
-部署工具是推荐方式；如果只需要单 DLL 场景（例如维护、测试、受限环境），可以手动 `NETLOAD`：
+以下步骤适用于 [v1.0.0](https://github.com/splrad/LayerScape/releases/tag/v1.0.0) 的独立 DLL 压缩包。在维护、测试或受限环境中，可以手动使用 `NETLOAD`。
 
 > 注意：单 DLL 手动安装不支持自动抑制 AutoCAD “缺少 SHX 文件”弹窗；如需该能力，请使用部署工具安装。
 
-1. 在 [Releases](https://github.com/splrad/LayerScape/releases) 下载 `AFR-DLL_vX.Y.Z.zip` 并解压。
+1. 下载 [`AFR-DLL_v1.0.0.zip`](https://github.com/splrad/LayerScape/releases/download/v1.0.0/AFR-DLL_v1.0.0.zip) 并解压。
 2. 按 AutoCAD 版本选择对应 DLL，例如 AutoCAD 2026 使用 `AFR-ACAD2026.dll`。
 3. 在 AutoCAD 命令行输入 `NETLOAD`，选择该 DLL。
 4. 首次 `NETLOAD` 会完成默认字体部署、配置初始化与自动加载注册；按命令行提示重启 AutoCAD 后生效。
@@ -112,7 +114,7 @@ LayerScape 的所有功能共用 AutoCAD 2018–2027 兼容范围，并通过统
 
 #### 手动下载公开安装包
 
-新系列首个版本为 1.0.0。旧 9.x 部署器按版本大小检查更新，不会提示降版到 1.0.0；请打开 [1.0.0 发行页](https://github.com/splrad/LayerScape/releases/tag/v1.0.0)，手动下载 `AFR-Deployer_v1.0.0.exe`。
+旧 9.x 部署器按版本号大小检查更新。从 9.x 迁移到当前 1.x 系列时，请在 [GitHub Releases](https://github.com/splrad/LayerScape/releases) 打开所需正式版，从 **Assets** 手动下载部署工具 EXE。
 
 #### 迁移前：备份现有配置
 
@@ -120,11 +122,11 @@ LayerScape 的所有功能共用 AutoCAD 2018–2027 兼容范围，并通过统
 
 #### 安装并检查图纸
 
-核对 Release 的七件附件和 `SHA256SUMS` 后，用新部署器向原部署路径安装。安装会更新 DLL 路径、版本和自动加载协议字段，已有字体选择值仅在缺失时补默认值。不要为迁移先执行卸载；卸载会清除插件配置项。逐个启动实际使用的 AutoCAD，以图纸副本检查加载、`AFR` 设置、`AFRLOG` 和字体显示，再保存工作图纸。
+核对发行标签与部署器文件名中的版本一致后，用新部署器向原部署路径安装。安装会更新 DLL 路径、版本和自动加载协议字段，已有字体选择值仅在缺失时补默认值。请直接安装到原路径，避免卸载时清除插件配置项。逐个启动实际使用的 AutoCAD，以图纸副本检查加载、`AFR` 设置、`AFRLOG` 和字体显示，再保存工作图纸。
 
 #### 需要恢复时
 
-1.0.0 是新系列首发，没有前一正式版本可供下载恢复。如需撤销迁移，关闭 AutoCAD，用部署器卸载本次安装，恢复自己的 DLL、字体及 `FixedProfile.aws` 备份，再导入对应注册表备份并核对 `LOADER` 指向原 DLL。仅恢复对应宿主和原部署路径，随后用图纸副本复验。该流程的真实宿主验证范围以发行说明为准。
+如需撤销从 9.x 的迁移，关闭 AutoCAD，用部署器卸载本次安装，恢复迁移前的 DLL、字体及 `FixedProfile.aws` 备份，再导入对应注册表备份并核对 `LOADER` 指向原 DLL。仅恢复对应宿主和原部署路径，随后用图纸副本复验。该流程的真实宿主验证范围以发行说明为准。
 
 ### 首次配置与验证
 
@@ -140,7 +142,7 @@ LayerScape 的所有功能共用 AutoCAD 2018–2027 兼容范围，并通过统
 > - 保留 `sas_____.pfb`、`MstnFontConfig.xml`、`internat.rsc`、`font.rsc` 等非 SHX 文件；
 > - 字体过多会导致插件界面加载明显卡顿。
 >
-> [点击下载 CAD 字体包（Fonts.zip）](https://github.com/splrad/LayerScape/releases)
+> 需要单独获取字体时，在 [GitHub Releases](https://github.com/splrad/LayerScape/releases) 的 **Assets** 下载 `Fonts.zip`。
 
 打开有缺失字体的 DWG，看到类似日志即说明插件已执行：
 
