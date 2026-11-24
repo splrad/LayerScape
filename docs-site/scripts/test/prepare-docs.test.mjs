@@ -107,7 +107,7 @@ test('install and download pages keep the independent DLL download tied to v1.0.
   const currentInstall=subsection(readme,'推荐：部署工具一键安装');
   const currentDownloads=section(downloads,'选择安装包');
   for(const body of [currentInstall,currentDownloads]){
-    assert.ok(body.includes('AFR-Deployer_vX.Y.Z.exe')&&body.includes('Fonts.zip'));
+    assert.ok(body.includes('LayerScape-vX.Y.Z.exe')&&body.includes('Fonts.zip'));
     assert.doesNotMatch(body,/AFR-DLL|NETLOAD/);
   }
   const manualInstall=subsection(readme,'单 DLL 手动安装');

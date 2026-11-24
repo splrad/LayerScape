@@ -78,11 +78,11 @@ LayerScape 的所有功能共用 AutoCAD 2018–2027 兼容范围，并通过统
 
 ### 推荐：部署工具一键安装
 
-一般用户只需要运行 **`AFR-Deployer_vX.Y.Z.exe`**。只需要字体时，可从同一发行页的 **Assets** 下载 `Fonts.zip`。
+一般用户只需下载部署工具 **`LayerScape-vX.Y.Z.exe`**（v1.0.0 和 v1.1.0 的文件名为 `AFR-Deployer_vX.Y.Z.exe`）。只需要字体时，可从同一发行页的 **Assets** 下载 `Fonts.zip`。
 
 1. 在 [GitHub Releases](https://github.com/splrad/LayerScape/releases) 打开最新正式版，从 **Assets** 下载部署工具 EXE。
 2. **先关闭所有 AutoCAD 进程**（部署工具会在检测到 CAD 运行时禁用安装/卸载按钮）。
-3. 双击运行 `AFR-Deployer_vX.Y.Z.exe`，工具会自动扫描本机已安装的 AutoCAD 版本。
+3. 双击运行下载的部署工具，工具会自动扫描本机已安装的 AutoCAD 版本。
 4. 勾选需要安装的项目，确认“部署路径”（默认会选中首个非系统盘下的 `\CADPlugins\`），点击“安装”。
 5. 工具会自动完成：
    - 将对应版本 DLL 复制到部署路径；
