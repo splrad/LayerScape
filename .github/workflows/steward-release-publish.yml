@@ -160,7 +160,7 @@ jobs:
         run: |
           $ErrorActionPreference = 'Stop'
           $directory = "$env:RUNNER_TEMP/github-release"
-          $expected = @("AFR-Deployer_v${env:RELEASE_VERSION}.exe", 'Fonts.zip')
+          $expected = @("LayerScape-v${env:RELEASE_VERSION}.exe", 'Fonts.zip')
           $files = @(Get-ChildItem -LiteralPath $directory -Force)
           if ($files.Count -ne $expected.Count -or ($files | Where-Object { $_.PSIsContainer -or $_.Name -cnotin $expected })) {
             throw 'Expected the versioned deployer EXE and Fonts.zip.'
