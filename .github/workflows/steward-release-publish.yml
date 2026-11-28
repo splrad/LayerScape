@@ -38,7 +38,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
         with:
           repository: splrad/steward
-          ref: 17ad34de4d8b60847af446c951195beb04d5fc20 # controller-v44
+          ref: bc1889da4028eec39362b11ef1fc6a68c5e47ef0 # controller-v47
           path: controller
           persist-credentials: false
       - name: Enable Git long paths
