@@ -1,5 +1,31 @@
 # Changelog
 
+## [1.1.1](https://github.com/splrad/LayerScape/compare/v1.1.0...v1.1.1) (2026-11-28)
+
+
+### 构建与分发
+
+* **release:** 将部署工具发布文件命名为 LayerScape-vX.Y.Z.exe ([#270](https://github.com/splrad/LayerScape/issues/270)) ([259b450](https://github.com/splrad/LayerScape/commit/259b450c20b061c6db9db6678e50c5af54bbabc3))
+
+
+### 维护
+
+* **actions:** Bump jdx/mise-action from 5.2.9 to 5.2.10 ([#253](https://github.com/splrad/LayerScape/issues/253)) ([866c30b](https://github.com/splrad/LayerScape/commit/866c30bdbafdbc74180d97075f022442996bac33))
+* **deps:** update dependency jdx/mise to v2026.11.14 ([#263](https://github.com/splrad/LayerScape/issues/263)) ([3861a17](https://github.com/splrad/LayerScape/commit/3861a1799d0caf994703e69a9f3a5d2a79758dc8))
+* **deps:** update dependency splrad/steward to controller-v12 ([#247](https://github.com/splrad/LayerScape/issues/247)) ([cb7b496](https://github.com/splrad/LayerScape/commit/cb7b496fa398b92a9b2205617e22261ca6986630))
+* **deps:** update dependency splrad/steward to controller-v16 ([#265](https://github.com/splrad/LayerScape/issues/265)) ([8fa0e00](https://github.com/splrad/LayerScape/commit/8fa0e00fd7f7a49ffdf676643fbee0cf7df0c7fb))
+* **deps:** update dependency splrad/steward to controller-v17 ([#267](https://github.com/splrad/LayerScape/issues/267)) ([cd45796](https://github.com/splrad/LayerScape/commit/cd45796fa7103ebff39c27b65e43211ef251e87f))
+* **deps:** update dependency splrad/steward to controller-v18 ([#268](https://github.com/splrad/LayerScape/issues/268)) ([50ad87d](https://github.com/splrad/LayerScape/commit/50ad87dc365161ca360eb90aeded1d2a4ae9899a))
+* **deps:** update dependency splrad/steward to controller-v21 ([#272](https://github.com/splrad/LayerScape/issues/272)) ([aae5b7f](https://github.com/splrad/LayerScape/commit/aae5b7f11049e6284ed868427510cb9a295377d2))
+* **deps:** update dependency splrad/steward to controller-v44 ([#273](https://github.com/splrad/LayerScape/issues/273)) ([7bf9501](https://github.com/splrad/LayerScape/commit/7bf9501f95887d84f2da90c6fa8f51595ffed0a2))
+* **deps:** update dependency splrad/steward to controller-v47 ([#275](https://github.com/splrad/LayerScape/issues/275)) ([bca3b59](https://github.com/splrad/LayerScape/commit/bca3b59d112112c245b85733cd1dc77596497727))
+* **release:** 采用正式 controller-v7 ([#258](https://github.com/splrad/LayerScape/issues/258)) ([4933996](https://github.com/splrad/LayerScape/commit/4933996611684f518c75d97fed5e13cc8b0cb755))
+* **release:** 采用正式 controller-v8 ([#260](https://github.com/splrad/LayerScape/issues/260)) ([e99e2dc](https://github.com/splrad/LayerScape/commit/e99e2dc7dd2dcfdd80556a4f657492b13030e805))
+* 更新公共仓库模板 ([#256](https://github.com/splrad/LayerScape/issues/256)) ([079085e](https://github.com/splrad/LayerScape/commit/079085e7825686329f1ee2227ff03eb26fdbf4b4))
+* 更新公共仓库模板 ([#266](https://github.com/splrad/LayerScape/issues/266)) ([8d43a88](https://github.com/splrad/LayerScape/commit/8d43a88fefb0cb311ef3839eb7cbeda28bd31a0f))
+* 更新公共仓库模板 ([#269](https://github.com/splrad/LayerScape/issues/269)) ([5790775](https://github.com/splrad/LayerScape/commit/579077509fcece2c5da82e4873915efc4a4a639d))
+* 更新公共仓库模板 ([#274](https://github.com/splrad/LayerScape/issues/274)) ([929de31](https://github.com/splrad/LayerScape/commit/929de31b2d0d783593c27e4c0889723b8d0489d1))
+
 ## [1.1.0](https://github.com/splrad/LayerScape/compare/v1.0.0...v1.1.0) (2026-11-23)
 
 
